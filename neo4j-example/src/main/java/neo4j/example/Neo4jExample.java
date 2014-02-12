@@ -3,6 +3,7 @@ package neo4j.example;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+
 /**
  * Hello world!
  *
@@ -17,13 +18,16 @@ public class Neo4jExample
         	System.out.println("error initialising neo4j; check database connection and neo4j server status");
         }
         
-        URI nodeWikipedia = neo4jService.createNode("Wikipedia", "http://www.wikipedia.com");
-        
-        URI nodeYahoo = neo4jService.createNode("Yahoo", "http://www.yahoo.com");
+        URI rootNode = neo4jService.populateDatabase();
         
         try {
-			neo4jService.addRelationship(nodeWikipedia, nodeYahoo, "links to", "{ \"how manny times\" : \"123\" }");
+			String response = neo4jService.findLinksForNode(rootNode);
+			
+			System.out.println("nodes realted to " + rootNode.toString() + " : ");
+			System.out.println(response);
+			
 		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }

@@ -13,6 +13,60 @@ public class Neo4jService {
 
 	private final String SERVER_ROOT_URI = "http://localhost:7474/db/data/";
 
+	public URI populateDatabase(){
+		
+		URI nodeWikipedia = createNode("Wikipedia", "http://www.wikipedia.com");
+        
+        URI nodeYahoo = createNode("Yahoo", "http://www.yahoo.com");
+        
+        try {
+			addRelationship(nodeWikipedia, nodeYahoo, "links to", "{ \"how manny times\" : \"123\" }");
+	    
+			return nodeWikipedia;
+
+        } catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+        
+        return null;
+	}
+	
+	public String findLinksForNode( URI rootNode )
+            throws URISyntaxException
+    {
+        // START SNIPPET: traversalDesc
+        // TraversalDefinition turns into JSON to send to the Server
+        TraversalDefinition t = new TraversalDefinition();
+        t.setOrder( TraversalDefinition.DEPTH_FIRST );
+        t.setUniqueness( TraversalDefinition.NODE );
+        t.setMaxDepth( 10 );
+        t.setReturnFilter( TraversalDefinition.ALL );
+        t.setRelationships( new Relation( "links to", Relation.OUT ) );
+        // END SNIPPET: traversalDesc
+
+        // START SNIPPET: traverse
+        URI traverserUri = new URI( rootNode.toString() + "/traverse/node" );
+        WebResource resource = Client.create()
+                .resource( traverserUri );
+        String jsonTraverserPayload = t.toJson();
+        ClientResponse response = resource.accept( MediaType.APPLICATION_JSON )
+                .type( MediaType.APPLICATION_JSON )
+                .entity( jsonTraverserPayload )
+                .post( ClientResponse.class );
+
+        String responseValue = String.format(
+                "POST [%s] to [%s], status code [%d], returned data: "
+                        + System.getProperty( "line.separator" ) + "%s",
+                jsonTraverserPayload, traverserUri, response.getStatus(),
+                response.getEntity( String.class ) ) ; 
+        
+        System.out.println(responseValue );
+        
+        response.close();
+        
+        return responseValue;
+    }
+	
 	public URI createNode(String nodeName, String nodeUrl) {
 		final String nodeEntryPointUri = SERVER_ROOT_URI + "node";
 		// http://localhost:7474/db/data/node
@@ -118,4 +172,6 @@ public class Neo4jService {
         sb.append( " }" );
         return sb.toString();
     }
+    
+    
 }
