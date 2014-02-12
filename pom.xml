@@ -21,5 +21,6 @@
 <modules>
     <module>neo4j-example</module>
     <module>WebCrawlerAKKA</module>
+    <module>rest-example</module>
 </modules>
 </project>
