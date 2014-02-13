@@ -1,0 +1,26 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>akka.ws</groupId>
+  <artifactId>ZipBreakerAkka</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>ZipBreakerAkka</name>
+  <description>Proof of concept for the Akka Workshop showing a basic actor setup for distributing a password breaking</description>
+  <dependencies>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-testkit_2.11.0-M3</artifactId>
+			<version>2.2.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.11.0-M3</artifactId>
+            <version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+  </dependencies>
+</project>
