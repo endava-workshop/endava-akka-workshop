@@ -1,0 +1,99 @@
+WebCrawler task management:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List of tasks open or in progress. All new TODOs can be added here, after the ones already defined.
+
+* [Radu] Domain master actor:
+	- Basic structure
+	- Review code
+	- Request list of domains to start crawling (Persistence master -> search)
+	- Ability to rescan the domains list and start new domains crawling
+	- Basic exception handling
+
+* [Radu] Domain actor:
+	- Basic structure
+	- Review code
+	- Get new link to crawl -> Query next link actor (Persistence master -> search)
+	- Download link -> Download link actor
+	- Basic exception handling
+	
+* Download link actor:
+	- Basic structure
+	- Review code
+	- Download content actions:
+		- check mime-type against a predefined list
+		- effective content download
+		- send content to Processing master
+		- change the link status to visited / failed (Persistence master -> persist)
+	- Basic exception handling
+	
+* [Roxana] Processing master actor:
+	- Basic structure
+	- Route messages to specific processing actors
+	- Basic exception handling
+	
+* [Roxana] Scan for links router and actor:
+	- Link identification (href attributes)
+	- Link normalization
+	- Persist the links (Persistence master -> persist)
+	- Basic exception handling
+	
+* Clean for indexing router and actor:
+	- Content cleaning (if required)
+	- Send cleaned content to persistence (Persistence master -> persist and Lucene)
+	- Basic exception handling
+	
+* [Radu] Persistence master actor:
+	- Basic structure
+	- Direct messages to search actors, persist actors or Lucene actors
+	- Basic exception handling
+	
+* [Radu] Query actor:
+	- Base actor for:
+		- Query domains actor
+		- Query next link actor
+
+* [Radu] Query actor router
+
+* [Radu] Query domains actor:
+	- Basic structure
+	- List all domains that can be crawled at query time
+	- Basic exception handling
+
+* [Radu] Query next link actor:
+	- Basic structure
+	- Review code
+	- No new link found exception
+	- Basic exception handling
+
+* Persist actor:
+	- Base actor for:
+		- Update domain actor
+		- Update link actor
+		- Add link actor
+
+* Persist actor router
+
+* Update domain actor:
+	- Persist information
+	- Basic exception handling
+	
+* Update link actor:
+	- Persist information
+	- Basic exception handling
+	
+* Add link actor:
+	- Add information
+	- Basic exception handling
+	
+* Lucene index router and actor:
+	- Access Lucene to index content
+	- Basic exception handling
+	
+* Neo4j REST wrapper:
+	- implement generic methods
+	- needs details (when available) to finalize
+	
+* Lucene REST wrapper:
+	- implement generic methods
+	- needs details (when available) to finalize
