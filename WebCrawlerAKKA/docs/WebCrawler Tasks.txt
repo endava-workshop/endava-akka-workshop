@@ -4,25 +4,25 @@ WebCrawler task management:
 List of tasks open or in progress. All new TODOs can be added here, after the ones already defined.
 
 * [Radu] Domain master actor:
-	- Basic structure
-	- Review code
-	- Request list of domains to start crawling (Persistence master -> search)
-	- Ability to rescan the domains list and start new domains crawling
+	- DONE Basic structure
+	- DONE Review code
+	- DONE Request list of domains to start crawling (Persistence master -> search)
+	- DONE Ability to rescan the domains list and start new domains crawling
 	- Basic exception handling
 
 * [Radu] Domain actor:
-	- Basic structure
-	- Review code
-	- Get new link to crawl -> Query next link actor (Persistence master -> search)
-	- Download link -> Download link actor
+	- DONE Basic structure
+	- DONE Review code
+	- DONE Get new link to crawl -> Query next link actor (Persistence master -> search)
+	- DONE Download link -> Download link actor
 	- Basic exception handling
 	
-* Download link actor:
-	- Basic structure
-	- Review code
+* [Radu] Download link actor:
+	- DONE Basic structure
+	- DONE Review code
 	- Download content actions:
-		- check mime-type against a predefined list
-		- effective content download
+		- DONE check mime-type against a predefined list
+		- DONE effective content download
 		- send content to Processing master
 		- change the link status to visited / failed (Persistence master -> persist)
 	- Basic exception handling
@@ -44,25 +44,23 @@ List of tasks open or in progress. All new TODOs can be added here, after the on
 	- Basic exception handling
 	
 * [Radu] Persistence master actor:
-	- Basic structure
-	- Direct messages to search actors, persist actors or Lucene actors
+	- DONE Basic structure
+	- PARTIAL Direct messages to search actors, persist actors or Lucene actors
 	- Basic exception handling
 	
 * [Radu] Query actor:
 	- Base actor for:
-		- Query domains actor
-		- Query next link actor
+		- DONE Query domains actor
+		- DONE Query next link actor
 
-* [Radu] Query actor router
-
-* [Radu] Query domains actor:
-	- Basic structure
-	- List all domains that can be crawled at query time
+* [Radu] Query domains router + actor:
+	- DONE Basic structure
+	- DONE List all domains that can be crawled at query time
 	- Basic exception handling
 
-* [Radu] Query next link actor:
-	- Basic structure
-	- Review code
+* [Radu] Query next link router + actor:
+	- DONE Basic structure
+	- DONE Review code
 	- No new link found exception
 	- Basic exception handling
 
