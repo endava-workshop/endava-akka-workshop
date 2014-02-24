@@ -5,6 +5,8 @@ import com.en_workshop.webcrawlerakka.entities.WebDomainCloner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.util.List;
+
 /**
  * @author Radu Ciumag
  */
@@ -53,6 +55,15 @@ public class WebDomainDao {
         }
 
         return null;
+    }
+
+    /**
+     * Find all {@link com.en_workshop.webcrawlerakka.entities.WebDomain}s
+     *
+     * @return The list of {@link com.en_workshop.webcrawlerakka.entities.WebDomain}s found
+     */
+    public static List<WebDomain> findAll() {
+        return WebDomain.DOMAINS;
     }
 
     /**

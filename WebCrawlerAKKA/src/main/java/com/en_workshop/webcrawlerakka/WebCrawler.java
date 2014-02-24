@@ -19,7 +19,7 @@ public class WebCrawler {
     public static void main(String[] args) {
         LOG.info("Web crawler starting ...");
 
-        LOG.info("Add sample (test) data ...");
+        LOG.debug("Add sample (test) data ...");
         WebDomain wikiDomain = WebDomainDao.add(new WebDomain("http://ro.wikipedia.org/", "Wikipedia", 5000, 0));
         if (null != wikiDomain) {
             WebUrlDao.add(wikiDomain, wikiDomain.getBaseUrl());
@@ -29,13 +29,13 @@ public class WebCrawler {
         if (null != debianDomain) {
             WebUrlDao.add(debianDomain, debianDomain.getBaseUrl());
         }
-        LOG.info("Add sample (test) data: DONE");
+        LOG.debug("Add sample (test) data: DONE");
 
-        LOG.info("Actor system initializing ...");
+        LOG.debug("Actor system initializing ...");
         ActorSystem actorSystem = ActorSystem.create(WebCrawlerConstants.SYSTEM_NAME);
 
         ActorRef masterActor = actorSystem.actorOf(Props.create(MasterActor.class), WebCrawlerConstants.MASTER_ACTOR_NAME);
         masterActor.tell(new StartMasterRequest(), ActorRef.noSender());
-        LOG.info("Actor system initialize: DONE");
+        LOG.debug("Actor system initialize: DONE");
     }
 }
