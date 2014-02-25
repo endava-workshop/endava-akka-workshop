@@ -3,29 +3,29 @@ WebCrawler task management:
 
 List of tasks open or in progress. All new TODOs can be added here, after the ones already defined.
 
-* [Radu] Domain master actor:
+* DONE Domain master actor:
 	- DONE Basic structure
 	- DONE Review code
 	- DONE Request list of domains to start crawling (Persistence master -> search)
 	- DONE Ability to rescan the domains list and start new domains crawling
-	- Basic exception handling
+	- DONE Basic exception handling
 
-* [Radu] Domain actor:
+* DONE Domain actor:
 	- DONE Basic structure
 	- DONE Review code
 	- DONE Get new link to crawl -> Query next link actor (Persistence master -> search)
 	- DONE Download link -> Download link actor
-	- Basic exception handling
+	- DONE Basic exception handling
 	
-* [Radu] Download link actor:
+* Download link actor:
 	- DONE Basic structure
 	- DONE Review code
 	- Download content actions:
 		- DONE check mime-type against a predefined list
 		- DONE effective content download
-		- send content to Processing master
+		- DONE send content to Processing master
 		- change the link status to visited / failed (Persistence master -> persist)
-	- Basic exception handling
+	- NO_NEED Basic exception handling
 	
 * [Roxana] Processing master actor:
 	- Basic structure
@@ -48,21 +48,20 @@ List of tasks open or in progress. All new TODOs can be added here, after the on
 	- PARTIAL Direct messages to search actors, persist actors or Lucene actors
 	- Basic exception handling
 	
-* [Radu] Query actor:
+* Query actor:
 	- Base actor for:
 		- DONE Query domains actor
 		- DONE Query next link actor
 
-* [Radu] Query domains router + actor:
+* DONE Query domains router + actor:
 	- DONE Basic structure
 	- DONE List all domains that can be crawled at query time
-	- Basic exception handling
+	- DONE Basic exception handling
 
-* [Radu] Query next link router + actor:
+* DONE Query next link router + actor:
 	- DONE Basic structure
 	- DONE Review code
-	- No new link found exception
-	- Basic exception handling
+	- DONE Basic exception handling
 
 * Persist actor:
 	- Base actor for:
