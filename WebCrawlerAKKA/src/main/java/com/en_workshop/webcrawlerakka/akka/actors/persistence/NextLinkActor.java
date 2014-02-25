@@ -26,7 +26,7 @@ public class NextLinkActor extends BaseActor {
             WebUrl webUrl = WebUrlDao.getNextForCrawling(request.getWebDomain());
             NextLinkResponse response = new NextLinkResponse(request, webUrl);
 
-            LOG.debug("Found next URL for crawling: " + webUrl.getUrl());
+            LOG.debug("Found next URL for crawling: " + (null == webUrl ? "NONE" : webUrl.getUrl()));
 
             getSender().tell(response, getSelf());
         } else {

@@ -2,6 +2,7 @@ package com.en_workshop.webcrawlerakka.dao;
 
 import com.en_workshop.webcrawlerakka.entities.WebDomain;
 import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.WebUrlCloner;
 import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -25,8 +26,6 @@ public class WebUrlDao {
             LOG.error("Cannot create WebUrl with params: " + webDomain + "; " + url + "; " + url);
             return null;
         }
-
-        //TODO: Normalize url (ref. http://en.wikipedia.org/wiki/URL_normalization)
 
         WebUrl webUrl = new WebUrl(webDomain, url);
         
@@ -61,5 +60,27 @@ public class WebUrlDao {
         }
 
         return null;
+    }
+
+    /**
+     * Update a {@link com.en_workshop.webcrawlerakka.entities.WebUrl} with a new status
+     *
+     * @param oldWebUrl The original {@link com.en_workshop.webcrawlerakka.entities.WebUrl}
+     * @param newStatus The new status
+     * @return The new {@link com.en_workshop.webcrawlerakka.entities.WebUrl} or {@code null}
+     */
+    public static WebUrl update(final WebUrl oldWebUrl, final WebUrlStatus newStatus) {
+        /* Validation */
+        if (null == oldWebUrl) {
+            LOG.error("Cannot update a null WebUrl");
+            return null;
+        }
+
+        WebUrl newWebUrl = new WebUrlCloner(oldWebUrl).withStatus(newStatus).build();
+
+        WebUrl.URLS.remove(oldWebUrl);
+        WebUrl.URLS.add(newWebUrl);
+
+        return newWebUrl;
     }
 }

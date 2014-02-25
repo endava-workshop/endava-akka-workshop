@@ -1,9 +1,12 @@
 package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
 import akka.actor.ActorRef;
+import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
+import akka.actor.SupervisorStrategy;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
@@ -23,6 +26,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class DomainActor extends BaseActor {
     private static final Logger LOG = Logger.getLogger(DomainActor.class);
+
+    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
+            new Function<Throwable, SupervisorStrategy.Directive>() {
+                @Override
+                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
+                    if (throwable instanceof Exception) {
+                        return SupervisorStrategy.restart();
+                    }
+
+                    return SupervisorStrategy.stop();
+                }
+            });
 
     /**
      * {@inheritDoc}
@@ -52,6 +67,10 @@ public class DomainActor extends BaseActor {
             if (null == response.getNextLink()) {
                 /* There is no next link */
                 LOG.info("Domain " + response.getNextLinkRequest().getWebDomain().getName() + " has no more links to crawl");
+
+                /* Schedule a new crawl for the downloaded domain after the cool down period */
+                getContext().system().scheduler().scheduleOnce(Duration.create(response.getNextLink().getWebDomain().getCooldownPeriod(), TimeUnit.MILLISECONDS),
+                        getSelf(), new CrawlDomainRequest(response.getNextLink().getWebDomain()), getContext().system().dispatcher(), getSelf());
 
                 return;
             }
@@ -83,6 +102,15 @@ public class DomainActor extends BaseActor {
                     getSelf(), new CrawlDomainRequest(response.getDownloadUrlRequest().getWebUrl().getWebDomain()), getContext().system().dispatcher(), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
+            unhandled(message);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SupervisorStrategy supervisorStrategy() {
+        return supervisorStrategy;
     }
 }

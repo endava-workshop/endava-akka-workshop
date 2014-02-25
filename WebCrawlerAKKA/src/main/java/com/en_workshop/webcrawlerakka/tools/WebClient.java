@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Radu Ciumag
@@ -29,40 +31,47 @@ public class WebClient {
      * @return The list of {@link org.apache.http.Header}s
      * @throws IOException
      */
-    public static synchronized Header[] getPageHeaders(final String link) throws IOException {
-        Header[] headers = new Header[0];
+    public static synchronized Map<String, String> getPageHeaders(final String link) throws IOException {
+        final Map<String, String> headersMap = new HashMap<>();
 
         final CloseableHttpClient httpClient = HttpClients.createDefault();
         final HttpHead headRequest = new HttpHead(link);
         try (final CloseableHttpResponse response = httpClient.execute(headRequest)) {
-            headers = response.getAllHeaders();
+            /* Add page headers */
+            final Header[] headers = response.getAllHeaders();
+            for (Header header : headers) {
+                headersMap.put(header.getName(), header.getValue());
+            }
+
+            /* Add the page response code to headers */
+            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
+        } catch (Exception exc) {
+            LOG.error("Cannot process page: " + exc.getMessage(), exc);
+
+            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, WebCrawlerConstants.HTTP_RESPONSE_CODE_NONE);
         }
 
-        return headers;
+        return headersMap;
     }
 
     /**
      * Are the headers mime types accepted
      *
-     * @param linkHeaders The page headers
+     * @param contentTypeHeader The page "content type" header
      * @return {@link java.lang.Boolean} {@code true} or {@code false}
      * @throws IOException
      */
-    public static synchronized boolean isMediaTypeAccepted(Header[] linkHeaders) throws IOException {
+    public static synchronized boolean isMediaTypeAccepted(final String contentTypeHeader) throws IOException {
         Boolean mediaAccepted = Boolean.FALSE;
 
-        for (final Header header : linkHeaders) {
-            if ("Content-Type".equalsIgnoreCase(header.getName())) {
-                final String[] mimeParts = header.getValue().trim().split(";");
-                for (final String mimePart : mimeParts) {
-                    if (Arrays.binarySearch(WebCrawlerConstants.ACCEPTED_MIME_TYPES, mimePart.trim()) >= 0) {
-                        return true;
-                    }
-                }
-
-                LOG.debug("Mime type " + header.getValue() + " not accepted");
+        final String[] mimeParts = contentTypeHeader.trim().split(";");
+        for (final String mimePart : mimeParts) {
+            if (Arrays.binarySearch(WebCrawlerConstants.ACCEPTED_MIME_TYPES, mimePart.trim()) >= 0) {
+                return true;
             }
         }
+
+        LOG.debug("Mime type " + contentTypeHeader + " not accepted");
 
         return false;
     }

@@ -17,6 +17,14 @@ public class WebCrawlerConstants {
     public static final String NEXT_URL_ACTOR_PART_NAME = "nextUrlActor_";
     public static final String DOWNLOAD_URL_ACTOR_PART_NAME = "downloadUrlActor_";
 
+    /* HTTP related constants */
+    public static final String HTTP_CUSTOM_HEADER_RESPONSE_CODE = "CRAWL-ResponseCode";
+
+    public static final String HTTP_RESPONSE_CODE_NONE = "0";
+    public static final String HTTP_RESPONSE_CODE_OK = "200";
+
+    public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
+
     /* Other */
     public static final long DOMAINS_REFRESH_PERIOD = 2 * 60 * 1000; // 2 minutes
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type

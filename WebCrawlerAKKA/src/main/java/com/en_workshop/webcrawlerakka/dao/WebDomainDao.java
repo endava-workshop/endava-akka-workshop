@@ -70,17 +70,17 @@ public class WebDomainDao {
      * Update a {@link com.en_workshop.webcrawlerakka.entities.WebDomain} with a new crawled time
      *
      * @param oldWebDomain The original {@link com.en_workshop.webcrawlerakka.entities.WebDomain}
-     * @param crawledTime  The new crawled time
+     * @param crawledAt    The new "crawled at" time
      * @return The new {@link com.en_workshop.webcrawlerakka.entities.WebDomain} or {@code null}
      */
-    public static WebDomain update(final WebDomain oldWebDomain, final long crawledTime) {
+    public static WebDomain update(final WebDomain oldWebDomain, final long crawledAt) {
         /* Validation */
         if (null == oldWebDomain) {
             LOG.error("Cannot update a null WebDomain");
             return null;
         }
 
-        WebDomain newWebDomain = new WebDomainCloner(oldWebDomain).withCrawledTime(crawledTime).build();
+        WebDomain newWebDomain = new WebDomainCloner(oldWebDomain).withCrawledAt(crawledAt).build();
 
         WebDomain.DOMAINS.remove(oldWebDomain);
         WebDomain.DOMAINS.add(newWebDomain);

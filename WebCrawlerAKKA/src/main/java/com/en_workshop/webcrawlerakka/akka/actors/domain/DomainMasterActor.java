@@ -1,9 +1,12 @@
 package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
 import akka.actor.ActorRef;
+import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
+import akka.actor.SupervisorStrategy;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
@@ -24,6 +27,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class DomainMasterActor extends BaseActor {
     private static final Logger LOG = Logger.getLogger(DomainMasterActor.class);
+
+    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
+            new Function<Throwable, SupervisorStrategy.Directive>() {
+                @Override
+                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
+                    if (throwable instanceof Exception) {
+                        return SupervisorStrategy.restart();
+                    }
+
+                    return SupervisorStrategy.stop();
+                }
+            });
 
     private final HashMap<String, ActorRef> domainActors;
 
@@ -73,6 +88,15 @@ public class DomainMasterActor extends BaseActor {
                     getSelf(), new RefreshDomainMasterRequest(), getContext().system().dispatcher(), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
+            unhandled(message);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SupervisorStrategy supervisorStrategy() {
+        return supervisorStrategy;
     }
 }
