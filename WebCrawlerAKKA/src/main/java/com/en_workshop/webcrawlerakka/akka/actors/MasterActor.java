@@ -1,21 +1,40 @@
 package com.en_workshop.webcrawlerakka.akka.actors;
 
 import akka.actor.ActorRef;
+import akka.actor.AllForOneStrategy;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
+import akka.actor.SupervisorStrategy;
+import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
-import com.en_workshop.webcrawlerakka.akka.requests.StartDomainMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.actors.domain.DomainMasterActor;
+import com.en_workshop.webcrawlerakka.akka.actors.persistence.PersistenceMasterActor;
+import com.en_workshop.webcrawlerakka.akka.actors.processing.ProcessingMasterActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.StartProcessingMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
 import org.apache.log4j.Logger;
+import scala.concurrent.duration.Duration;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Crawler root actor
  *
  * @author Radu Ciumag
  */
-public class MasterActor extends UntypedActor {
+public class MasterActor extends BaseActor {
     private static final Logger LOG = Logger.getLogger(MasterActor.class);
+
+    private final SupervisorStrategy supervisorStrategy = new AllForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+            new Function<Throwable, SupervisorStrategy.Directive>() {
+                @Override
+                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
+                    if (throwable instanceof Exception) {
+                        return SupervisorStrategy.restart();
+                    }
+
+                    return SupervisorStrategy.stop();
+                }
+            });
 
     /**
      * {@inheritDoc}
@@ -23,19 +42,32 @@ public class MasterActor extends UntypedActor {
     @Override
     public void onReceive(Object message) {
         if (message instanceof StartMasterRequest) {
-            LOG.info("StartMasterRequest: " + message);
-
             /* Start the domain master actor */
             ActorRef domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
-            domainMasterActor.tell(new StartDomainMasterRequest(), getSelf());
+            domainMasterActor.tell(new RefreshDomainMasterRequest(), getSelf());
 
-            /* Start the domain processing actor */
+            LOG.debug("Started Domain Master...");
+
+            /* Start the processing actor */
             ActorRef processingMasterActor = getContext().actorOf(Props.create(ProcessingMasterActor.class), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
-            processingMasterActor.tell(new StartProcessingMasterRequest(), getSelf());
 
-            LOG.info("StartMasterRequest: DONE");
+            LOG.debug("Started Processing Master...");
+
+            /* Start the persistence actor */
+            ActorRef persistenceMasterActor = getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
+
+            LOG.debug("Started Persistence Master...");
         } else {
             LOG.error("Unknown message: " + message);
+            unhandled(message);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SupervisorStrategy supervisorStrategy() {
+        return supervisorStrategy;
     }
 }

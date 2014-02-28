@@ -1,7 +1,7 @@
-package com.en_workshop.webcrawlerakka.akka.actors;
+package com.en_workshop.webcrawlerakka.akka.actors.processing;
 
-import akka.actor.UntypedActor;
-import com.en_workshop.webcrawlerakka.akka.requests.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import org.apache.log4j.Logger;
 
 /**
@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
  *
  * @author Radu Ciumag
  */
-public class ProcessingMasterActor extends UntypedActor {
+public class ProcessingMasterActor extends BaseActor {
     private static final Logger LOG = Logger.getLogger(ProcessingMasterActor.class);
 
     /**

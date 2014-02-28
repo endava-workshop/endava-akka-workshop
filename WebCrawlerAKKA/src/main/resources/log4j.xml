@@ -16,8 +16,12 @@
         </layout>
     </appender>-->
 
+    <logger name="com.en_workshop.webcrawlerakka">
+        <level value="DEBUG"/>
+    </logger>
+
     <root>
-        <level value="INFO"/>
+        <level value="WARN"/>
         <appender-ref ref="consoleAppender"/>
         <!--<appender-ref ref="fileAppender"/>-->
     </root>

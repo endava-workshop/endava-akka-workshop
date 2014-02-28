@@ -13,13 +13,13 @@ public class WebDomain {
     private final String baseUrl;
     private final String name;
     private final long cooldownPeriod;
-    private final long crawledTime;
+    private final long crawledAt;
 
-    public WebDomain(final String baseUrl, final String name, final long cooldownPeriod, final long crawledTime) {
+    public WebDomain(final String baseUrl, final String name, final long cooldownPeriod, final long crawledAt) {
         this.baseUrl = baseUrl;
         this.name = name;
         this.cooldownPeriod = cooldownPeriod;
-        this.crawledTime = crawledTime;
+        this.crawledAt = crawledAt;
     }
 
     public String getBaseUrl() {
@@ -30,8 +30,8 @@ public class WebDomain {
         return name;
     }
 
-    public long getCrawledTime() {
-        return crawledTime;
+    public long getCrawledAt() {
+        return crawledAt;
     }
 
     public long getCooldownPeriod() {
@@ -44,7 +44,7 @@ public class WebDomain {
                 "baseUrl='" + baseUrl + '\'' +
                 ", name='" + name + '\'' +
                 ", cooldownPeriod=" + cooldownPeriod +
-                ", crawledTime=" + crawledTime +
+                ", crawledAt=" + crawledAt +
                 '}';
     }
 

@@ -78,7 +78,7 @@ class DemoHttpService extends HttpServiceActor {
               <h1>Say hello to <i>spray-can</i>!</h1>
               <p>Defined resources:</p>
               <ul>
-                <li><a href="/database/seed">/seed</a></li>
+                <li><a href="/seed/">/seed</a></li>
                 <li><a href="/links/">/links</a></li>
               </ul>
             </body>

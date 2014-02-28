@@ -1,5 +1,6 @@
-package com.en_workshop.webcrawlerakka.akka.requests;
+package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
+import com.en_workshop.webcrawlerakka.akka.requests.MessageResponse;
 import com.en_workshop.webcrawlerakka.entities.WebUrl;
 import org.apache.log4j.Logger;
 
