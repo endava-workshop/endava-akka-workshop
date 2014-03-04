@@ -9,18 +9,76 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>neo4j-example</module>
+        <module>WebCrawlerAKKA</module>
+        <module>rest-example</module>
+        <module>ZipBreakerAkka</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <com.typesafe.akka.version>2.2.3</com.typesafe.akka.version>
+
+        <org.slf4j.version>1.7.6</org.slf4j.version>
+        <ch.qos.logback.version>1.1.1</ch.qos.logback.version>
+        <junit.version>4.11</junit.version>
+    </properties>
+
     <dependencies>
-     
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_2.10</artifactId>
+            <version>${com.typesafe.akka.version}</version>
+        </dependency>
+
+        <!--
+               The slf4j API for logging
+           -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+        </dependency>
+
+        <!--
+            Binding for commons logging over slf4j
+        -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${ch.qos.logback.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
     <build>
-        
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
-
-<modules>
-    <module>neo4j-example</module>
-    <module>WebCrawlerAKKA</module>
-    <module>rest-example</module>
-</modules>
 </project>
