@@ -4,6 +4,8 @@ import akka.actor.ActorRef;
 import akka.actor.AllForOneStrategy;
 import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.domain.DomainMasterActor;
@@ -11,7 +13,6 @@ import com.en_workshop.webcrawlerakka.akka.actors.persistence.PersistenceMasterA
 import com.en_workshop.webcrawlerakka.akka.actors.processing.ProcessingMasterActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
-import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,8 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class MasterActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(MasterActor.class);
+
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private final SupervisorStrategy supervisorStrategy = new AllForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
             new Function<Throwable, SupervisorStrategy.Directive>() {

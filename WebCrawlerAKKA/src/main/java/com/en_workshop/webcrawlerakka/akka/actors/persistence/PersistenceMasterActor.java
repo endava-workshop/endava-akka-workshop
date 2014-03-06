@@ -4,12 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
-import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -20,7 +21,8 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class PersistenceMasterActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(PersistenceMasterActor.class);
+
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private final ActorRef listDomainsRouter;
     private final ActorRef nextLinkRouter;
