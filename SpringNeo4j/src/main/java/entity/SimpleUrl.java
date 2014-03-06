@@ -1,0 +1,26 @@
+package entity;
+
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+
+@NodeEntity
+public class SimpleUrl {
+
+	@GraphId Long id;
+	
+	@Indexed(indexName = "name")
+	String name;
+	
+	String url;
+	
+	public SimpleUrl(){
+		
+	}
+	
+	public SimpleUrl(String name, String url) {
+		this.name = name;
+		this.url = url;
+	}
+	
+}
