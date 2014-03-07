@@ -14,6 +14,6 @@ public class DownloadUrlResponse extends MessageResponse {
     }
 
     public DownloadUrlRequest getDownloadUrlRequest() {
-        return (DownloadUrlRequest) messageRequest;
+        return (DownloadUrlRequest) getMessageRequest();
     }
 }

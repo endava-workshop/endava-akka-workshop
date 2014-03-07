@@ -31,9 +31,8 @@ public class WebClient {
      *
      * @param link The link to access
      * @return The list of {@link org.apache.http.Header}s
-     * @throws IOException
      */
-    public static synchronized Map<String, String> getPageHeaders(final String link) throws IOException {
+    public static synchronized Map<String, String> getPageHeaders(final String link) {
         final Map<String, String> headersMap = new HashMap<>();
 
         final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -61,11 +60,8 @@ public class WebClient {
      *
      * @param contentTypeHeader The page "content type" header
      * @return {@link java.lang.Boolean} {@code true} or {@code false}
-     * @throws IOException
      */
-    public static synchronized boolean isMediaTypeAccepted(final String contentTypeHeader) throws IOException {
-        Boolean mediaAccepted = Boolean.FALSE;
-
+    public static synchronized boolean isMediaTypeAccepted(final String contentTypeHeader) {
         final String[] mimeParts = contentTypeHeader.trim().split(";");
         for (final String mimePart : mimeParts) {
             if (Arrays.binarySearch(WebCrawlerConstants.ACCEPTED_MIME_TYPES, mimePart.trim()) >= 0) {

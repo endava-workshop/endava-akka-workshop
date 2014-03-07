@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 public abstract class MessageRequest {
     private static final Logger LOG = Logger.getLogger(MessageRequest.class);
 
-    protected final long id;
+    private final long id;
 
     public MessageRequest(final long id) {
         this.id = id;

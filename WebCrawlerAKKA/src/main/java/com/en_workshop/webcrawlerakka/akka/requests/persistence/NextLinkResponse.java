@@ -21,7 +21,7 @@ public class NextLinkResponse extends MessageResponse {
     }
 
     public NextLinkRequest getNextLinkRequest() {
-        return (NextLinkRequest) messageRequest;
+        return (NextLinkRequest) getMessageRequest();
     }
 
     public WebUrl getNextLink() {

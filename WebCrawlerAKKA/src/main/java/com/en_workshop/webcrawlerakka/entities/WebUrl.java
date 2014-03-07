@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class WebUrl {
 
-    public static List<WebUrl> URLS = new ArrayList<WebUrl>();
+    public static final List<WebUrl> URLS = new ArrayList<>();
 
     private final WebDomain webDomain;
     private final String url;
