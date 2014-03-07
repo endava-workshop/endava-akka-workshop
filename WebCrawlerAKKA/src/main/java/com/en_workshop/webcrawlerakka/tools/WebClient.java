@@ -24,6 +24,8 @@ import java.util.Map;
 public class WebClient {
     private static final Logger LOG = Logger.getLogger(WebClient.class);
 
+    //TODO Set and use User-Agent
+
     /**
      * Get the page headers for a specified link
      *

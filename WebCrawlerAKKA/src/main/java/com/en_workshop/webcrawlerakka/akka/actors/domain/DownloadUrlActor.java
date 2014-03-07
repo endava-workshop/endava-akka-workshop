@@ -34,14 +34,17 @@ public class DownloadUrlActor extends BaseActor {
 
                 /* Test the response code */
                 if (!pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE).equals(WebCrawlerConstants.HTTP_RESPONSE_CODE_OK)) {
+                    LOG.debug(request.getWebUrl().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
+
                     finishWork(request, WebUrlStatus.FAILED);
                     return;
                 }
 
                 /* Test for accepted mime types */
                 if (!WebClient.isMediaTypeAccepted(pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE))) {
-                    finishWork(request, WebUrlStatus.VISITED);
+                    LOG.debug(request.getWebUrl().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
 
+                    finishWork(request, WebUrlStatus.VISITED);
                     return;
                 }
 
@@ -49,7 +52,7 @@ public class DownloadUrlActor extends BaseActor {
 
                 /* Get page content */
                 final String pageContent = WebClient.getPageContent(request.getWebUrl().getUrl());
-                LOG.debug("Page content downloaded. Size (in characters): " + pageContent.length());
+                LOG.debug(request.getWebUrl().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
 
                 /* Send to processing master */
                 findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
@@ -60,19 +63,20 @@ public class DownloadUrlActor extends BaseActor {
                         }, new OnFailure() {
                             @Override
                             public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error("Cannot find Processing Master.");
+                                LOG.error(request.getWebUrl().getUrl() + " - Cannot find Processing Master");
                             }
                         }
                 );
 
                 finishWork(request, WebUrlStatus.VISITED);
             } catch (IOException exc) {
-                LOG.error("Cannot process link: " + request.getWebUrl().getUrl(), exc);
+                LOG.error(request.getWebUrl().getUrl() + " - Cannot process link", exc);
 
                 finishWork(request, WebUrlStatus.FAILED);
             }
         } else {
             LOG.error("Unknown message: " + message);
+            unhandled(message);
         }
     }
 

@@ -65,12 +65,14 @@ public class DomainActor extends BaseActor {
             final NextLinkResponse response = (NextLinkResponse) message;
 
             if (null == response.getNextLink()) {
+                NextLinkRequest request = response.getNextLinkRequest();
+
                 /* There is no next link */
-                LOG.info("Domain " + response.getNextLinkRequest().getWebDomain().getName() + " has no more links to crawl");
+                LOG.info("Domain " + request.getWebDomain().getName() + " has no more links to crawl");
 
                 /* Schedule a new crawl for the downloaded domain after the cool down period */
-                getContext().system().scheduler().scheduleOnce(Duration.create(response.getNextLink().getWebDomain().getCooldownPeriod(), TimeUnit.MILLISECONDS),
-                        getSelf(), new CrawlDomainRequest(response.getNextLink().getWebDomain()), getContext().system().dispatcher(), getSelf());
+                getContext().system().scheduler().scheduleOnce(Duration.create(request.getWebDomain().getCooldownPeriod(), TimeUnit.MILLISECONDS),
+                        getSelf(), new CrawlDomainRequest(request.getWebDomain()), getContext().system().dispatcher(), getSelf());
 
                 return;
             }
