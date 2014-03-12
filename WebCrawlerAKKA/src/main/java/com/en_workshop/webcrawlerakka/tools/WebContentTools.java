@@ -1,5 +1,6 @@
 package com.en_workshop.webcrawlerakka.tools;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
@@ -10,6 +11,15 @@ import java.net.URL;
  */
 public class WebContentTools {
     private static final Logger LOG = Logger.getLogger(WebContentTools.class);
+
+    /* TODO: Add ALPHA (%41–%5A and %61–%7A) */
+    private static final String[] URL_FRAGMENT_REPLACE_SRC = new String[]{"%30", "%31", "%32", "%33", "%34", "%35", "%36", "%37", "%38", "%39",
+            "%2d", "%2e", "%5f", "%7e", "/\\.\\./", "/\\./"};
+    private static final String[] URL_FRAGMENT_REPLACE_DEST = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "-", ".", "_", "~", "/", "/"};
+
+    private static final String[] URL_FRAGMENT_PATH_REPLACE_SRC = new String[]{"//"};
+    private static final String[] URL_FRAGMENT_PATH_REPLACE_DEST = new String[]{"/"};
 
     /**
      * Normalize the URL. URLs that are mall formed will not be processed.
@@ -22,21 +32,49 @@ public class WebContentTools {
      * @return The normalized link as {@link java.lang.String}
      */
     public static String normalizeURLLink(final String urlLink) {
+        /* Validate URL link text */
+        if (null == urlLink || 0 == urlLink.length()) {
+            return urlLink;
+        }
+
         try {
-            URL url = new URL(urlLink);
+            /* URL as string pre-processing */
+            String processedLink = urlLink.toLowerCase();
 
-            StringBuilder linkBuilder = new StringBuilder();
+            /* Replace (eliminate) specific link fragments */
+            for (int i = 0; i < URL_FRAGMENT_REPLACE_SRC.length; i++) {
+                processedLink = processedLink.replaceAll(URL_FRAGMENT_REPLACE_SRC[i], URL_FRAGMENT_REPLACE_DEST[i]);
+            }
 
+            URL url = new URL(processedLink);
 
-            System.out.println("protocol = " + aURL.getProtocol());
-            System.out.println("authority = " + aURL.getAuthority());
-            System.out.println("host = " + aURL.getHost());
-            System.out.println("port = " + aURL.getPort());
-            System.out.println("path = " + aURL.getPath());
-            System.out.println("query = " + aURL.getQuery());
-            System.out.println("filename = " + aURL.getFile());
-            System.out.println("ref = " + aURL.getRef());
+            final StringBuilder linkBuilder = new StringBuilder();
 
+            /* Protocol */
+            if (WebClient.PROTOCOL_HTTPS.equals(url.getProtocol())) {
+                linkBuilder.append(WebClient.PROTOCOL_HTTP).append("://");
+            } else {
+                linkBuilder.append(url.getProtocol()).append("://");
+            }
+
+            /* Host */
+            linkBuilder.append(url.getHost());
+
+            /* Port */
+            linkBuilder.append(processURLPort(url.getProtocol(), url.getPort()));
+
+            /* Path */
+            String urlPath = url.getPath();
+            /* Replace (eliminate) specific path fragments */
+            for (int i = 0; i < URL_FRAGMENT_PATH_REPLACE_SRC.length; i++) {
+                urlPath = urlPath.replaceAll(URL_FRAGMENT_PATH_REPLACE_SRC[i], URL_FRAGMENT_PATH_REPLACE_DEST[i]);
+            }
+            linkBuilder.append(urlPath);
+
+            /* Query */
+            if (null != url.getQuery()) {
+                linkBuilder.append("?").append(url.getQuery());
+            }
 
             return linkBuilder.toString();
         } catch (MalformedURLException exc) {
@@ -61,5 +99,32 @@ public class WebContentTools {
         }
 
         return results;
+    }
+
+    /**
+     * Process the URL port and return the final port fragment to use
+     *
+     * @param urlProtocol The URL protocol
+     * @param urlPort     The URL port
+     * @return The final port fragment to use
+     */
+    private static String processURLPort(final String urlProtocol, final int urlPort) {
+        if (-1 == urlPort) {
+            return StringUtils.EMPTY;
+        }
+
+        /* Skip default ports */
+        boolean skipDefaultPort = false;
+        if (WebClient.PROTOCOL_HTTP.equals(urlProtocol) && WebClient.PROTOCOL_HTTP_PORT == urlPort) {
+            skipDefaultPort = true;
+        } else if (WebClient.PROTOCOL_HTTPS.equals(urlProtocol) && WebClient.PROTOCOL_HTTPS_PORT == urlPort) {
+            skipDefaultPort = true;
+        }
+
+        if (!skipDefaultPort) {
+            return ":" + urlPort;
+        }
+
+        return StringUtils.EMPTY;
     }
 }

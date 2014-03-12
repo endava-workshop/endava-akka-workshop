@@ -16,38 +16,74 @@ public class WebContentToolsTest {
         final String inLink = "HTTP://www.Example.com/";
         final String outLink = "http://www.example.com/";
 
-        assertEquals("Lower case conversion failed", inLink, WebContentTools.normalizeURLLink(inLink));
+        assertEquals("Lower case conversion failed", outLink, WebContentTools.normalizeURLLink(inLink));
     }
 
     @Test
-    public void testNormalizeURLLink() throws Exception {
+    public void testNormalizeURLLink_decodeEncoded() throws Exception {
         /* Decoding percent-encoded octets of unreserved characters. For consistency, percent-encoded octets in the ranges of ALPHA (%41–%5A and %61–%7A), DIGIT (%30–%39),
         hyphen (%2D), period (%2E), underscore (%5F), or tilde (%7E) should not be created by URI producers and, when found in a URI, should be decoded to their
         corresponding unreserved characters by URI normalizers.
             http://www.example.com/%7Eusername/ → http://www.example.com/~username/ */
+        final String inLink = "http://www.example.com/%7Eusername/";
+        final String outLink = "http://www.example.com/~username/";
+
+        assertEquals("Decode percent-encoded octets of unreserved characters failed", outLink, WebContentTools.normalizeURLLink(inLink));
     }
 
     @Test
-    public void testNormalizeURLLink() throws Exception {
+    public void testNormalizeURLLink_defaultPorts() throws Exception {
         /* Removing the default port. The default port (port 80 for the “http” scheme) may be removed from (or added to) a URL.
             http://www.example.com:80/bar.html → http://www.example.com/bar.html */
+        final String inLink = "http://www.example.com:80/bar.html";
+        final String outLink = "http://www.example.com/bar.html";
+
+        assertEquals("Removing the default port failed", outLink, WebContentTools.normalizeURLLink(inLink));
     }
 
+    @Test
+    public void testNormalizeURLLink_RemoveDots() throws Exception {
         /* Removing dot-segments. The segments “..” and “.” can be removed from a URL according to the algorithm described in RFC 3986 (or a similar algorithm).
             http://www.example.com/../a/b/../c/./d.html → http://www.example.com/a/c/d.html
         However, if a removed ".." component, e.g. "b/..", is a symlink to a directory with a different parent, eliding "b/.." will result in a different path and URL. */
+        final String inLink = "http://www.example.com/../a/b/../c/./d.html";
+        final String outLink = "http://www.example.com/a/b/c/d.html";
 
+        assertEquals("Removing dot-segments failed", outLink, WebContentTools.normalizeURLLink(inLink));
+    }
+
+    @Test
+    public void testNormalizeURLLink_limitProtocols() throws Exception {
         /* Limiting protocols. Limiting different application layer protocols. For example, the “https” scheme could be replaced with “http”.
             https://www.example.com/ → http://www.example.com/ */
+        final String inLink = "https://www.example.com/";
+        final String outLink = "http://www.example.com/";
 
+        assertEquals("Limiting protocols failed", outLink, WebContentTools.normalizeURLLink(inLink));
+    }
+
+    @Test
+    public void testNormalizeURLLink_removeSlashes() throws Exception {
         /* Removing duplicate slashes Paths which include two adjacent slashes could be converted to one.
             http://www.example.com/foo//bar.html → http://www.example.com/foo/bar.html */
+        final String inLink = "http://www.example.com/foo//bar.html";
+        final String outLink = "http://www.example.com/foo/bar.html";
 
+        assertEquals("Removing duplicate slashes failed", outLink, WebContentTools.normalizeURLLink(inLink));
+    }
+
+    @Test
+    public void testNormalizeURLLink_addWww() throws Exception {
         /* Removing or adding “www” as the first domain label. Some websites operate in two Internet domains: one whose least significant label is “www” and another whose name
         is the result of omitting the least significant label from the name of the first. For example, http://example.com/ and http://www.example.com/ may access the same
         website. Many websites redirect the user from the www to the non-www address or vice versa. A normalizer may determine if one of these URLs redirects to the other
         and normalize all URLs appropriately.
             http://www.example.com/ → http://example.com/ */
+        final String inLink = "http://example.com/";
+        final String outLink = "http://www.example.com/";
+
+        assertEquals("Adding \"www\" failed", outLink, WebContentTools.normalizeURLLink(inLink));
+    }
 
         /* Sorting the query parameters. Some web pages use more than one query parameter in the URL. A normalizer can sort the parameters into alphabetical order (with their
         values), and reassemble the URL.

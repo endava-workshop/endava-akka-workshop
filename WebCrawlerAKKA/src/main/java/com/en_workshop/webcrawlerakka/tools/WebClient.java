@@ -24,6 +24,11 @@ import java.util.Map;
 public class WebClient {
     private static final Logger LOG = Logger.getLogger(WebClient.class);
 
+    public static final String PROTOCOL_HTTP = "http";
+    public static final int PROTOCOL_HTTP_PORT = 80;
+    public static final String PROTOCOL_HTTPS = "https";
+    public static final int PROTOCOL_HTTPS_PORT = 443;
+
     //TODO Set and use User-Agent
 
     /**
