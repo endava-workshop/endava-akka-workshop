@@ -9,6 +9,7 @@ import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.actors.persistence.ListDomainsActor;
 import com.en_workshop.webcrawlerakka.akka.actors.persistence.NextLinkActor;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
@@ -27,6 +28,7 @@ public class ProcessingMasterActor extends BaseActor {
     //define the routers
     private final ActorRef indentifyLinksRouter;
     private final ActorRef dataExtractorRouter;
+    private final ActorRef analyzeLinksRouter;
 
     public ProcessingMasterActor() {
         final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
@@ -45,6 +47,8 @@ public class ProcessingMasterActor extends BaseActor {
                 "indentifyLinksRouter");
         this.dataExtractorRouter = getContext().actorOf(Props.create(DataExtractorActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "dataExtractorRouter");
+        this.analyzeLinksRouter = getContext().actorOf(Props.create(AnalyzeLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "analyzeLinksRouter");
 
     }
 
@@ -62,6 +66,12 @@ public class ProcessingMasterActor extends BaseActor {
             dataExtractorRouter.tell(message, getSender());
 
             LOG.info("ProcessContentRequest: DONE");
+        } else if (message instanceof AnalyzeLinkRequest) {
+            LOG.info("AnalyzeLinkRequest: " + message);
+            //analyze the links
+            analyzeLinksRouter.tell(message, getSender());
+
+            LOG.info("AnalyzeLinkRequest: DONE");
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

@@ -11,6 +11,7 @@ import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import scala.concurrent.duration.Duration;
 
@@ -28,6 +29,7 @@ public class PersistenceMasterActor extends BaseActor {
     private final ActorRef listDomainsRouter;
     private final ActorRef nextLinkRouter;
     private final ActorRef persistLinkRouter;
+    private final ActorRef persistDomainRouter;
 
     /**
      * The default constructor
@@ -51,6 +53,8 @@ public class PersistenceMasterActor extends BaseActor {
                 "nextLinkRouter");
         this.persistLinkRouter = getContext().actorOf(Props.create(PersistLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "persistLinkRouter");
+        this.persistDomainRouter = getContext().actorOf(Props.create(PersistDomainActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "persistDomainRouter");
     }
 
     /**
@@ -64,6 +68,8 @@ public class PersistenceMasterActor extends BaseActor {
             nextLinkRouter.tell(message, getSender());
         }  else if (message instanceof PersistLinkRequest) {
             persistLinkRouter.tell(message, getSender());
+        } if (message instanceof PersistDomainRequest) {
+            persistDomainRouter.tell(message, getSender());
         } else {
             LOG.error("Unknown message: " + message);
         }
