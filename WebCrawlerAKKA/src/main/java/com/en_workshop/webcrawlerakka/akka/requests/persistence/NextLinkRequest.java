@@ -5,11 +5,12 @@ import com.en_workshop.webcrawlerakka.entities.WebDomain;
 import org.apache.log4j.Logger;
 
 /**
- * Request a new link to crawle
+ * Request a new link to crawl.
  *
  * @author Radu Ciumag
  */
 public class NextLinkRequest extends MessageRequest {
+
     private static final Logger LOG = Logger.getLogger(NextLinkRequest.class);
 
     private final WebDomain webDomain;
