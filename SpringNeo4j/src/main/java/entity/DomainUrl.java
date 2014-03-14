@@ -37,4 +37,32 @@ public class DomainUrl {
 	public void addInternalUrl(SimpleUrl simpleUrl){
 		internalUrlSet.add(simpleUrl);
 	}
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @return the address
+	 */
+	public String getAddress() {
+		return address;
+	}
+
+	/**
+	 * @return the internalUrlSet
+	 */
+	public Set<SimpleUrl> getInternalUrlSet() {
+		return internalUrlSet;
+	}
 }

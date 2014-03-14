@@ -1,33 +1,70 @@
 package service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import repo.DomainUrlRepo;
+import repo.SimpleUrlRepo;
 import service.UrlService;
+import entity.DomainUrl;
+import entity.SimpleUrl;
 
+@Service
 public class UrlServiceImpl implements UrlService {
 
 	@Autowired
-	DomainUrlRepo urlRepo;
+	DomainUrlRepo domainRepo;
+	
+	@Autowired
+	SimpleUrlRepo simpleUrlRepo;
 
-	public void addDomainUrl(String urlValue) {
+	@Transactional
+	public DomainUrl addDomainUrl(String domainName, String domainUrl) {
+		DomainUrl domain = new DomainUrl(domainName, domainUrl);
+		domain = domainRepo.save(domain);
+		return domain;
+	}
 
+	@Transactional
+	public SimpleUrl addSimpleUrl(String name, String url, String domainName) {
+		DomainUrl domain = domainRepo.findByPropertyValue("name", domainName);
+		if(domain == null){
+			return null;
+		}
+		
+		SimpleUrl simpleUrl = new SimpleUrl(name, url);
+		domain.addInternalUrl(simpleUrl);
+		simpleUrl = simpleUrlRepo.save(simpleUrl);
+		domainRepo.save(domain);
+		
+		return simpleUrl;
+	}
+
+	@Transactional
+	public void removeSimpleUrl(String name) {
+		SimpleUrl simpleUrl = simpleUrlRepo.findByPropertyValue("name", name);
+		if(simpleUrl != null){
+			simpleUrlRepo.delete(simpleUrl);
+		}
 
 	}
 
-	public void addSimpleUrl(String urlValue, String domainUrl) {
-		// TODO Auto-generated method stub
-
+	public void removeDomainUrl(String domainName) {
+		DomainUrl domain = domainRepo.findByPropertyValue("name", domainName);
+		
+		for(SimpleUrl simpleUrl : domain.getInternalUrlSet()){
+			simpleUrlRepo.delete(simpleUrl);
+		}
+		
+		domainRepo.delete(domain);
 	}
 
-	public void removeSimpleUrl(String simpleUrl) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void removeDomainUrl(String domainUrl) {
-		// TODO Auto-generated method stub
-
+	@Transactional
+	@Override
+	public void removeAllDomains() {
+		simpleUrlRepo.deleteAll();
+		domainRepo.deleteAll();
 	}
 
 }

@@ -22,5 +22,26 @@ public class SimpleUrl {
 		this.name = name;
 		this.url = url;
 	}
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @return the url
+	 */
+	public String getUrl() {
+		return url;
+	}
 	
 }
