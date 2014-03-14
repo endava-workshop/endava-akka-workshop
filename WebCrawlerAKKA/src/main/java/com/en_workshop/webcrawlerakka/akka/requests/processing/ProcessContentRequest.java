@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
  * @author Radu Ciumag
  */
 public class ProcessContentRequest extends MessageRequest {
+
     private static final Logger LOG = Logger.getLogger(ProcessContentRequest.class);
 
     private final WebUrl source;

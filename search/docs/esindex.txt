@@ -1,0 +1,79 @@
+Index used (I use Sense plugin)
+
+articles index
+
+POST articles/
+PUT /articles/article/_mapping
+{
+    "article": {
+        "properties": {
+            "domain": {
+                "type": "string"
+            },
+            "content": {
+                "type": "string"
+            },
+            "internalLinks": {
+                "type": "string"   
+            },
+            "externalLinks": {
+                "type": "string"   
+            }
+        } 
+        
+    }
+}
+
+for tokenizeing
+
+POST /analyzerindex
+{
+    "settings" : {
+    	"index":{
+			"analysis":{
+				"analyzer":{
+					"myanalyzer":{
+						"type":"custom",
+						"tokenizer":"standard",
+						"filter":["stop_words"]
+					}
+				},
+				"filter":{
+					"stop_words":{
+						"type":"stop",
+						"stopwords":["ce", "mai", "si", "pe", "la"],
+                        "ignore_case":true
+					}
+				}
+			}
+		}
+	}
+}
+
+GET /analyzerindex/_analyze?analyzer=myanalyzer&text=?ce mAi. faceti doamnelor si domnilor!
+
+Passwords index
+
+POST /passwords/
+
+PUT /passwords/password/_mapping
+{
+    "password": {
+        "properties": {
+            "password": {
+                "type": "string"
+            },
+            "indexedDate": {
+                "type": "date"
+            }
+        } 
+        
+    }
+}
+
+For bulk indexing(not yet done) the json should  be something like this
+POST /_bulk 
+    { "index": {"_index": "articles", "_type": "article"}}
+    {"domain": "bla","content": "bla","internalLinks": "bla","externalLinks": "bla"}
+     { "index": {"_index": "articles", "_type": "article"}}
+    {"domain": "bla","content": "bla","internalLinks": "bla","externalLinks": "bla"}

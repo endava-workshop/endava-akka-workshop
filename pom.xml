@@ -14,6 +14,7 @@
         <module>WebCrawlerAKKA</module>
         <module>rest-example</module>
         <module>ZipBreakerAkka</module>
+        <module>search</module>
     </modules>
 
     <properties>
@@ -24,12 +25,19 @@
         <org.slf4j.version>1.7.6</org.slf4j.version>
         <ch.qos.logback.version>1.1.1</ch.qos.logback.version>
         <junit.version>4.11</junit.version>
+        <elasticsearch.version>1.0.0</elasticsearch.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.10</artifactId>
+            <version>${com.typesafe.akka.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.10</artifactId>
             <version>${com.typesafe.akka.version}</version>
         </dependency>
 

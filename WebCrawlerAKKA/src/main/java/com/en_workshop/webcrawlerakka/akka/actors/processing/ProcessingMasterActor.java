@@ -1,8 +1,22 @@
 package com.en_workshop.webcrawlerakka.akka.actors.processing;
 
+import akka.actor.ActorRef;
+import akka.actor.OneForOneStrategy;
+import akka.actor.Props;
+import akka.actor.SupervisorStrategy;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+import akka.japi.Function;
+import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
+import com.en_workshop.webcrawlerakka.akka.actors.persistence.ListDomainsActor;
+import com.en_workshop.webcrawlerakka.akka.actors.persistence.NextLinkActor;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import org.apache.log4j.Logger;
+import scala.concurrent.duration.Duration;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Processing master actor
@@ -10,7 +24,35 @@ import org.apache.log4j.Logger;
  * @author Radu Ciumag
  */
 public class ProcessingMasterActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(ProcessingMasterActor.class);
+
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
+
+    //define the routers
+    private final ActorRef indentifyLinksRouter;
+    private final ActorRef dataExtractorRouter;
+    private final ActorRef analyzeLinksRouter;
+
+    public ProcessingMasterActor() {
+        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+                new Function<Throwable, SupervisorStrategy.Directive>() {
+                    @Override
+                    public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
+                        if (throwable instanceof Exception) {
+                            return SupervisorStrategy.restart();
+                        }
+
+                        return SupervisorStrategy.stop();
+                    }
+                });
+
+        this.indentifyLinksRouter = getContext().actorOf(Props.create(IdentifyLinksActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "indentifyLinksRouter");
+        this.dataExtractorRouter = getContext().actorOf(Props.create(DataExtractorActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "dataExtractorRouter");
+        this.analyzeLinksRouter = getContext().actorOf(Props.create(AnalyzeLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "analyzeLinksRouter");
+
+    }
 
     /**
      * {@inheritDoc}
@@ -20,11 +62,21 @@ public class ProcessingMasterActor extends BaseActor {
         if (message instanceof ProcessContentRequest) {
             LOG.info("ProcessContentRequest: " + message);
 
-            //TODO
+            //identify the links
+            indentifyLinksRouter.tell(message, getSender());
+            //extract the data
+            dataExtractorRouter.tell(message, getSender());
 
             LOG.info("ProcessContentRequest: DONE");
+        } else if (message instanceof AnalyzeLinkRequest) {
+            LOG.info("AnalyzeLinkRequest: " + message);
+            //analyze the links
+            analyzeLinksRouter.tell(message, getSender());
+
+            LOG.info("AnalyzeLinkRequest: DONE");
         } else {
             LOG.error("Unknown message: " + message);
+            unhandled(message);
         }
     }
 }

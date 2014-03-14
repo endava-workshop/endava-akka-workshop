@@ -26,6 +26,6 @@ public class WebCrawlerConstants {
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
 
     /* Other */
-    public static final long DOMAINS_REFRESH_PERIOD = 2 * 60 * 1000; // 2 minutes
+    public static final long DOMAINS_REFRESH_PERIOD = 5 * 60 * 1000; // 5 minutes
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
 }

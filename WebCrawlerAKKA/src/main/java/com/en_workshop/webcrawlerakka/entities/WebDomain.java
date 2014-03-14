@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class WebDomain {
 
-    public static List<WebDomain> DOMAINS = new ArrayList<WebDomain>();
+    public static final List<WebDomain> DOMAINS = new ArrayList<>();
 
     private final String baseUrl;
     private final String name;

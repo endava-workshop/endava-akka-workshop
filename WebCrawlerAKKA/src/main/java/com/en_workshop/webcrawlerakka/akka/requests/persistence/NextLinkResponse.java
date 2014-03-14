@@ -5,7 +5,7 @@ import com.en_workshop.webcrawlerakka.entities.WebUrl;
 import org.apache.log4j.Logger;
 
 /**
- * Send the next link to be crawled
+ * Send the next link to be crawled.
  *
  * @author Radu Ciumag
  */
@@ -21,7 +21,7 @@ public class NextLinkResponse extends MessageResponse {
     }
 
     public NextLinkRequest getNextLinkRequest() {
-        return (NextLinkRequest) messageRequest;
+        return (NextLinkRequest) getMessageRequest();
     }
 
     public WebUrl getNextLink() {
