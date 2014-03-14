@@ -3,6 +3,8 @@ package com.en_workshop.webcrawlerakka.akka.actors.processing;
 import akka.actor.ActorRef;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
@@ -25,7 +27,7 @@ import java.net.URL;
  */
 public class AnalyzeLinkActor extends BaseActor {
 
-    private static final Logger LOG = Logger.getLogger(AnalyzeLinkActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**
      * {@inheritDoc}

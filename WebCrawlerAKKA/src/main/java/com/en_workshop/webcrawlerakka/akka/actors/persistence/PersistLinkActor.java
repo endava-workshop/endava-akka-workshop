@@ -1,5 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.actors.persistence;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import org.apache.log4j.Logger;
@@ -11,14 +13,17 @@ import org.apache.log4j.Logger;
  */
 public class PersistLinkActor extends BaseActor {
 
-    private static final Logger LOG = Logger.getLogger(PersistLinkActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void onReceive(Object message) throws Exception {
+
         if (message instanceof PersistLinkRequest) {
+            PersistLinkRequest persistLinkRequest = (PersistLinkRequest) message;
+            LOG.info("Received link to persist: " + persistLinkRequest.getLink().getUrl());
 
         } else {
             LOG.error("Unknown message: " + message);

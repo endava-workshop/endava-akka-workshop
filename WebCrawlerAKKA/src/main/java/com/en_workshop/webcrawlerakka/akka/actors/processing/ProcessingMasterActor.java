@@ -4,6 +4,8 @@ import akka.actor.ActorRef;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
@@ -23,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ProcessingMasterActor extends BaseActor {
 
-    private static final Logger LOG = Logger.getLogger(ProcessingMasterActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     //define the routers
     private final ActorRef indentifyLinksRouter;

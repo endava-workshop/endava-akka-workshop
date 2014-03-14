@@ -1,6 +1,8 @@
 package com.en_workshop.webcrawlerakka.akka.actors.processing;
 
 import akka.actor.UntypedActor;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import org.apache.log4j.Logger;
 
@@ -11,7 +13,7 @@ import org.apache.log4j.Logger;
  */
 public class DataExtractorActor extends UntypedActor {
 
-    private static final Logger LOG = Logger.getLogger(IdentifyLinksActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
 
     @Override

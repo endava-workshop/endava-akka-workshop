@@ -68,7 +68,7 @@ public class PersistenceMasterActor extends BaseActor {
             nextLinkRouter.tell(message, getSender());
         }  else if (message instanceof PersistLinkRequest) {
             persistLinkRouter.tell(message, getSender());
-        } if (message instanceof PersistDomainRequest) {
+        } else if (message instanceof PersistDomainRequest) {
             persistDomainRouter.tell(message, getSender());
         } else {
             LOG.error("Unknown message: " + message);
