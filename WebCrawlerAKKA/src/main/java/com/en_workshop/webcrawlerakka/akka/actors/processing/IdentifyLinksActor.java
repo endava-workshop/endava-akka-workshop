@@ -39,7 +39,12 @@ public class IdentifyLinksActor extends BaseActor {
             Document document = Jsoup.parse(contentToBeProcessed.getContent(), baseUrl);
             Elements links = document.select("a[href]");
             for (Element link : links) {
-                final String normalizedLink = WebContentTools.normalizeURLLink(link.data());
+
+                LOG.info("Identified a link: " + link);
+
+                final String normalizedLink = WebContentTools.normalizeURLLink(link.attr("abs:href"));
+                LOG.info("Normalized link: " + link);
+
                 //call to analyze the normalized link
                 findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override

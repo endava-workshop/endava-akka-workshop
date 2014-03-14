@@ -31,4 +31,9 @@ public class AnalyzeLinkRequest extends MessageRequest {
     public String getLink() {
         return link;
     }
+
+    @Override
+    public String toString() {
+        return "AnalyzeLinkRequest{webDomain=" + sourceDomain + ", link=" + link + "}";
+    }
 }

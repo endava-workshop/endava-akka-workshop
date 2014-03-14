@@ -34,23 +34,27 @@ public class AnalyzeLinkActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof AnalyzeLinkRequest) {
-//            AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
-//
-//            String sourceUrl = analyzeLinkRequest.getSourceDomain().getBaseUrl();
-//            String link = analyzeLinkRequest.getLink();
-//
-//            //if the initial domain is not the same as the domain of the link, persist both domain and link
-//            URL url = new URL(link);
-//            String path = url.getFile().substring(0, url.getFile().lastIndexOf('/'));
-//            String linkDomain = url.getProtocol() + "://" + url.getHost() + path;
-//
-//            WebDomain newWebDomain = null;
-//            if (!linkDomain.equals(sourceUrl)) {
-//                newWebDomain = new WebDomain(linkDomain, url.getHost(), 20000, 0);
-//                persistDomain(newWebDomain);
-//            }
-//
-//            persistLink(newWebDomain == null ? analyzeLinkRequest.getSourceDomain() : newWebDomain, link);
+            AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
+
+            String sourceUrl = analyzeLinkRequest.getSourceDomain().getBaseUrl();
+            String link = analyzeLinkRequest.getLink();
+
+            LOG.info("Received link: " + link + " and domain " + sourceUrl);
+
+            //if the initial domain is not the same as the domain of the link, persist both domain and link
+            URL url = new URL(link);
+            String path = url.getFile().substring(0, url.getFile().lastIndexOf('/'));
+            String linkDomain = url.getProtocol() + "://" + url.getHost() + path;
+
+            LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
+
+            WebDomain newWebDomain = null;
+            if (!linkDomain.equals(sourceUrl)) {
+                newWebDomain = new WebDomain(linkDomain, url.getHost(), 20000, 0);
+                persistDomain(newWebDomain);
+            }
+
+            persistLink(newWebDomain == null ? analyzeLinkRequest.getSourceDomain() : newWebDomain, link);
 
         } else {
             LOG.error("Unknown message: " + message);
