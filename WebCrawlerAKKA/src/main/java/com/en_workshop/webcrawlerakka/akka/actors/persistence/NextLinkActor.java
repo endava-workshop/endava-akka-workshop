@@ -23,7 +23,7 @@ public class NextLinkActor extends BaseActor {
         if (message instanceof NextLinkRequest) {
             NextLinkRequest request = (NextLinkRequest) message;
 
-            WebUrl webUrl = WebUrlDao.getNextForCrawling(request.getWebDomain());
+            WebUrl webUrl = WebUrlDao.getNextForCrawling(request.getDomain());
             NextLinkResponse response = new NextLinkResponse(request, webUrl);
 
             LOG.debug("Found next URL for crawling: " + (null == webUrl ? "NONE" : webUrl.getUrl()));

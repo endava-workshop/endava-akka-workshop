@@ -13,7 +13,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
@@ -72,14 +72,15 @@ public class DomainMasterActor extends BaseActor {
             final ListDomainsResponse response = (ListDomainsResponse) message;
 
             /* Start an actor for each domain, if not already started */
-            for (final WebDomain webDomain : response.getWebDomains()) {
-                if (!domainActors.containsKey(webDomain.getName())) {
-                    final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class), WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + webDomain.getName());
-                    domainActors.put(webDomain.getName(), domainActor);
+            for (final Domain domain : response.getDomains()) {
+                if (!domainActors.containsKey(domain.getName())) {
+                    final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class),
+                            WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + domain.getName().replace('.','_').replace(':', '_').replace('/', '_'));
+                    domainActors.put(domain.getName(), domainActor);
 
-                    LOG.info("Domain " + webDomain.getName() + " starting actor " + domainActor);
+                    LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
 
-                    domainActor.tell(new CrawlDomainRequest(webDomain), getSelf());
+                    domainActor.tell(new CrawlDomainRequest(domain), getSelf());
                 }
             }
 

@@ -1,6 +1,6 @@
 package com.en_workshop.webcrawlerakka.dao;
 
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.WebDomainCloner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -14,43 +14,43 @@ public class WebDomainDao {
     private static final Logger LOG = Logger.getLogger(WebDomainDao.class);
 
     /**
-     * Add a {@link com.en_workshop.webcrawlerakka.entities.WebDomain} to the collection
+     * Add a {@link com.en_workshop.webcrawlerakka.entities.Domain} to the collection
      *
-     * @param webDomain The {@link com.en_workshop.webcrawlerakka.entities.WebDomain} to add
-     * @return The {@link com.en_workshop.webcrawlerakka.entities.WebDomain} addded or {@code null}
+     * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to add
+     * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} addded or {@code null}
      */
-    public static WebDomain add(final WebDomain webDomain) {
+    public static Domain add(final Domain domain) {
         /* Validation */
-        if (null == webDomain) {
-            LOG.error("Cannot create a null WebDomain.");
+        if (null == domain) {
+            LOG.error("Cannot create a null Domain.");
             return null;
         }
 
         /* Test if the domain is already added to the database */
-        if (WebDomain.DOMAINS.contains(webDomain)) {
-            LOG.error("WebDomain record already found for info: " + webDomain);
+        if (Domain.DOMAINS.contains(domain)) {
+            LOG.error("Domain record already found for info: " + domain);
             return null;
         }
 
-        WebDomain.DOMAINS.add(webDomain);
+        Domain.DOMAINS.add(domain);
 
-        return webDomain;
+        return domain;
     }
 
     /**
-     * Find a {@link com.en_workshop.webcrawlerakka.entities.WebDomain} based on the domain's base url
+     * Find a {@link com.en_workshop.webcrawlerakka.entities.Domain} based on the domain's base url
      *
-     * @param webDomainUrl The web domain's base url
-     * @return The {@link com.en_workshop.webcrawlerakka.entities.WebDomain} found or {@code null}
+     * @param webDomainName The web domain's name.
+     * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} found or {@code null}
      */
-    public static WebDomain find(final String webDomainUrl) {
-        if (StringUtils.isBlank(webDomainUrl)) {
+    public static Domain find(final String webDomainName) {
+        if (StringUtils.isBlank(webDomainName)) {
             return null;
         }
 
-        for (WebDomain webDomain : WebDomain.DOMAINS) {
-            if (webDomain.getBaseUrl().equalsIgnoreCase(webDomainUrl)) {
-                return webDomain;
+        for (Domain domain : Domain.DOMAINS) {
+            if (domain.getName().equalsIgnoreCase(webDomainName)) {
+                return domain;
             }
         }
 
@@ -58,33 +58,33 @@ public class WebDomainDao {
     }
 
     /**
-     * Find all {@link com.en_workshop.webcrawlerakka.entities.WebDomain}s
+     * Find all {@link com.en_workshop.webcrawlerakka.entities.Domain}s
      *
-     * @return The list of {@link com.en_workshop.webcrawlerakka.entities.WebDomain}s found
+     * @return The list of {@link com.en_workshop.webcrawlerakka.entities.Domain}s found
      */
-    public static List<WebDomain> findAll() {
-        return WebDomain.DOMAINS;
+    public static List<Domain> findAll() {
+        return Domain.DOMAINS;
     }
 
     /**
-     * Update a {@link com.en_workshop.webcrawlerakka.entities.WebDomain} with a new crawled time
+     * Update a {@link com.en_workshop.webcrawlerakka.entities.Domain} with a new crawled time
      *
-     * @param oldWebDomain The original {@link com.en_workshop.webcrawlerakka.entities.WebDomain}
+     * @param oldDomain The original {@link com.en_workshop.webcrawlerakka.entities.Domain}
      * @param crawledAt    The new "crawled at" time
-     * @return The new {@link com.en_workshop.webcrawlerakka.entities.WebDomain} or {@code null}
+     * @return The new {@link com.en_workshop.webcrawlerakka.entities.Domain} or {@code null}
      */
-    public static WebDomain update(final WebDomain oldWebDomain, final long crawledAt) {
+    public static Domain update(final Domain oldDomain, final long crawledAt) {
         /* Validation */
-        if (null == oldWebDomain) {
-            LOG.error("Cannot update a null WebDomain");
+        if (null == oldDomain) {
+            LOG.error("Cannot update a null Domain");
             return null;
         }
 
-        WebDomain newWebDomain = new WebDomainCloner(oldWebDomain).withCrawledAt(crawledAt).build();
+        Domain newDomain = new WebDomainCloner(oldDomain).withCrawledAt(crawledAt).build();
 
-        WebDomain.DOMAINS.remove(oldWebDomain);
-        WebDomain.DOMAINS.add(newWebDomain);
+        Domain.DOMAINS.remove(oldDomain);
+        Domain.DOMAINS.add(newDomain);
 
-        return newWebDomain;
+        return newDomain;
     }
 }

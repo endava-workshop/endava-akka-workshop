@@ -10,13 +10,8 @@ import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.WebUrl;
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import sun.org.mozilla.javascript.internal.json.JsonParser;
 
 import java.net.URL;
 
@@ -38,7 +33,7 @@ public class AnalyzeLinkActor extends BaseActor {
         if (message instanceof AnalyzeLinkRequest) {
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
-            String sourceUrl = analyzeLinkRequest.getSourceDomain().getBaseUrl();
+            String sourceUrl = analyzeLinkRequest.getSourceDomain().getName();
             String link = analyzeLinkRequest.getLink();
 
             LOG.info("Received link: " + link + " and domain " + sourceUrl);
@@ -50,13 +45,13 @@ public class AnalyzeLinkActor extends BaseActor {
 
             LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
-            WebDomain newWebDomain = null;
+            Domain newDomain = null;
             if (!linkDomain.equals(sourceUrl)) {
-                newWebDomain = new WebDomain(linkDomain, url.getHost(), 20000, 0);
-                persistDomain(newWebDomain);
+                newDomain = new Domain(url.getHost(), 20000, 0);
+                persistDomain(newDomain);
             }
 
-            persistLink(newWebDomain == null ? analyzeLinkRequest.getSourceDomain() : newWebDomain, link);
+            persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomain() : newDomain, link);
 
         } else {
             LOG.error("Unknown message: " + message);
@@ -68,15 +63,15 @@ public class AnalyzeLinkActor extends BaseActor {
     /**
      * Finds the PersistenceMasterActor and sends the request to persist the link.
      *
-     * @param webDomain the web domain of the link.
+     * @param domain the web domain of the link.
      * @param link the link.
      */
-    private void persistLink(final WebDomain webDomain, final String link) {
+    private void persistLink(final Domain domain, final String link) {
         //call to persist the normalized link
         findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(new WebUrl(webDomain, link)), getSelf());
+                        persistenceMasterActor.tell(new PersistLinkRequest(new WebUrl(domain, link)), getSelf());
                     }
                 }, new OnFailure() {
                     @Override
@@ -90,14 +85,14 @@ public class AnalyzeLinkActor extends BaseActor {
     /**
      * Finds the PersistenceMasterActor and sends the request to persist the web domain.
      *
-     * @param webDomain the web domain of the link.
+     * @param domain the web domain of the link.
      */
-    private void persistDomain(final WebDomain webDomain) {
+    private void persistDomain(final Domain domain) {
         //call to persist the normalized link
         findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistDomainRequest(webDomain), getSelf());
+                        persistenceMasterActor.tell(new PersistDomainRequest(domain), getSelf());
                     }
                 }, new OnFailure() {
                     @Override

@@ -4,7 +4,7 @@ import akka.actor.UntypedActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
 import com.en_workshop.webcrawlerakka.dao.WebDomainDao;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -25,11 +25,11 @@ public class ListDomainsActor extends UntypedActor {
         if (message instanceof ListDomainsRequest) {
             ListDomainsRequest request = (ListDomainsRequest) message;
 
-            List<WebDomain> webDomains = WebDomainDao.findAll();
+            List<Domain> domains = WebDomainDao.findAll();
 
-            LOG.debug("List of domains found: " + webDomains);
+            LOG.debug("List of domains found: " + domains);
 
-            ListDomainsResponse response = new ListDomainsResponse(request, webDomains);
+            ListDomainsResponse response = new ListDomainsResponse(request, domains);
             getSender().tell(response, getSelf());
         } else {
             LOG.error("Unknown message: " + message);

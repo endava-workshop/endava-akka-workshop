@@ -1,8 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.requests.processing;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 
 /**
@@ -14,17 +13,17 @@ public class AnalyzeLinkRequest extends MessageRequest {
 
     private static final Logger LOG = Logger.getLogger(AnalyzeLinkRequest.class);
 
-    private final WebDomain sourceDomain;
+    private final Domain sourceDomain;
     private final String link;
 
-    public AnalyzeLinkRequest(final WebDomain sourceDomain, final String link) {
+    public AnalyzeLinkRequest(final Domain sourceDomain, final String link) {
         super(System.currentTimeMillis());
 
         this.sourceDomain = sourceDomain;
         this.link = link;
     }
 
-    public WebDomain getSourceDomain() {
+    public Domain getSourceDomain() {
         return sourceDomain;
     }
 

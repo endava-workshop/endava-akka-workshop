@@ -1,6 +1,6 @@
 package com.en_workshop.webcrawlerakka.dao;
 
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.WebUrl;
 import com.en_workshop.webcrawlerakka.entities.WebUrlCloner;
 import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
@@ -16,22 +16,22 @@ public class WebUrlDao {
     /**
      * Add a {@link com.en_workshop.webcrawlerakka.entities.WebUrl} to the urls list
      *
-     * @param webDomain The url domain
+     * @param domain The url domain
      * @param url       The url
      * @return The {@link com.en_workshop.webcrawlerakka.entities.WebUrl} added or {@code null}
      */
-    public static WebUrl add(final WebDomain webDomain, final String url) {
+    public static WebUrl add(final Domain domain, final String url) {
         /* Validation */
-        if (null == webDomain || StringUtils.isBlank(url)) {
-            LOG.error("Cannot create WebUrl with params: " + webDomain + "; " + url + "; " + url);
+        if (null == domain || StringUtils.isBlank(url)) {
+            LOG.error("Cannot create WebUrl with params: " + domain + "; " + url + "; " + url);
             return null;
         }
 
-        WebUrl webUrl = new WebUrl(webDomain, url);
+        WebUrl webUrl = new WebUrl(domain, url);
         
         /* Test if the url is already added to the database */
         if (WebUrl.URLS.contains(webUrl)) {
-            LOG.error("WebUrl record already found for params: " + webDomain + "; " + url + "; " + url);
+            LOG.error("WebUrl record already found for params: " + domain + "; " + url + "; " + url);
             return null;
         }
 
@@ -43,18 +43,18 @@ public class WebUrlDao {
     /**
      * Get the next {@link com.en_workshop.webcrawlerakka.entities.WebUrl} for crawling
      *
-     * @param webDomain The {@link com.en_workshop.webcrawlerakka.entities.WebDomain} to scan
+     * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to scan
      * @return The first {@link com.en_workshop.webcrawlerakka.entities.WebUrl} not visited found or {@code null}
      */
-    public static WebUrl getNextForCrawling(final WebDomain webDomain) {
+    public static WebUrl getNextForCrawling(final Domain domain) {
         /* Validation */
-        if (null == webDomain) {
+        if (null == domain) {
             LOG.error("Cannot scan a null WbeDomain");
             return null;
         }
 
         for (WebUrl webUrl : WebUrl.URLS) {
-            if (webUrl.getWebDomain().equals(webDomain) && webUrl.getStatus().equals(WebUrlStatus.NOT_VISITED)) {
+            if (webUrl.getDomain().equals(domain) && webUrl.getStatus().equals(WebUrlStatus.NOT_VISITED)) {
                 return webUrl;
             }
         }

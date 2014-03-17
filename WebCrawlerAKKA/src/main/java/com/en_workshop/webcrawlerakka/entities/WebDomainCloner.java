@@ -5,16 +5,14 @@ package com.en_workshop.webcrawlerakka.entities;
  */
 public class WebDomainCloner {
 
-    private String baseUrl;
     private String name;
     private long cooldownPeriod;
     private long crawledAt;
 
-    public WebDomainCloner(final WebDomain webDomain) {
-        this.baseUrl = webDomain.getBaseUrl();
-        this.name = webDomain.getName();
-        this.cooldownPeriod = webDomain.getCooldownPeriod();
-        this.crawledAt = webDomain.getCrawledAt();
+    public WebDomainCloner(final Domain domain) {
+        this.name = domain.getName();
+        this.cooldownPeriod = domain.getCoolDownPeriod();
+        this.crawledAt = domain.getCrawledAt();
     }
 
     public WebDomainCloner withCrawledAt(final long crawledAt) {
@@ -23,7 +21,7 @@ public class WebDomainCloner {
         return this;
     }
 
-    public WebDomain build() {
-        return new WebDomain(baseUrl, name, cooldownPeriod, crawledAt);
+    public Domain build() {
+        return new Domain(name, cooldownPeriod, crawledAt);
     }
 }

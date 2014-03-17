@@ -12,22 +12,22 @@ public class WebUrl {
 
     public static final List<WebUrl> URLS = new ArrayList<>();
 
-    private final WebDomain webDomain;
+    private final Domain domain;
     private final String url;
     private final WebUrlStatus status;
 
-    public WebUrl(final WebDomain webDomain, final String url) {
-        this(webDomain, url, WebUrlStatus.NOT_VISITED);
+    public WebUrl(final Domain domain, final String url) {
+        this(domain, url, WebUrlStatus.NOT_VISITED);
     }
 
-    public WebUrl(final WebDomain webDomain, final String url, final WebUrlStatus status) {
-        this.webDomain = webDomain;
+    public WebUrl(final Domain domain, final String url, final WebUrlStatus status) {
+        this.domain = domain;
         this.url = url;
         this.status = status;
     }
 
-    public WebDomain getWebDomain() {
-        return webDomain;
+    public Domain getDomain() {
+        return domain;
     }
 
     public String getUrl() {
@@ -41,7 +41,7 @@ public class WebUrl {
     @Override
     public String toString() {
         return "WebUrl{" +
-                "webDomain=" + webDomain +
+                "domain=" + domain +
                 ", url='" + url + '\'' +
                 ", status=" + status +
                 '}';
@@ -60,7 +60,7 @@ public class WebUrl {
         if (url != null ? !url.equals(webUrl.url) : webUrl.url != null) {
             return false;
         }
-        if (webDomain != null ? !webDomain.equals(webUrl.webDomain) : webUrl.webDomain != null) {
+        if (domain != null ? !domain.equals(webUrl.domain) : webUrl.domain != null) {
             return false;
         }
 
@@ -69,7 +69,7 @@ public class WebUrl {
 
     @Override
     public int hashCode() {
-        int result = webDomain != null ? webDomain.hashCode() : 0;
+        int result = domain != null ? domain.hashCode() : 0;
         result = 31 * result + (url != null ? url.hashCode() : 0);
 
         return result;

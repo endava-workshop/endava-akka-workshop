@@ -7,7 +7,7 @@ import com.en_workshop.webcrawlerakka.akka.actors.MasterActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
 import com.en_workshop.webcrawlerakka.dao.WebDomainDao;
 import com.en_workshop.webcrawlerakka.dao.WebUrlDao;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 
 /**
@@ -20,9 +20,9 @@ public class WebCrawler {
         LOG.info("Web crawler starting ...");
 
         LOG.debug("Add sample (test) data ...");
-        WebDomain wikiDomain = WebDomainDao.add(new WebDomain("http://ro.wikipedia.org/", "Wikipedia", 20000, 0));
+        Domain wikiDomain = WebDomainDao.add(new Domain("http://ro.wikipedia.org/", 20000, 0));
         if (null != wikiDomain) {
-            WebUrlDao.add(wikiDomain, wikiDomain.getBaseUrl());
+            WebUrlDao.add(wikiDomain, wikiDomain.getName());
 
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
@@ -41,9 +41,9 @@ public class WebCrawler {
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Special:Modific%C4%83ri_corelate/Pagina_principal%C4%83");
         }
 
-        WebDomain debianDomain = WebDomainDao.add(new WebDomain("https://wiki.debian.org/", "WikiDebian", 30000, 0));
+        Domain debianDomain = WebDomainDao.add(new Domain("https://wiki.debian.org/", 30000, 0));
         if (null != debianDomain) {
-            WebUrlDao.add(debianDomain, debianDomain.getBaseUrl());
+            WebUrlDao.add(debianDomain, debianDomain.getName());
         }
         LOG.debug("Add sample (test) data: DONE");
 

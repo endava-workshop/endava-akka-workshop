@@ -51,7 +51,7 @@ public class DomainActor extends BaseActor {
             findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(new NextLinkRequest(request.getWebDomain()), getSelf());
+                            persistenceMasterActor.tell(new NextLinkRequest(request.getDomain()), getSelf());
                         }
                     }, new OnFailure() {
                         @Override
@@ -68,20 +68,20 @@ public class DomainActor extends BaseActor {
                 NextLinkRequest request = response.getNextLinkRequest();
 
                 /* There is no next link */
-                LOG.info("Domain " + request.getWebDomain().getName() + " has no more links to crawl");
+                LOG.info("Domain " + request.getDomain().getName() + " has no more links to crawl");
 
                 /* Schedule a new crawl for the downloaded domain after the cool down period */
-                getContext().system().scheduler().scheduleOnce(Duration.create(request.getWebDomain().getCooldownPeriod(), TimeUnit.MILLISECONDS),
-                        getSelf(), new CrawlDomainRequest(request.getWebDomain()), getContext().system().dispatcher(), getSelf());
+                getContext().system().scheduler().scheduleOnce(Duration.create(request.getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
+                        getSelf(), new CrawlDomainRequest(request.getDomain()), getContext().system().dispatcher(), getSelf());
 
                 return;
             }
 
-            LOG.info("Domain " + response.getNextLinkRequest().getWebDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
+            LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
 
             /* Send a "download URL" request */
-            findActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + response.getNextLinkRequest().getWebDomain().getName() +
-                    "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME + response.getNextLinkRequest().getWebDomain().getName(), new OnSuccess<ActorRef>() {
+            findActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + response.getNextLinkRequest().getDomain().getName() +
+                    "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME + response.getNextLinkRequest().getDomain().getName(), new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
                             downloadUrlActor.tell(new DownloadUrlRequest(response.getNextLink()), getSelf());
@@ -90,7 +90,7 @@ public class DomainActor extends BaseActor {
                         @Override
                         public void onFailure(Throwable throwable) throws Throwable {
                             ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
-                                    response.getNextLinkRequest().getWebDomain().getName());
+                                    response.getNextLinkRequest().getDomain().getName().replace('.','_').replace(':', '_').replace('/', '_'));
                             downloadUrlActor.tell(new DownloadUrlRequest(response.getNextLink()), getSelf());
                         }
                     }
@@ -100,8 +100,8 @@ public class DomainActor extends BaseActor {
             DownloadUrlResponse response = (DownloadUrlResponse) message;
 
             /* Schedule a new crawl for the downloaded domain after the cool down period */
-            getContext().system().scheduler().scheduleOnce(Duration.create(response.getDownloadUrlRequest().getWebUrl().getWebDomain().getCooldownPeriod(), TimeUnit.MILLISECONDS),
-                    getSelf(), new CrawlDomainRequest(response.getDownloadUrlRequest().getWebUrl().getWebDomain()), getContext().system().dispatcher(), getSelf());
+            getContext().system().scheduler().scheduleOnce(Duration.create(response.getDownloadUrlRequest().getWebUrl().getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
+                    getSelf(), new CrawlDomainRequest(response.getDownloadUrlRequest().getWebUrl().getDomain()), getContext().system().dispatcher(), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

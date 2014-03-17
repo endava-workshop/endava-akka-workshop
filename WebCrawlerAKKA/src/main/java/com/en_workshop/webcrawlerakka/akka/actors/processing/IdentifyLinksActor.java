@@ -7,14 +7,9 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
 import com.en_workshop.webcrawlerakka.tools.WebContentTools;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -51,7 +46,7 @@ public class IdentifyLinksActor extends BaseActor {
                 findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef processingMasterActor) throws Throwable {
-                                processingMasterActor.tell(new AnalyzeLinkRequest(contentToBeProcessed.getSource().getWebDomain(), normalizedLink), getSelf());
+                                processingMasterActor.tell(new AnalyzeLinkRequest(contentToBeProcessed.getSource().getDomain(), normalizedLink), getSelf());
                             }
                         }, new OnFailure() {
                             @Override

@@ -1,8 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
-import com.en_workshop.webcrawlerakka.entities.WebDomain;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 
 /**
  *
@@ -10,14 +9,14 @@ import com.en_workshop.webcrawlerakka.entities.WebUrl;
  */
 public class PersistDomainRequest extends MessageRequest {
 
-    private final WebDomain webDomain;
+    private final Domain domain;
 
-    public PersistDomainRequest(WebDomain webDomain) {
+    public PersistDomainRequest(Domain domain) {
         super(System.currentTimeMillis());
-        this.webDomain = webDomain;
+        this.domain = domain;
     }
 
-    public WebDomain getWebDomain() {
-        return webDomain;
+    public Domain getDomain() {
+        return domain;
     }
 }
