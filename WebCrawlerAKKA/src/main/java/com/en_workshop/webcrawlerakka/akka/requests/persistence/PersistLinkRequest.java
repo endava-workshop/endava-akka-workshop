@@ -1,8 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.MessageResponse;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Link;
 
 /**
  * Request to persist a link.
@@ -11,14 +10,14 @@ import com.en_workshop.webcrawlerakka.entities.WebUrl;
  */
 public class PersistLinkRequest extends MessageRequest {
 
-    private final WebUrl link;
+    private final Link link;
 
-    public PersistLinkRequest(WebUrl link) {
+    public PersistLinkRequest(Link link) {
         super(System.currentTimeMillis());
         this.link = link;
     }
 
-    public WebUrl getLink() {
+    public Link getLink() {
         return link;
     }
 }

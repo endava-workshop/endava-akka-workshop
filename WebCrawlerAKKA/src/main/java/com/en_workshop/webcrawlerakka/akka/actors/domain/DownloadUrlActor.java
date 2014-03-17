@@ -30,11 +30,11 @@ public class DownloadUrlActor extends BaseActor {
             final DownloadUrlRequest request = (DownloadUrlRequest) message;
 
             try {
-                final Map<String, String> pageHeaders = WebClient.getPageHeaders(request.getWebUrl().getUrl());
+                final Map<String, String> pageHeaders = WebClient.getPageHeaders(request.getLink().getUrl());
 
                 /* Test the response code */
                 if (!pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE).equals(WebCrawlerConstants.HTTP_RESPONSE_CODE_OK)) {
-                    LOG.debug(request.getWebUrl().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
+                    LOG.debug(request.getLink().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
 
                     finishWork(request, WebUrlStatus.FAILED);
                     return;
@@ -42,7 +42,7 @@ public class DownloadUrlActor extends BaseActor {
 
                 /* Test for accepted mime types */
                 if (!WebClient.isMediaTypeAccepted(pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE))) {
-                    LOG.debug(request.getWebUrl().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
+                    LOG.debug(request.getLink().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
 
                     finishWork(request, WebUrlStatus.VISITED);
                     return;
@@ -51,26 +51,26 @@ public class DownloadUrlActor extends BaseActor {
                 //TODO Test for redirects
 
                 /* Get page content */
-                final String pageContent = WebClient.getPageContent(request.getWebUrl().getUrl());
-                LOG.debug(request.getWebUrl().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
+                final String pageContent = WebClient.getPageContent(request.getLink().getUrl());
+                LOG.debug(request.getLink().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
 
                 /* Send to processing master */
                 findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef processingMasterActor) throws Throwable {
-                                processingMasterActor.tell(new ProcessContentRequest(request.getWebUrl(), pageContent), getSelf());
+                                processingMasterActor.tell(new ProcessContentRequest(request.getLink(), pageContent), getSelf());
                             }
                         }, new OnFailure() {
                             @Override
                             public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error(request.getWebUrl().getUrl() + " - Cannot find Processing Master");
+                                LOG.error(request.getLink().getUrl() + " - Cannot find Processing Master");
                             }
                         }
                 );
 
                 finishWork(request, WebUrlStatus.VISITED);
             } catch (IOException exc) {
-                LOG.error(request.getWebUrl().getUrl() + " - Cannot process link", exc);
+                LOG.error(request.getLink().getUrl() + " - Cannot process link", exc);
 
                 finishWork(request, WebUrlStatus.FAILED);
             }
@@ -89,7 +89,7 @@ public class DownloadUrlActor extends BaseActor {
     private void finishWork(final DownloadUrlRequest request, final WebUrlStatus urlStatus) {
         /* Persist the new link status */
         // TODO Use the persistence master
-        WebUrlDao.update(request.getWebUrl(), urlStatus);
+        WebUrlDao.update(request.getLink(), urlStatus);
 
         /* Report back to the domain actor */
         DownloadUrlResponse response = new DownloadUrlResponse(request);

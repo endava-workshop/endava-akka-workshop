@@ -1,7 +1,8 @@
 package com.en_workshop.webcrawlerakka.akka.requests.domain;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.Link;
 import org.apache.log4j.Logger;
 
 /**
@@ -10,15 +11,21 @@ import org.apache.log4j.Logger;
 public class DownloadUrlRequest extends MessageRequest {
     private static final Logger LOG = Logger.getLogger(DownloadUrlRequest.class);
 
-    private final WebUrl webUrl;
+    private final Domain domain;
+    private final Link link;
 
-    public DownloadUrlRequest(final WebUrl webUrl) {
+    public DownloadUrlRequest(final Domain domain, final Link link) {
         super(System.currentTimeMillis());
 
-        this.webUrl = webUrl;
+        this.domain = domain;
+        this.link = link;
     }
 
-    public WebUrl getWebUrl() {
-        return webUrl;
+    public Link getLink() {
+        return link;
+    }
+
+    public Domain getDomain() {
+        return domain;
     }
 }

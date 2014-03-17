@@ -13,18 +13,18 @@ public class AnalyzeLinkRequest extends MessageRequest {
 
     private static final Logger LOG = Logger.getLogger(AnalyzeLinkRequest.class);
 
-    private final Domain sourceDomain;
+    private final String sourceDomainName;
     private final String link;
 
-    public AnalyzeLinkRequest(final Domain sourceDomain, final String link) {
+    public AnalyzeLinkRequest(final String sourceDomainName, final String link) {
         super(System.currentTimeMillis());
 
-        this.sourceDomain = sourceDomain;
+        this.sourceDomainName = sourceDomainName;
         this.link = link;
     }
 
-    public Domain getSourceDomain() {
-        return sourceDomain;
+    public String getSourceDomainName() {
+        return sourceDomainName;
     }
 
     public String getLink() {
@@ -33,6 +33,6 @@ public class AnalyzeLinkRequest extends MessageRequest {
 
     @Override
     public String toString() {
-        return "AnalyzeLinkRequest{webDomain=" + sourceDomain + ", link=" + link + "}";
+        return "AnalyzeLinkRequest{webDomainName=" + sourceDomainName + ", link=" + link + "}";
     }
 }

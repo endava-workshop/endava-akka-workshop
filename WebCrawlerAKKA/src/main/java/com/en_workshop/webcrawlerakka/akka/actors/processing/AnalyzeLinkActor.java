@@ -11,7 +11,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainReq
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Link;
 
 import java.net.URL;
 
@@ -33,7 +33,7 @@ public class AnalyzeLinkActor extends BaseActor {
         if (message instanceof AnalyzeLinkRequest) {
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
-            String sourceUrl = analyzeLinkRequest.getSourceDomain().getName();
+            String sourceUrl = analyzeLinkRequest.getSourceDomainName();
             String link = analyzeLinkRequest.getLink();
 
             LOG.info("Received link: " + link + " and domain " + sourceUrl);
@@ -51,7 +51,7 @@ public class AnalyzeLinkActor extends BaseActor {
                 persistDomain(newDomain);
             }
 
-            persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomain() : newDomain, link);
+            persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
 
         } else {
             LOG.error("Unknown message: " + message);
@@ -63,15 +63,15 @@ public class AnalyzeLinkActor extends BaseActor {
     /**
      * Finds the PersistenceMasterActor and sends the request to persist the link.
      *
-     * @param domain the web domain of the link.
+     * @param domainName the name of the web domain of the link.
      * @param link the link.
      */
-    private void persistLink(final Domain domain, final String link) {
+    private void persistLink(final String domainName, final String link) {
         //call to persist the normalized link
         findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(new WebUrl(domain, link)), getSelf());
+                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(domainName, link)), getSelf());
                     }
                 }, new OnFailure() {
                     @Override

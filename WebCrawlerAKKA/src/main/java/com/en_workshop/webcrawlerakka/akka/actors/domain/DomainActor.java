@@ -14,6 +14,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
+import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
@@ -63,10 +64,9 @@ public class DomainActor extends BaseActor {
 
         } else if (message instanceof NextLinkResponse) {
             final NextLinkResponse response = (NextLinkResponse) message;
+            final NextLinkRequest request = response.getNextLinkRequest();
 
             if (null == response.getNextLink()) {
-                NextLinkRequest request = response.getNextLinkRequest();
-
                 /* There is no next link */
                 LOG.info("Domain " + request.getDomain().getName() + " has no more links to crawl");
 
@@ -84,24 +84,25 @@ public class DomainActor extends BaseActor {
                     "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME + response.getNextLinkRequest().getDomain().getName(), new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
-                            downloadUrlActor.tell(new DownloadUrlRequest(response.getNextLink()), getSelf());
+                            downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
                         }
                     }, new OnFailure() {
                         @Override
                         public void onFailure(Throwable throwable) throws Throwable {
                             ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
-                                    response.getNextLinkRequest().getDomain().getName().replace('.','_').replace(':', '_').replace('/', '_'));
-                            downloadUrlActor.tell(new DownloadUrlRequest(response.getNextLink()), getSelf());
+                                    response.getNextLinkRequest().getDomain().getName().replace('.', '_').replace(':', '_').replace('/', '_'));
+                            downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
                         }
                     }
             );
 
         } else if (message instanceof DownloadUrlResponse) {
             DownloadUrlResponse response = (DownloadUrlResponse) message;
+            final Domain domain = response.getDownloadUrlRequest().getDomain();
 
             /* Schedule a new crawl for the downloaded domain after the cool down period */
-            getContext().system().scheduler().scheduleOnce(Duration.create(response.getDownloadUrlRequest().getWebUrl().getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
-                    getSelf(), new CrawlDomainRequest(response.getDownloadUrlRequest().getWebUrl().getDomain()), getContext().system().dispatcher(), getSelf());
+            getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS),
+                    getSelf(), new CrawlDomainRequest(domain), getContext().system().dispatcher(), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

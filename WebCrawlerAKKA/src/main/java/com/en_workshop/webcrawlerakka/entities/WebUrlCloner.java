@@ -7,14 +7,14 @@ import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
  */
 public class WebUrlCloner {
 
-    private Domain domain;
+    private String domain;
     private String url;
     private WebUrlStatus status;
 
-    public WebUrlCloner(final WebUrl webUrl) {
-        this.domain = webUrl.getDomain();
-        this.url = webUrl.getUrl();
-        this.status = webUrl.getStatus();
+    public WebUrlCloner(final Link link) {
+        this.domain = link.getDomain();
+        this.url = link.getUrl();
+        this.status = link.getStatus();
     }
 
     public WebUrlCloner withStatus(final WebUrlStatus status) {
@@ -23,7 +23,7 @@ public class WebUrlCloner {
         return this;
     }
 
-    public WebUrl build() {
-        return new WebUrl(domain, url, status);
+    public Link build() {
+        return new Link(domain, url, status);
     }
 }

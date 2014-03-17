@@ -1,7 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageResponse;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Link;
 import org.apache.log4j.Logger;
 
 /**
@@ -12,9 +12,9 @@ import org.apache.log4j.Logger;
 public class NextLinkResponse extends MessageResponse {
     private static final Logger LOG = Logger.getLogger(NextLinkResponse.class);
 
-    private final WebUrl nextLink;
+    private final Link nextLink;
 
-    public NextLinkResponse(final NextLinkRequest nextLinkRequest, final WebUrl nextLink) {
+    public NextLinkResponse(final NextLinkRequest nextLinkRequest, final Link nextLink) {
         super(System.currentTimeMillis(), nextLinkRequest);
 
         this.nextLink = nextLink;
@@ -24,7 +24,7 @@ public class NextLinkResponse extends MessageResponse {
         return (NextLinkRequest) getMessageRequest();
     }
 
-    public WebUrl getNextLink() {
+    public Link getNextLink() {
         return nextLink;
     }
 }

@@ -1,7 +1,7 @@
 package com.en_workshop.webcrawlerakka.dao;
 
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import com.en_workshop.webcrawlerakka.entities.WebUrl;
+import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.entities.WebUrlCloner;
 import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
 import org.apache.commons.lang3.StringUtils;
@@ -14,48 +14,48 @@ public class WebUrlDao {
     private static final Logger LOG = Logger.getLogger(WebUrlDao.class);
 
     /**
-     * Add a {@link com.en_workshop.webcrawlerakka.entities.WebUrl} to the urls list
+     * Add a {@link com.en_workshop.webcrawlerakka.entities.Link} to the urls list
      *
      * @param domain The url domain
      * @param url       The url
-     * @return The {@link com.en_workshop.webcrawlerakka.entities.WebUrl} added or {@code null}
+     * @return The {@link com.en_workshop.webcrawlerakka.entities.Link} added or {@code null}
      */
-    public static WebUrl add(final Domain domain, final String url) {
+    public static Link add(final Domain domain, final String url) {
         /* Validation */
         if (null == domain || StringUtils.isBlank(url)) {
-            LOG.error("Cannot create WebUrl with params: " + domain + "; " + url + "; " + url);
+            LOG.error("Cannot create Link with params: " + domain + "; " + url + "; " + url);
             return null;
         }
 
-        WebUrl webUrl = new WebUrl(domain, url);
+        Link link = new Link(domain.getName(), url);
         
         /* Test if the url is already added to the database */
-        if (WebUrl.URLS.contains(webUrl)) {
-            LOG.error("WebUrl record already found for params: " + domain + "; " + url + "; " + url);
+        if (Link.LINKS.contains(link)) {
+            LOG.error("Link record already found for params: " + domain + "; " + url + "; " + url);
             return null;
         }
 
-        WebUrl.URLS.add(webUrl);
+        Link.LINKS.add(link);
 
-        return webUrl;
+        return link;
     }
 
     /**
-     * Get the next {@link com.en_workshop.webcrawlerakka.entities.WebUrl} for crawling
+     * Get the next {@link com.en_workshop.webcrawlerakka.entities.Link} for crawling
      *
      * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to scan
-     * @return The first {@link com.en_workshop.webcrawlerakka.entities.WebUrl} not visited found or {@code null}
+     * @return The first {@link com.en_workshop.webcrawlerakka.entities.Link} not visited found or {@code null}
      */
-    public static WebUrl getNextForCrawling(final Domain domain) {
+    public static Link getNextForCrawling(final Domain domain) {
         /* Validation */
         if (null == domain) {
-            LOG.error("Cannot scan a null WbeDomain");
+            LOG.error("Cannot scan a null Domain");
             return null;
         }
 
-        for (WebUrl webUrl : WebUrl.URLS) {
-            if (webUrl.getDomain().equals(domain) && webUrl.getStatus().equals(WebUrlStatus.NOT_VISITED)) {
-                return webUrl;
+        for (Link link : Link.LINKS) {
+            if (link.getDomain().equals(domain.getName()) && link.getStatus().equals(WebUrlStatus.NOT_VISITED)) {
+                return link;
             }
         }
 
@@ -63,24 +63,24 @@ public class WebUrlDao {
     }
 
     /**
-     * Update a {@link com.en_workshop.webcrawlerakka.entities.WebUrl} with a new status
+     * Update a {@link com.en_workshop.webcrawlerakka.entities.Link} with a new status
      *
-     * @param oldWebUrl The original {@link com.en_workshop.webcrawlerakka.entities.WebUrl}
+     * @param oldLink The original {@link com.en_workshop.webcrawlerakka.entities.Link}
      * @param newStatus The new status
-     * @return The new {@link com.en_workshop.webcrawlerakka.entities.WebUrl} or {@code null}
+     * @return The new {@link com.en_workshop.webcrawlerakka.entities.Link} or {@code null}
      */
-    public static WebUrl update(final WebUrl oldWebUrl, final WebUrlStatus newStatus) {
+    public static Link update(final Link oldLink, final WebUrlStatus newStatus) {
         /* Validation */
-        if (null == oldWebUrl) {
-            LOG.error("Cannot update a null WebUrl");
+        if (null == oldLink) {
+            LOG.error("Cannot update a null Link");
             return null;
         }
 
-        WebUrl newWebUrl = new WebUrlCloner(oldWebUrl).withStatus(newStatus).build();
+        Link newLink = new WebUrlCloner(oldLink).withStatus(newStatus).build();
 
-        WebUrl.URLS.remove(oldWebUrl);
-        WebUrl.URLS.add(newWebUrl);
+        Link.LINKS.remove(oldLink);
+        Link.LINKS.add(newLink);
 
-        return newWebUrl;
+        return newLink;
     }
 }

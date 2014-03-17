@@ -20,9 +20,9 @@ public class WebCrawler {
         LOG.info("Web crawler starting ...");
 
         LOG.debug("Add sample (test) data ...");
-        Domain wikiDomain = WebDomainDao.add(new Domain("http://ro.wikipedia.org/", 20000, 0));
+        Domain wikiDomain = WebDomainDao.add(new Domain("ro.wikipedia.org", 20000, 0));
         if (null != wikiDomain) {
-            WebUrlDao.add(wikiDomain, wikiDomain.getName());
+//            WebUrlDao.add(wikiDomain, wikiDomain.getName());
 
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
@@ -41,9 +41,9 @@ public class WebCrawler {
             WebUrlDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Special:Modific%C4%83ri_corelate/Pagina_principal%C4%83");
         }
 
-        Domain debianDomain = WebDomainDao.add(new Domain("https://wiki.debian.org/", 30000, 0));
+        Domain debianDomain = WebDomainDao.add(new Domain("wiki.debian.org", 30000, 0));
         if (null != debianDomain) {
-            WebUrlDao.add(debianDomain, debianDomain.getName());
+            WebUrlDao.add(debianDomain, "http://" + debianDomain.getName());
         }
         LOG.debug("Add sample (test) data: DONE");
 

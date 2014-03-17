@@ -35,7 +35,7 @@ public class Domain {
     @Override
     public String toString() {
         return "Domain{" +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", coolDownPeriod=" + coolDownPeriod +
                 ", crawledAt=" + crawledAt +
                 '}';
