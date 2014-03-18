@@ -29,7 +29,7 @@ public class IdentifyLinksActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof ProcessContentRequest) {
-            LOG.info("Identify the links in the content.");
+            LOG.debug("Identify the links in the content.");
 
             final ProcessContentRequest contentToBeProcessed = (ProcessContentRequest) message;
             final String baseUrl = contentToBeProcessed.getSource().getUrl();
@@ -57,6 +57,7 @@ public class IdentifyLinksActor extends BaseActor {
                 );
             }
 
+            LOG.debug("Identify the links in the content - DONE.");
         }else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

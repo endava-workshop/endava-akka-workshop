@@ -31,6 +31,8 @@ public class AnalyzeLinkActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof AnalyzeLinkRequest) {
+            LOG.debug("Analyzing link - START");
+
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
             String sourceUrl = analyzeLinkRequest.getSourceDomainName();
@@ -40,8 +42,7 @@ public class AnalyzeLinkActor extends BaseActor {
 
             //if the initial domain is not the same as the domain of the link, persist both domain and link
             URL url = new URL(link);
-            String path = url.getFile().substring(0, url.getFile().lastIndexOf('/'));
-            String linkDomain = url.getProtocol() + "://" + url.getHost() + path;
+            String linkDomain = url.getHost();
 
             LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
@@ -52,6 +53,8 @@ public class AnalyzeLinkActor extends BaseActor {
             }
 
             persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
+
+            LOG.debug("Analyzing link - STOP");
 
         } else {
             LOG.error("Unknown message: " + message);

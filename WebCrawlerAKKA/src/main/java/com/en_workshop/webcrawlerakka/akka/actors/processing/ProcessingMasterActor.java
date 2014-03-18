@@ -60,20 +60,21 @@ public class ProcessingMasterActor extends BaseActor {
     @Override
     public void onReceive(Object message) {
         if (message instanceof ProcessContentRequest) {
-            LOG.info("ProcessContentRequest: " + message);
+            LOG.debug("ProcessContentRequest: " + message);
 
             //identify the links
             indentifyLinksRouter.tell(message, getSender());
             //extract the data
             dataExtractorRouter.tell(message, getSender());
 
-            LOG.info("ProcessContentRequest: DONE");
+            LOG.debug("ProcessContentRequest: DONE");
         } else if (message instanceof AnalyzeLinkRequest) {
-            LOG.info("AnalyzeLinkRequest: " + message);
+            LOG.debug("AnalyzeLinkRequest: " + message);
+
             //analyze the links
             analyzeLinksRouter.tell(message, getSender());
 
-            LOG.info("AnalyzeLinkRequest: DONE");
+            LOG.debug("AnalyzeLinkRequest: DONE");
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
