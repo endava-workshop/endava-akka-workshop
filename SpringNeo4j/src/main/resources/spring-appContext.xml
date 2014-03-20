@@ -19,16 +19,12 @@
  -->
 	<!-- Embedded Database -->
 
-	<bean id="graphDatabaseService" class="org.neo4j.kernel.EmbeddedGraphDatabase"
-		destroy-method="shutdown">
-		<constructor-arg index="0" value="D:/Database/Neo4jDb/embedded/db" />
-		<constructor-arg index="1">
-			<map>
-				<entry key="enable_remote_shell" value="true" />
-				<entry key="allow_store_upgrade" value="true" />
-			</map>
-		</constructor-arg>
-	</bean>
+    <bean name="graphDatabaseFactory" class="org.neo4j.graphdb.factory.GraphDatabaseFactory"/>
+
+	<bean id="graphDatabaseService" factory-bean="graphDatabaseFactory" factory-method="newEmbeddedDatabase">
+        <constructor-arg value="D:/Database/Neo4jDb/embedded/db"/>
+    </bean>
+
 
 	<!-- Neo4j configuration (template) -->
 	<neo4j:config graphDatabaseService="graphDatabaseService" />

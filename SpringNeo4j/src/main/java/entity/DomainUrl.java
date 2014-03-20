@@ -8,6 +8,7 @@ import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.support.index.IndexType;
 
 @NodeEntity
 public class DomainUrl {
@@ -17,7 +18,7 @@ public class DomainUrl {
 	@GraphId
 	Long id;
 
-	@Indexed(indexName = "name")
+	@Indexed(indexType = IndexType.SIMPLE, indexName = "name")
 	String name;
 
 	String address;

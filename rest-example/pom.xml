@@ -84,24 +84,21 @@
 
 
         <dependency>
-            <groupId>io.spray</groupId>
-            <artifactId>spray-io</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.spray</groupId>
-            <artifactId>spray-can</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.jvnet.mimepull</groupId>
             <artifactId>mimepull</artifactId>
             <version>1.9.4</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-io</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-can</artifactId>
+            <version>1.2.0</version>
+        </dependency>
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-http</artifactId>

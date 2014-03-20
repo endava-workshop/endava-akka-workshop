@@ -1,6 +1,9 @@
 package service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.conversion.EndResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +12,8 @@ import repo.SimpleUrlRepo;
 import service.UrlService;
 import entity.DomainUrl;
 import entity.SimpleUrl;
+
+import java.util.List;
 
 @Service
 public class UrlServiceImpl implements UrlService {
@@ -41,7 +46,14 @@ public class UrlServiceImpl implements UrlService {
 		return simpleUrl;
 	}
 
-	@Transactional
+    @Transactional
+    @Override
+    public Page<DomainUrl> findDomains(Pageable pageable) {
+        Page<DomainUrl> domains = domainRepo.findAll(pageable);
+        return domains;
+    }
+
+    @Transactional
 	public void removeSimpleUrl(String name) {
 		SimpleUrl simpleUrl = simpleUrlRepo.findByPropertyValue("name", name);
 		if(simpleUrl != null){
