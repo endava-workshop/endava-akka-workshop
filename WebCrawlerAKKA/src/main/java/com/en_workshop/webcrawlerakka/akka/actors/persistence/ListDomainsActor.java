@@ -3,7 +3,7 @@ package com.en_workshop.webcrawlerakka.akka.actors.persistence;
 import akka.actor.UntypedActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
-import com.en_workshop.webcrawlerakka.dao.WebDomainDao;
+import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 
@@ -25,7 +25,7 @@ public class ListDomainsActor extends UntypedActor {
         if (message instanceof ListDomainsRequest) {
             ListDomainsRequest request = (ListDomainsRequest) message;
 
-            List<Domain> domains = WebDomainDao.findAll();
+            List<Domain> domains = DomainDao.findAll();
 
             LOG.debug("List of domains found: " + domains);
 

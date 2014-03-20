@@ -3,7 +3,7 @@ package com.en_workshop.webcrawlerakka.akka.actors.persistence;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
-import com.en_workshop.webcrawlerakka.dao.WebUrlDao;
+import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import org.apache.log4j.Logger;
 
@@ -23,7 +23,7 @@ public class NextLinkActor extends BaseActor {
         if (message instanceof NextLinkRequest) {
             NextLinkRequest request = (NextLinkRequest) message;
 
-            Link link = WebUrlDao.getNextForCrawling(request.getDomain());
+            Link link = LinkDao.getNextForCrawling(request.getDomain());
             NextLinkResponse response = new NextLinkResponse(request, link);
 
             LOG.debug("Found next URL for crawling: " + (null == link ? "NONE" : link.getUrl()));

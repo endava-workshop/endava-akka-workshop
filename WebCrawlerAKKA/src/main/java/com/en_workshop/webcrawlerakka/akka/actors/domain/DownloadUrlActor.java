@@ -8,8 +8,8 @@ import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.dao.WebUrlDao;
-import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
+import com.en_workshop.webcrawlerakka.dao.LinkDao;
+import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
 import org.apache.log4j.Logger;
 
@@ -36,7 +36,7 @@ public class DownloadUrlActor extends BaseActor {
                 if (!pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE).equals(WebCrawlerConstants.HTTP_RESPONSE_CODE_OK)) {
                     LOG.debug(request.getLink().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
 
-                    finishWork(request, WebUrlStatus.FAILED);
+                    finishWork(request, LinkStatus.FAILED);
                     return;
                 }
 
@@ -44,7 +44,7 @@ public class DownloadUrlActor extends BaseActor {
                 if (!WebClient.isMediaTypeAccepted(pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE))) {
                     LOG.debug(request.getLink().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
 
-                    finishWork(request, WebUrlStatus.VISITED);
+                    finishWork(request, LinkStatus.VISITED);
                     return;
                 }
 
@@ -68,11 +68,11 @@ public class DownloadUrlActor extends BaseActor {
                         }
                 );
 
-                finishWork(request, WebUrlStatus.VISITED);
+                finishWork(request, LinkStatus.VISITED);
             } catch (IOException exc) {
                 LOG.error(request.getLink().getUrl() + " - Cannot process link", exc);
 
-                finishWork(request, WebUrlStatus.FAILED);
+                finishWork(request, LinkStatus.FAILED);
             }
         } else {
             LOG.error("Unknown message: " + message);
@@ -84,12 +84,12 @@ public class DownloadUrlActor extends BaseActor {
      * Finish the download actor work: persist link status; send the download url response
      *
      * @param request   The {@link com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest}
-     * @param urlStatus The new {@link com.en_workshop.webcrawlerakka.enums.WebUrlStatus}
+     * @param urlStatus The new {@link com.en_workshop.webcrawlerakka.enums.LinkStatus}
      */
-    private void finishWork(final DownloadUrlRequest request, final WebUrlStatus urlStatus) {
+    private void finishWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
         /* Persist the new link status */
         // TODO Use the persistence master
-        WebUrlDao.update(request.getLink(), urlStatus);
+        LinkDao.update(request.getLink(), urlStatus);
 
         /* Report back to the domain actor */
         DownloadUrlResponse response = new DownloadUrlResponse(request);

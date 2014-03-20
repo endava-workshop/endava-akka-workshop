@@ -1,6 +1,6 @@
 package com.en_workshop.webcrawlerakka.entities;
 
-import com.en_workshop.webcrawlerakka.enums.WebUrlStatus;
+import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,13 +14,13 @@ public class Link {
 
     private final String domain;
     private final String url;
-    private final WebUrlStatus status;
+    private final LinkStatus status;
 
     public Link(final String domain, final String url) {
-        this(domain, url, WebUrlStatus.NOT_VISITED);
+        this(domain, url, LinkStatus.NOT_VISITED);
     }
 
-    public Link(final String domain, final String url, final WebUrlStatus status) {
+    public Link(final String domain, final String url, final LinkStatus status) {
         this.domain = domain;
         this.url = url;
         this.status = status;
@@ -34,7 +34,7 @@ public class Link {
         return url;
     }
 
-    public WebUrlStatus getStatus() {
+    public LinkStatus getStatus() {
         return status;
     }
 
