@@ -6,6 +6,11 @@ import service.UrlService
 import org.springframework.data.domain.{PageRequest, Page}
 import entity.{SimpleUrl, DomainUrl}
 import java.util
+import com.gettyimages.spray.swagger.SwaggerApiBuilder
+import scala.reflect.runtime.universe._
+import com.wordnik.swagger.annotations.{ApiOperation, ApiModel, Api}
+import spray.httpx.Json4sSupport
+import org.json4s.{DefaultFormats, Formats}
 
 
 // magic import
@@ -20,13 +25,17 @@ import akka.util.Timeout
 import spray.util._
 import spray.http._
 
+@Api(value = "/", description = "This is a Neo4J endpoint.")
+abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContextSupport  with Json4sSupport {
 
-abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContextSupport   {
+  implicit def json4sFormats: Formats = DefaultFormats
 
   implicit val timeout = Timeout(30 seconds)
-//  val urlService = () => springContext.getBean(classOf[UrlService])
+  //  val urlService = () => springContext.getBean(classOf[UrlService])
   lazy val urlService = springContext.getBean(classOf[UrlService])
+  val swaggerApi = new SwaggerApiBuilder("1.2", "1.0", "swagger-specs", _: Seq[Type], _: Seq[Type])
 
+  @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET") // TODO this needs to be moved at method level
   def receive = runRoute {
     path("purge") {
       complete {
@@ -34,71 +43,72 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
         "Removed all domains"
       }
     } ~
-    path("domainURL" / Segment / Segment) { (domainName: String, domainURL: String) =>
-      post {
-        urlService.addDomainUrl(domainName, domainURL)
-        complete(s"Added $domainName - $domainURL")
-      }
-    } ~
-    path("domainURL" / Segment) { domainURL =>
-      delete {
-        urlService.removeDomainUrl(domainURL)
-        complete(s"Removed $domainURL")
-      }
-    } ~
-    path("simpleURL" / Segment / Segment/ Segment) { (domainName: String, simpleURL: String, name: String) =>
-      post {
-        urlService.addSimpleUrl(name, simpleURL, domainName)
-        complete(s"Added $domainName - $simpleURL - $name")
-      }
-    } ~
-    path("simpleURL" / Segment) { simpleURL =>
-      delete {
-        urlService.removeSimpleUrl(simpleURL)
-        complete(s"Removed $simpleURL")
-      }
-    } ~
-    path("domains") {
-      get {
-        complete(urlService.findDomains(new PageRequest(0, 1000)))
-      }
-    } ~
-      path("domain" / Segment) { address =>
+      path("domainURL" / Segment / Segment) {
+        (domainName: String, domainURL: String) =>
+          post {
+            urlService.addDomainUrl(domainName, domainURL)
+            complete(s"Added $domainName - $domainURL")
+          }
+      } ~
+      path("domainURL" / Segment) {
+        domainURL =>
+          delete {
+            urlService.removeDomainUrl(domainURL)
+            complete(s"Removed $domainURL")
+          }
+      } ~
+      path("simpleURL" / Segment / Segment / Segment) {
+        (domainName: String, simpleURL: String, name: String) =>
+          post {
+            urlService.addSimpleUrl(name, simpleURL, domainName)
+            complete(s"Added $domainName - $simpleURL - $name")
+          }
+      } ~
+      path("simpleURL" / Segment) {
+        simpleURL =>
+          delete {
+            urlService.removeSimpleUrl(simpleURL)
+            complete(s"Removed $simpleURL")
+          }
+      } ~
+      path("domains") {
         get {
-          complete(urlService.findURLs(address))
+          complete(urlService.findDomains(new PageRequest(0, 1000)).getContent)
         }
       } ~
-    path("stop") {
-      complete {
-        in(1.second){ actorSystem.shutdown() }
-        "Shutting down in 1 second..."
+      path("domain" / Segment) {
+        address =>
+          get {
+            complete(urlService.findURLs(address))
+          }
+      } ~
+      //    @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET")
+      path("api") {
+        get {
+          complete {
+            val (resourceListing, apiListings) = swaggerApi(List(typeOf[Neo4JHttpService]), List[Type](typeOf[DictEntry])).buildAll
+            apiListings
+          }
+        }
+      } ~
+      path("stop") {
+        complete {
+          in(1.second) {
+            actorSystem.shutdown()
+          }
+          "Shutting down in 1 second..."
+        }
       }
-    }
   }
 
   def in[U](duration: FiniteDuration)(body: => U): Unit =
     actorSystem.scheduler.scheduleOnce(duration)(body)
-
-
-//  implicit def futureMarshaller[T](implicit m: Marshaller[T], ec: ExecutionContext) =
-//    Marshaller[Future[T]] { (value, ctx) ⇒
-//      value.onComplete {
-//        case Success(v)     ⇒ m(v, ctx)
-//        case Failure(error) ⇒ ctx.handleError(error)
-//      }
-//    }
-implicit val domainUrlPageMarshaller: Marshaller[Page[DomainUrl]] =
-  Marshaller.delegate[Page[DomainUrl], String](ContentTypes.`text/plain`) { domainUrls: Page[DomainUrl] =>
-//    domainUrls.getContent().flatMap(domainUrl => "address : " + domainUrl.getAddress)
-    val x = domainUrls.getContent().flatMap(domainUrl => s"address: " + domainUrl.getAddress + "\n")
-    x.mkString
-  }
-implicit val domainUrlMarshaller: Marshaller[util.Collection[SimpleUrl]] =
-  Marshaller.delegate[util.Collection[SimpleUrl], String](ContentTypes.`application/json`) { urls: util.Collection[SimpleUrl] =>
-//    domainUrls.getContent().flatMap(domainUrl => "address : " + domainUrl.getAddress)
-//    val x = domain.getInternalUrlSet().foldLeft(List())((list: List[String], simpleURL: SimpleUrl) => list::("{\"name\": \"" + simpleURL.getUrl() + "\"}\n"))
-    val x = urls.map("{\"name\": \"" + _.getUrl() + "\"}")
-//    "[" + x.mkString + "]"
-    x.mkString("[\n", ",\n", "\n]")
-  }
 }
+
+@ApiModel(description = "an entry in the dictionary")
+case class DictEntry(
+    val key: String,
+    val value: String,
+    val expire: Option[Long]
+)
+
