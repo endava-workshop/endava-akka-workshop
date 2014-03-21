@@ -45,18 +45,18 @@ public class MasterActor extends BaseActor {
     public void onReceive(Object message) {
         if (message instanceof StartMasterRequest) {
             /* Start the domain master actor */
-            ActorRef domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
+            final ActorRef domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
             domainMasterActor.tell(new RefreshDomainMasterRequest(), getSelf());
 
             LOG.debug("Started Domain Master...");
 
             /* Start the processing actor */
-            ActorRef processingMasterActor = getContext().actorOf(Props.create(ProcessingMasterActor.class), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
+            getContext().actorOf(Props.create(ProcessingMasterActor.class), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
 
             LOG.debug("Started Processing Master...");
 
             /* Start the persistence actor */
-            ActorRef persistenceMasterActor = getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
+            getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
 
             LOG.debug("Started Persistence Master...");
         } else {

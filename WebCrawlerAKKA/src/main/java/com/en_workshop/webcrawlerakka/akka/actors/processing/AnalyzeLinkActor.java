@@ -48,7 +48,7 @@ public class AnalyzeLinkActor extends BaseActor {
 
             Domain newDomain = null;
             if (!linkDomain.equals(sourceUrl)) {
-                newDomain = new Domain(url.getHost(), 20000, 0);
+                newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
                 persistDomain(newDomain);
             }
 

@@ -1,6 +1,8 @@
 package com.en_workshop.webcrawlerakka.entities;
 
+import java.beans.Transient;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -8,7 +10,7 @@ import java.util.List;
  */
 public class Domain {
 
-    public static final List<Domain> DOMAINS = new ArrayList<>();
+    public static final List<Domain> DOMAINS = Collections.synchronizedList(new ArrayList<Domain>());
 
     private final String name;
     private final long coolDownPeriod;

@@ -2,7 +2,6 @@ package com.en_workshop.webcrawlerakka.dao;
 
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
-import com.en_workshop.webcrawlerakka.entities.LinkCloner;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -17,7 +16,7 @@ public class LinkDao {
      * Add a {@link com.en_workshop.webcrawlerakka.entities.Link} to the urls list
      *
      * @param domain The url domain
-     * @param url       The url
+     * @param url    The url
      * @return The {@link com.en_workshop.webcrawlerakka.entities.Link} added or {@code null}
      */
     public static Link add(final Domain domain, final String url) {
@@ -63,24 +62,27 @@ public class LinkDao {
     }
 
     /**
-     * Update a {@link com.en_workshop.webcrawlerakka.entities.Link} with a new status
+     * Update or add a {@link com.en_workshop.webcrawlerakka.entities.Link}
      *
-     * @param oldLink The original {@link com.en_workshop.webcrawlerakka.entities.Link}
-     * @param newStatus The new status
-     * @return The new {@link com.en_workshop.webcrawlerakka.entities.Link} or {@code null}
+     * @param newLink The new {@link com.en_workshop.webcrawlerakka.entities.Link} to persist
      */
-    public static Link update(final Link oldLink, final LinkStatus newStatus) {
+    public static void update(final Link newLink) {
         /* Validation */
-        if (null == oldLink) {
+        if (null == newLink) {
             LOG.error("Cannot update a null Link");
-            return null;
+            return;
         }
 
-        Link newLink = new LinkCloner(oldLink).withStatus(newStatus).build();
+        /* Remove the old link */
+        for (int i = 0; i < Link.LINKS.size(); i++) {
+            final Link crtLink = Link.LINKS.get(i);
+            if (crtLink.getUrl().equals(newLink.getUrl())) {
+                Link.LINKS.remove(i);
+                i--;
+            }
+        }
 
-        Link.LINKS.remove(oldLink);
+        /* Add the new link */
         Link.LINKS.add(newLink);
-
-        return newLink;
     }
 }

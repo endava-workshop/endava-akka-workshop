@@ -4,11 +4,11 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
-import org.apache.log4j.Logger;
+import com.en_workshop.webcrawlerakka.dao.LinkDao;
 
 /**
  * Actor that will persist the links.
- *
+ * <p/>
  * Created by roxana on 3/13/14.
  */
 public class PersistLinkActor extends BaseActor {
@@ -25,6 +25,8 @@ public class PersistLinkActor extends BaseActor {
             PersistLinkRequest persistLinkRequest = (PersistLinkRequest) message;
             LOG.info("Received link to persist: " + persistLinkRequest.getLink().getUrl());
 
+            // TODO Remove after the persistence infrastructure is up and running
+            LinkDao.update(persistLinkRequest.getLink());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

@@ -58,7 +58,20 @@ public class WebContentTools {
             }
 
             /* Host */
-            linkBuilder.append(url.getHost());
+            String host = url.getHost();
+            if (null != host) {
+                int dotsCount = 0;
+                for (int i = 0; i < host.length(); i++) {
+                    if (host.charAt(i) == '.') {
+                        dotsCount++;
+                    }
+                }
+
+                if (dotsCount == 1 && !host.startsWith("www.")) {
+                    host = "www." + host;
+                }
+            }
+            linkBuilder.append(host);
 
             /* Port */
             linkBuilder.append(processURLPort(url.getProtocol(), url.getPort()));

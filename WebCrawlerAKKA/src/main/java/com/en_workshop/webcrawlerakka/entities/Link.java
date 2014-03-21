@@ -3,6 +3,7 @@ package com.en_workshop.webcrawlerakka.entities;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public class Link {
 
-    public static final List<Link> LINKS = new ArrayList<>();
+    public static final List<Link> LINKS = Collections.synchronizedList(new ArrayList<Link>());
 
     private final String domain;
     private final String url;

@@ -80,8 +80,9 @@ public class DomainActor extends BaseActor {
             LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
 
             /* Send a "download URL" request */
-            findActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + response.getNextLinkRequest().getDomain().getName() +
-                    "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME + response.getNextLinkRequest().getDomain().getName(), new OnSuccess<ActorRef>() {
+            findActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
+                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
+                    getActorName(response.getNextLinkRequest().getDomain().getName()), new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
@@ -90,7 +91,7 @@ public class DomainActor extends BaseActor {
                         @Override
                         public void onFailure(Throwable throwable) throws Throwable {
                             ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
-                                    response.getNextLinkRequest().getDomain().getName().replace('.', '_').replace(':', '_').replace('/', '_'));
+                                    getActorName(response.getNextLinkRequest().getDomain().getName()));
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
                         }
                     }

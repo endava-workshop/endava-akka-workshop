@@ -7,8 +7,9 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.dao.LinkDao;
+import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
 import org.apache.log4j.Logger;
@@ -88,8 +89,20 @@ public class DownloadUrlActor extends BaseActor {
      */
     private void finishWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
         /* Persist the new link status */
-        // TODO Use the persistence master
-        LinkDao.update(request.getLink(), urlStatus);
+        findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                    @Override
+                    public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
+                        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getUrl(), urlStatus);
+
+                        persistenceMasterActor.tell(new PersistLinkRequest(newLink), getSelf());
+                    }
+                }, new OnFailure() {
+                    @Override
+                    public void onFailure(Throwable throwable) throws Throwable {
+                        LOG.error("Cannot find Persistence Master");
+                    }
+                }
+        );
 
         /* Report back to the domain actor */
         DownloadUrlResponse response = new DownloadUrlResponse(request);

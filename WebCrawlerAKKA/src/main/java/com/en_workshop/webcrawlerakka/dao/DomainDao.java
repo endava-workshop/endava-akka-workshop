@@ -1,7 +1,6 @@
 package com.en_workshop.webcrawlerakka.dao;
 
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import com.en_workshop.webcrawlerakka.entities.DomainCloner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -67,24 +66,27 @@ public class DomainDao {
     }
 
     /**
-     * Update a {@link com.en_workshop.webcrawlerakka.entities.Domain} with a new crawled time
+     * Update or add a {@link com.en_workshop.webcrawlerakka.entities.Domain}
      *
-     * @param oldDomain The original {@link com.en_workshop.webcrawlerakka.entities.Domain}
-     * @param crawledAt    The new "crawled at" time
-     * @return The new {@link com.en_workshop.webcrawlerakka.entities.Domain} or {@code null}
+     * @param newDomain The new {@link com.en_workshop.webcrawlerakka.entities.Domain} to persist
      */
-    public static Domain update(final Domain oldDomain, final long crawledAt) {
+    public static void update(final Domain newDomain) {
         /* Validation */
-        if (null == oldDomain) {
+        if (null == newDomain) {
             LOG.error("Cannot update a null Domain");
-            return null;
+            return;
         }
 
-        Domain newDomain = new DomainCloner(oldDomain).withCrawledAt(crawledAt).build();
+        /* Remove the old domain */
+        for (int i = 0; i < Domain.DOMAINS.size(); i++) {
+            final Domain crtDomain = Domain.DOMAINS.get(i);
+            if (crtDomain.getName().equals(newDomain.getName())) {
+                Domain.DOMAINS.remove(i);
+                i--;
+            }
+        }
 
-        Domain.DOMAINS.remove(oldDomain);
+        /* Add a new domain */
         Domain.DOMAINS.add(newDomain);
-
-        return newDomain;
     }
 }

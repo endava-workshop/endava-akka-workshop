@@ -33,4 +33,14 @@ public abstract class BaseActor extends UntypedActor {
         actorRef.onSuccess(onSuccess, getContext().dispatcher());
         actorRef.onFailure(onFailure, getContext().dispatcher());
     }
+
+    /**
+     * Process the string and convert it to a valid actor name
+     *
+     * @param name The original name
+     * @return The valid actor name
+     */
+    protected String getActorName(String name) {
+        return name.replace('.', '_');
+    }
 }
