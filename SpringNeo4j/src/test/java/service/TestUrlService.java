@@ -1,5 +1,7 @@
 package service;
 
+import entity.DomainUrl;
+import entity.SimpleUrl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,11 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-
 import repo.DomainUrlRepo;
 import repo.SimpleUrlRepo;
-import entity.DomainUrl;
-import entity.SimpleUrl;
+
+import java.util.Collection;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"/spring-appContext.xml"})
@@ -87,6 +88,19 @@ public class TestUrlService {
 		urlService.removeDomainUrl(domain_1.getName());
 		
 		Assert.assertEquals(1, domainRepo.count());
+	}
+
+	@Test
+	public void testDomainFind(){
+		urlService.addDomainUrl("Domain_8", "www.domain_8.com");
+		urlService.addSimpleUrl("link_1", "/into.txt", "Domain_8");
+
+		Collection<SimpleUrl> urls = urlService.findURLs("Domain_8");
+
+		Assert.assertNotNull(urls);
+		Assert.assertNotNull(urls);
+		Assert.assertTrue(urls.iterator().hasNext());
+		Assert.assertEquals("/into.txt", urls.iterator().next().getUrl());
 	}
 
 //	@After

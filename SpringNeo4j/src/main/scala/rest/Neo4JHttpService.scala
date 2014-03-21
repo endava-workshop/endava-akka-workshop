@@ -4,7 +4,8 @@ import spray.routing._
 import scala.concurrent.duration.Duration
 import service.UrlService
 import org.springframework.data.domain.{PageRequest, Page}
-import entity.DomainUrl
+import entity.{SimpleUrl, DomainUrl}
+import java.util
 
 
 // magic import
@@ -62,6 +63,11 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
         complete(urlService.findDomains(new PageRequest(0, 1000)))
       }
     } ~
+      path("domain" / Segment) { address =>
+        get {
+          complete(urlService.findURLs(address))
+        }
+      } ~
     path("stop") {
       complete {
         in(1.second){ actorSystem.shutdown() }
@@ -81,10 +87,18 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
 //        case Failure(error) ⇒ ctx.handleError(error)
 //      }
 //    }
-implicit val domainUrlMarshaller: Marshaller[Page[DomainUrl]] =
+implicit val domainUrlPageMarshaller: Marshaller[Page[DomainUrl]] =
   Marshaller.delegate[Page[DomainUrl], String](ContentTypes.`text/plain`) { domainUrls: Page[DomainUrl] =>
 //    domainUrls.getContent().flatMap(domainUrl => "address : " + domainUrl.getAddress)
     val x = domainUrls.getContent().flatMap(domainUrl => s"address: " + domainUrl.getAddress + "\n")
     x.mkString
+  }
+implicit val domainUrlMarshaller: Marshaller[util.Collection[SimpleUrl]] =
+  Marshaller.delegate[util.Collection[SimpleUrl], String](ContentTypes.`application/json`) { urls: util.Collection[SimpleUrl] =>
+//    domainUrls.getContent().flatMap(domainUrl => "address : " + domainUrl.getAddress)
+//    val x = domain.getInternalUrlSet().foldLeft(List())((list: List[String], simpleURL: SimpleUrl) => list::("{\"name\": \"" + simpleURL.getUrl() + "\"}\n"))
+    val x = urls.map("{\"name\": \"" + _.getUrl() + "\"}")
+//    "[" + x.mkString + "]"
+    x.mkString("[\n", ",\n", "\n]")
   }
 }

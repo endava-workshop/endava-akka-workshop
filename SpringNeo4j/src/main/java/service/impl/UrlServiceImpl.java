@@ -1,19 +1,20 @@
 package service.impl;
 
+import entity.DomainUrl;
+import entity.SimpleUrl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.neo4j.conversion.EndResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import repo.DomainUrlRepo;
 import repo.SimpleUrlRepo;
 import service.UrlService;
-import entity.DomainUrl;
-import entity.SimpleUrl;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class UrlServiceImpl implements UrlService {
@@ -52,6 +53,23 @@ public class UrlServiceImpl implements UrlService {
         Page<DomainUrl> domains = domainRepo.findAll(pageable);
         return domains;
     }
+
+	@Transactional
+	@Override
+	public Collection<SimpleUrl> findURLs(String address) {
+		EndResult<DomainUrl> addresses = domainRepo.findAllByPropertyValue("name", address);
+		if (addresses != null) {
+			DomainUrl domainUrl = addresses.singleOrNull();
+			Set<SimpleUrl> urls = new HashSet<>();
+			if (domainUrl != null) {
+				for (SimpleUrl simpleUrl : domainUrl.getInternalUrlSet()) {
+					urls.add(simpleUrlRepo.findOne(simpleUrl.getId())); // TODO why do we need to re-hidrate?
+				}
+			}
+			return urls;
+		}
+		return null;
+	}
 
     @Transactional
 	public void removeSimpleUrl(String name) {

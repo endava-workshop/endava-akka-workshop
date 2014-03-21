@@ -32,6 +32,13 @@
 	<!-- Package w/ automagic repositories -->
 	<neo4j:repositories base-package="repo" />
 
-	<tx:annotation-driven mode="aspectj" transaction-manager="transactionManager" />
+    <bean id="transactionManager"
+          class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager">
+            <bean id="jotm" class="org.springframework.data.neo4j.transaction.JotmFactoryBean"/>
+        </property>
+    </bean>
+
+	<tx:annotation-driven mode="proxy"  transaction-manager="transactionManager" />
 
 </beans>

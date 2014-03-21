@@ -80,6 +80,7 @@ class DemoHttpService extends HttpServiceActor {
               <ul>
                 <li><a href="/seed/">/seed</a></li>
                 <li><a href="/links/">/links</a></li>
+                <li><a href="/stop/">/stop</a></li>
               </ul>
             </body>
           </html>
@@ -88,7 +89,7 @@ class DemoHttpService extends HttpServiceActor {
     } ~
     path("stop") {
       complete {
-        in(1.second){ actorSystem.shutdown() }
+        in(1.second){ actorSystem shutdown }
         "Shutting down in 1 second..."
       }
     }
