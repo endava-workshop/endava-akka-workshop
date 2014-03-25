@@ -62,9 +62,7 @@ public class UrlServiceImpl implements UrlService {
 			DomainUrl domainUrl = addresses.singleOrNull();
 			Set<SimpleUrl> urls = new HashSet<>();
 			if (domainUrl != null) {
-				for (SimpleUrl simpleUrl : domainUrl.getInternalUrlSet()) {
-					urls.add(simpleUrlRepo.findOne(simpleUrl.getId())); // TODO why do we need to re-hidrate?
-				}
+				return domainUrl.getInternalUrlSet();
 			}
 			return urls;
 		}

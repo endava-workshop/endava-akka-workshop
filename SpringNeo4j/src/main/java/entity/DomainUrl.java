@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -24,6 +25,7 @@ public class DomainUrl {
 	String address;
 
 	@RelatedTo(type = CONTAINS, direction = Direction.OUTGOING)
+	@Fetch
 	Set<SimpleUrl> internalUrlSet;
 
 	public DomainUrl() {

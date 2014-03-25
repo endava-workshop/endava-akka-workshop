@@ -15,6 +15,7 @@
         <module>rest-example</module>
         <module>ZipBreakerAkka</module>
         <module>search</module>
+        <module>SpringNeo4j</module>
     </modules>
 
     <properties>

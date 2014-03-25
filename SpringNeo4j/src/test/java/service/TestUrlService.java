@@ -1,7 +1,8 @@
 package service;
 
-import entity.DomainUrl;
-import entity.SimpleUrl;
+import java.util.Collection;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+
 import repo.DomainUrlRepo;
 import repo.SimpleUrlRepo;
-
-import java.util.Collection;
+import entity.DomainUrl;
+import entity.SimpleUrl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"/spring-appContext.xml"})
@@ -103,10 +105,10 @@ public class TestUrlService {
 		Assert.assertEquals("/into.txt", urls.iterator().next().getUrl());
 	}
 
-//	@After
-//	public void tearDown() {
-//		urlService.removeAllDomains();
-//	}
+	@After
+	public void tearDown() {
+		urlService.removeAllDomains();
+	}
 	
 	private void populateDatabase(){
 		DomainUrl wikiDomain = new DomainUrl("wikipedia", "www.wikipedia.org");

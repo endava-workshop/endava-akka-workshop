@@ -22,7 +22,7 @@
     <bean name="graphDatabaseFactory" class="org.neo4j.graphdb.factory.GraphDatabaseFactory"/>
 
 	<bean id="graphDatabaseService" factory-bean="graphDatabaseFactory" factory-method="newEmbeddedDatabase">
-        <constructor-arg value="D:/Database/Neo4jDb/embedded/db"/>
+        <constructor-arg value="embedded/db"/>
     </bean>
 
 
@@ -31,13 +31,6 @@
 
 	<!-- Package w/ automagic repositories -->
 	<neo4j:repositories base-package="repo" />
-
-    <bean id="transactionManager"
-          class="org.springframework.transaction.jta.JtaTransactionManager">
-        <property name="transactionManager">
-            <bean id="jotm" class="org.springframework.data.neo4j.transaction.JotmFactoryBean"/>
-        </property>
-    </bean>
 
 	<tx:annotation-driven mode="proxy"  transaction-manager="transactionManager" />
 

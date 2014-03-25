@@ -77,11 +77,6 @@
             <artifactId>spray-httpx</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>io.spray</groupId>-->
-            <!--<artifactId>spray-json_2.10</artifactId>-->
-            <!--<version>1.2.5</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>io.spray</groupId>
@@ -89,11 +84,6 @@
             <version>1.2.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>jotm</groupId>
-            <artifactId>jotm</artifactId>
-            <version>2.0.10</version>
-        </dependency>
         <dependency>
             <groupId>com.gettyimages</groupId>
             <artifactId>spray-swagger_2.10</artifactId>
