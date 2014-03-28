@@ -1,5 +1,7 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.ws.pass.breaker.util.PropertyUtil;
+
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
@@ -21,7 +23,7 @@ import akka.ws.pass.breaker.messages.StartNewProcessMessage;
  */
 public class ZipPasswordBreakWorker extends UntypedActor {
 	private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-	private static final int PASSWORD_CHECKERS_NUM = 4;
+	private static final String WORKER_NUM_KEY = "pass.checker.actor.number";
 	
 	ActorRef workDispatcher;
 	ActorRef zipFileDownloader;
@@ -58,7 +60,9 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 	private void initChildren() {
 		zipFileDownloader = this.getContext().actorOf(Props.create(ZipFileDownloader.class), "zipFileDownloader");
 		
-		zipFileDownloader = this.getContext().actorOf(Props.create(ZipFileDownloader.class).withRouter(new RoundRobinRouter(PASSWORD_CHECKERS_NUM)), "zipFileDownloader");
+		final int passCheckersNumber = Integer.parseInt(PropertyUtil.getRemoteProperty(WORKER_NUM_KEY));
+		
+		zipFileDownloader = this.getContext().actorOf(Props.create(ZipFileDownloader.class).withRouter(new RoundRobinRouter(passCheckersNumber)), "zipFileDownloader");
 		
 	}
 
