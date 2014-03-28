@@ -17,7 +17,7 @@ import akka.actor.Props;
 public class LocalApplication {
 
 	public static void main(String[] args) throws Exception {
-		ActorSystem actorSystem = ActorSystem.create("LocalZipBreakerActorSystem");
+		ActorSystem actorSystem = ActorSystem.create("LocalZipBreakerActorSystem"); //TODO externalize name in the properties
 
 		final int NUMBER_OF_WORKERS = 3;
 		final String zipFilePath = "target/classes/experiment.zip";

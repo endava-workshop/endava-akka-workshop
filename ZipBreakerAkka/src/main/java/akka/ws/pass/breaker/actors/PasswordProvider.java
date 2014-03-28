@@ -1,6 +1,7 @@
 package akka.ws.pass.breaker.actors;
 
 import akka.actor.UntypedActor;
+import akka.ws.pass.breaker.messages.ContinuePasswordFlowMessage;
 import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.PasswordChunkMessage;
 import akka.ws.pass.breaker.messages.RequestPasswordFlowMessage;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class PasswordProvider extends UntypedActor {
 
 	final static int PASSWORD_CHUNK_SIZE = 100;
-	final static String PASSWORD_FILE_NAME = "common passwords.txt";
+	final static String PASSWORD_FILE_NAME = "common_passwords.txt";
 
 	private Map<Long, Cursor> cursors = new HashMap<>();
 
@@ -32,17 +33,30 @@ public class PasswordProvider extends UntypedActor {
 
 			RequestPasswordFlowMessage inMessage = (RequestPasswordFlowMessage) message;
 			final long processId = inMessage.getProcessId();
+			System.out.println("******* PasswordProvider received RequestPasswordFlowMessage for processId: " + processId);
 			initCursor(processId);
 			
-			while(processNotEnded(processId) && morePasswordsAvailable(processId)) {
+			ContinuePasswordFlowMessage outMessage = new ContinuePasswordFlowMessage(processId);
+			getSelf().tell(outMessage, getSender());
+
+		} else if(message instanceof ContinuePasswordFlowMessage) {
+			
+			ContinuePasswordFlowMessage inMessage = (ContinuePasswordFlowMessage) message;
+			final long processId = inMessage.getProcessId();
+			System.out.println("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
+			if(processNotEnded(processId) && morePasswordsAvailable(processId)) {
 				Collection<String> passwordChunk = nextPasswordChunk(processId);
 				PasswordChunkMessage outMessage = new PasswordChunkMessage(processId, passwordChunk);
 				getSender().tell(outMessage, getSelf());
+				
+				getSelf().tell(inMessage, getSender());
 			}
-
 		} else if(message instanceof EndProcessMessage) {
+			
 			EndProcessMessage inMessage = (EndProcessMessage) message;
-			cursors.remove(((EndProcessMessage) message).getProcessId());
+			final long processId = inMessage.getProcessId();
+			System.out.println("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
+			cursors.remove(processId);
 		}
 	}
 
@@ -56,9 +70,9 @@ public class PasswordProvider extends UntypedActor {
 				final long fileLength = raf.length();
 				raf.seek(cursor.lastFilePointer);
 				int positionInChunk = 0;
-				while(raf.getFilePointer() < fileLength && ++positionInChunk < PASSWORD_CHUNK_SIZE) {
+				do {
 					result.add(raf.readLine());
-				}
+				} while(raf.getFilePointer() < fileLength && ++positionInChunk < PASSWORD_CHUNK_SIZE);
 				cursor.lastFilePointer = raf.getFilePointer();
 				if(result.size() < PASSWORD_CHUNK_SIZE || cursor.lastFilePointer == fileLength) {
 					//TODO switch to feeding from external sources

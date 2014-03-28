@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  * The RoutingActor class represents the actor that acts like a router for the worker remote machines. This actor
  * manages the worker actors distribution on remote machines and the routing policy.
  * 
+ * @deprecated This actor is kept here temporary, for backup. It is not used anymore.
+ * 
  * @author Daniel DOBOGA
  */
 public class RoutingActor extends UntypedActor {

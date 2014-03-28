@@ -74,6 +74,7 @@ public class WorkDispatcher extends UntypedActor {
 	}
 	
 	private void initChildren() {
+		//TODO RemoteAddressProvider should be moved in the utilities package and representation changed in the diagram, as it's not an actor anymore
 		List<RemoteAddress> availableRemoteAddresses = RemoteAddressProvider.getAvailableRemoteAddresses();
 		List<Address> remoteAddresses = new ArrayList<>(availableRemoteAddresses.size());
 		
