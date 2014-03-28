@@ -1,24 +1,24 @@
 package akka.ws.pass.breaker.messages;
 
-import java.io.Serializable;
+/**
+ * 
+ * The FoundPasswordMessage class
+ * 
+ * @author ddoboga
+ *
+ */
+public class FoundPasswordMessage extends BaseProcessMessage {
 
-public class FoundPasswordMessage implements Serializable {
-
-	private long processId;
+	private static final long serialVersionUID = -4011471800774897618L;
 
 	private String successfullPassword;
-
-	public long getProcessId() {
-		return processId;
-	}
 
 	public String getSuccessfullPassword() {
 		return successfullPassword;
 	}
 
 	public FoundPasswordMessage(long processId, String successfullPassword) {
-		super();
-		this.processId = processId;
+		super(processId);
 		this.successfullPassword = successfullPassword;
 	}
 }

@@ -1,7 +1,8 @@
 package akka.ws.pass.breaker.messages;
 
-import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * The FeedProcessMessage class represents a message to be sent by the ZipPasswordBreaker to the workers, constantly
@@ -9,24 +10,19 @@ import java.util.List;
  * 
  * @author ddoboga
  */
-public class FeedProcessMessage implements Serializable {
+public class FeedProcessMessage extends BaseProcessMessage {
 
-	private List<String> passwords;
+	private static final long serialVersionUID = 6503801934483367773L;
 
-	private long idProcess;
+	private Collection<String> passwords;
 
-	public FeedProcessMessage(List<String> passwords, long idProcess) {
-		super();
-		this.passwords = passwords;
-		this.idProcess = idProcess;
+	public FeedProcessMessage(Collection<String> passwords, long idProcess) {
+		super(idProcess);
+		this.passwords = ImmutableSet.copyOf(passwords);
 	}
 
-	public List<String> getPasswords() {
+	public Collection<String> getPasswords() {
 		return passwords;
-	}
-
-	public long getIdProcess() {
-		return idProcess;
 	}
 
 }

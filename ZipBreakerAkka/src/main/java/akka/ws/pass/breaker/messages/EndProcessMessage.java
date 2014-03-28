@@ -6,17 +6,12 @@ package akka.ws.pass.breaker.messages;
  * 
  * @author Daniel DOBOGA
  */
-public class EndProcessMessage {
+public class EndProcessMessage extends BaseProcessMessage {
 
-	private long idProcess;
+	private static final long serialVersionUID = -4543948108784406908L;
 
 	public EndProcessMessage(long idProcess) {
-		super();
-		this.idProcess = idProcess;
-	}
-
-	public long getIdProcess() {
-		return idProcess;
+		super(idProcess);
 	}
 
 }

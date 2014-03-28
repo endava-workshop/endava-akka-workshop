@@ -1,11 +1,5 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.ws.pass.breaker.messages.BreakZipMessage;
-import akka.ws.pass.breaker.messages.EndProcessMessage;
-import akka.ws.pass.breaker.messages.FeedProcessMessage;
-import akka.ws.pass.breaker.messages.FoundPasswordMessage;
-import akka.ws.pass.breaker.messages.NewProcessMessage;
-
 import akka.actor.ActorRef;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
@@ -13,14 +7,25 @@ import akka.actor.SupervisorStrategy;
 import akka.actor.SupervisorStrategy.Directive;
 import akka.actor.UntypedActor;
 import akka.japi.Function;
-import net.lingala.zip4j.core.ZipFile;
+import akka.ws.pass.breaker.messages.BreakArchiveMessage;
+import akka.ws.pass.breaker.messages.EndProcessMessage;
+import akka.ws.pass.breaker.messages.FeedProcessMessage;
+import akka.ws.pass.breaker.messages.FoundPasswordMessage;
+import akka.ws.pass.breaker.messages.NewProcessMessage;
+import akka.ws.pass.breaker.messages.PasswordChunkMessage;
+import akka.ws.pass.breaker.messages.RequestPasswordFlowMessage;
+import akka.ws.pass.breaker.messages.StartFeedingProcessMessage;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.io.Files;
 
 /**
  * 
@@ -31,76 +36,79 @@ import java.util.concurrent.TimeUnit;
  */
 public class ZipPasswordBreaker extends UntypedActor {
 
-	final static int PASSWORD_CHUNK_SIZE = 30;
+	final static String THIS_HOST = "192.168.166.100"; //TODO externalize in properties
+	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
+	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
 
 	private ActorRef routingActor;
+	private ActorRef passwordProvider;
 
 	private SupervisorStrategy strategy;
+	
+	private Set<Long> runningProcessesIds = new HashSet<>();
+	
+	private Random random;
 
 	public void onReceive(Object message) throws Exception {
 
-		if (message instanceof BreakZipMessage) {
+		if (message instanceof BreakArchiveMessage) {
 			System.out.println("Master received start message");
-			initialiseChildren((BreakZipMessage) message);
+			initialiseChildren((BreakArchiveMessage) message);
 
-			BreakZipMessage inMessage = (BreakZipMessage) message;
+			BreakArchiveMessage inMessage = (BreakArchiveMessage) message;
 			final String zipFilePath = inMessage.getZipFilePath();
 			if(! new File(zipFilePath).exists()) {
 				throw new IllegalArgumentException("The path does not denote a valid existing zip file.");
 			}
 			
-			ZipFile zipFile = new ZipFile(inMessage.getZipFilePath());
-			long idProcess = zipFile.hashCode();
-			// TODO Research the possibilities offered by AKKA I/O for asynchronous file transfer between actors
-			// final ActorRef tcp = Tcp.get(getContext().system()).manager();
-			routingActor.tell(new NewProcessMessage(idProcess, zipFile), getSelf());
+			Long processId = generateNewProcessId();
+			URL fileURL = makeFileAvailable(new File(inMessage.getZipFilePath()));
 
-			boolean passwordNotFound = true;
-			do {
-				List<String> passwords = generateNewChunkOfPasswords(PASSWORD_CHUNK_SIZE);
-				FeedProcessMessage outMessage = new FeedProcessMessage(passwords, idProcess);
-				routingActor.tell(outMessage, getSelf());
-			}
-			while (passwordNotFound);
+			routingActor.tell(new NewProcessMessage(processId, fileURL), getSelf());
+			
 
+		} else if(message instanceof StartFeedingProcessMessage) {
+			
+			StartFeedingProcessMessage inMessage = (StartFeedingProcessMessage) message;
+			passwordProvider.tell(new RequestPasswordFlowMessage(inMessage.getProcessId()), getSelf());
+		} else if(message instanceof PasswordChunkMessage) {
+			
+			PasswordChunkMessage inMessage = (PasswordChunkMessage) message;
+			FeedProcessMessage outMessage = new FeedProcessMessage(inMessage.getPasswordChunk(), inMessage.getProcessId());
+			routingActor.tell(outMessage, getSelf());
 		} else if(message instanceof FoundPasswordMessage) {
+			
 			FoundPasswordMessage inMessage = (FoundPasswordMessage) message;
-			routingActor.tell(new EndProcessMessage(inMessage.getProcessId()), getSelf());
+			EndProcessMessage outMessage = new EndProcessMessage(inMessage.getProcessId());
+			routingActor.tell(outMessage, getSelf());
+			passwordProvider.tell(outMessage, getSelf());
 		}
 	}
 
-	private void initialiseChildren(BreakZipMessage message) {
+	private void initialiseChildren(BreakArchiveMessage message) {
 		if(routingActor == null) {
-			routingActor = this.getContext().actorOf(Props.create(RoutingActor.class), "routingActor");
+			routingActor = getContext().actorOf(Props.create(RoutingActor.class), "routingActor");
+		}
+		if(passwordProvider == null) {
+			passwordProvider = getContext().actorOf(Props.create(PasswordProvider.class), "passwordProvider");
 		}
 	}
-
-	/**
-	 * FIXME This method should feed from an external password database somehow. At this moment, it simply generates
-	 * random printable character sequences with a maximum length of 50.
-	 * 
-	 * @param chunkSize
-	 * @return List<String> containing a number of random Strings equal to chunkSize
-	 */
-	private static List<String> generateNewChunkOfPasswords(int chunkSize) {
-		// FIXME 
-		Random random = new Random();
-		byte[] b = new byte[random.nextInt(50)];
-		List<String> list = new ArrayList<String>(chunkSize);
-		final String acceptedPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_- ";
-		final int maxPasswordLength = 50;
-
-		for (int i = 0; i < chunkSize; i++) {
-			int passwordLength = random.nextInt(maxPasswordLength);
-			StringBuilder password = new StringBuilder(passwordLength);
-			for (int j = 0; j < passwordLength; j++) {
-				int charIndex = random.nextInt(acceptedPasswordChars.length());
-				password.append(acceptedPasswordChars.charAt(charIndex));
-			}
-			list.add(password.toString());
+	
+	private URL makeFileAvailable(File source) throws IOException {
+		final String fileName = source.getName();
+		File destination = new File(PATH_TO_SHARED_FOLDER + "/" + fileName);
+		Files.move(source, destination);
+		URL url = new URL(SHARED_PATH_TO_SHARED_FOLDER + "/" + fileName);
+		return url;
+	}
+	
+	private Long generateNewProcessId() {
+		Long generated = random.nextLong();
+		while(runningProcessesIds.contains(generated)) {
+			generated = random.nextLong();
 		}
-		list.add("pass");
-		return list;
+		runningProcessesIds.add(generated);
+		return generated;
 	}
 
 	@Override

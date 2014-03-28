@@ -1,9 +1,9 @@
 package akka.ws.pass.breaker.messages;
 
-import net.lingala.zip4j.core.ZipFile;
+import akka.actor.ActorRef;
 
 import java.io.Serializable;
-import java.util.List;
+import java.net.URL;
 
 /**
  * 
@@ -14,22 +14,24 @@ import java.util.List;
  */
 public class NewProcessMessage implements Serializable {
 
+	private static final long serialVersionUID = -3299471703222360216L;
+
 	private long idProcess;
 
-	private ZipFile zipFile;
+	private URL fileURL;
 
-	public NewProcessMessage(long idProcess, ZipFile zipFile) {
+	public NewProcessMessage(long idProcess, URL fileUrl) {
 		super();
 		this.idProcess = idProcess;
-		this.zipFile = zipFile;
+		this.fileURL = fileUrl;
 	}
 
 	public long getIdProcess() {
 		return idProcess;
 	}
 
-	public ZipFile getZipFile() {
-		return zipFile;
+	public URL getFileURL() {
+		return fileURL;
 	}
 
 }
