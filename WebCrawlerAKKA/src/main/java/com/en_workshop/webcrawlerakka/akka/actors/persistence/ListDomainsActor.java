@@ -1,6 +1,7 @@
 package com.en_workshop.webcrawlerakka.akka.actors.persistence;
 
 import akka.actor.UntypedActor;
+import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author Radu Ciumag
  */
-public class ListDomainsActor extends UntypedActor {
+public class ListDomainsActor extends BaseActor {
     private static final Logger LOG = Logger.getLogger(ListDomainsActor.class);
 
     /**

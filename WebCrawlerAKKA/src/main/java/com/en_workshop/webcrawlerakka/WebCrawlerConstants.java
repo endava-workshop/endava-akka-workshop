@@ -26,6 +26,6 @@ public class WebCrawlerConstants {
 
     /* Other */
     public static final long DOMAINS_REFRESH_PERIOD = 5 * 60 * 1000; // 5 minutes
-    public static final long DOMAIN_DEFAULT_COOLDOWN = 30 * 1000; // 30 seconds
+    public static final long DOMAIN_DEFAULT_COOLDOWN = 60 * 1000; // 60 seconds
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
 }
