@@ -14,7 +14,7 @@ public class BreakArchiveMessage implements Serializable {
 	private static final long serialVersionUID = -2987201959668563366L;
 	private String zipFilePath;
 
-	public BreakArchiveMessage(String zipFilePath, int numberOfWorkers) {
+	public BreakArchiveMessage(String zipFilePath) {
 		super();
 		this.zipFilePath = zipFilePath;
 	}

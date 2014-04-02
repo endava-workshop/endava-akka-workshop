@@ -17,6 +17,7 @@ public class StartNewProcessMessage extends BaseProcessMessage {
 
 	public StartNewProcessMessage(long processId, File zipFile) {
 		super(processId);
+		this.zipFile = zipFile;
 	}
 
 	public File getZipFile() {

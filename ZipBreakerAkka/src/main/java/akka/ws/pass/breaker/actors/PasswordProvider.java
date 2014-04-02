@@ -1,5 +1,11 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+
+import akka.ws.pass.breaker.messages.RequestTotalSpentTimeMessage;
+import akka.ws.pass.breaker.messages.TotalSpentTimeMessage;
+
 import akka.actor.UntypedActor;
 import akka.ws.pass.breaker.messages.ContinuePasswordFlowMessage;
 import akka.ws.pass.breaker.messages.EndProcessMessage;
@@ -8,6 +14,9 @@ import akka.ws.pass.breaker.messages.RequestPasswordFlowMessage;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,18 +31,25 @@ import java.util.Map;
  */
 public class PasswordProvider extends UntypedActor {
 
-	final static int PASSWORD_CHUNK_SIZE = 100;
+	final static int PASSWORD_CHUNK_SIZE = 1000;
 	final static String PASSWORD_FILE_NAME = "common_passwords.txt";
 
+	private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+	
 	private Map<Long, Cursor> cursors = new HashMap<>();
+	
+	private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+	
+	private BigInteger totalSpentCPUTime = BigInteger.ZERO;
 
 	public void onReceive(Object message) throws Exception {
+		final long startTime = threadMXBean.getCurrentThreadCpuTime();
 
 		if (message instanceof RequestPasswordFlowMessage) {
 
 			RequestPasswordFlowMessage inMessage = (RequestPasswordFlowMessage) message;
 			final long processId = inMessage.getProcessId();
-			System.out.println("******* PasswordProvider received RequestPasswordFlowMessage for processId: " + processId);
+			log.debug("******* PasswordProvider received RequestPasswordFlowMessage for processId: " + processId);
 			initCursor(processId);
 			
 			ContinuePasswordFlowMessage outMessage = new ContinuePasswordFlowMessage(processId);
@@ -43,7 +59,7 @@ public class PasswordProvider extends UntypedActor {
 			
 			ContinuePasswordFlowMessage inMessage = (ContinuePasswordFlowMessage) message;
 			final long processId = inMessage.getProcessId();
-			System.out.println("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
+			log.debug("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
 			if(processNotEnded(processId) && morePasswordsAvailable(processId)) {
 				Collection<String> passwordChunk = nextPasswordChunk(processId);
 				PasswordChunkMessage outMessage = new PasswordChunkMessage(processId, passwordChunk);
@@ -55,9 +71,16 @@ public class PasswordProvider extends UntypedActor {
 			
 			EndProcessMessage inMessage = (EndProcessMessage) message;
 			final long processId = inMessage.getProcessId();
-			System.out.println("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
+			log.debug("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
 			cursors.remove(processId);
+		} else if (message instanceof RequestTotalSpentTimeMessage) {
+			TotalSpentTimeMessage outMessage = new TotalSpentTimeMessage(totalSpentCPUTime);
+			getSender().tell(outMessage, getSelf());
+			
 		}
+		
+		final long endTime = threadMXBean.getCurrentThreadCpuTime();
+		totalSpentCPUTime = totalSpentCPUTime.add(BigInteger.valueOf(endTime - startTime));
 	}
 
 	private Collection<String> nextPasswordChunk(Long processId) {

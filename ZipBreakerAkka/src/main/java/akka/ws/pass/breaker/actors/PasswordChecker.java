@@ -6,11 +6,16 @@ import akka.event.LoggingAdapter;
 import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.FeedProcessMessage;
 import akka.ws.pass.breaker.messages.FoundPasswordMessage;
+import akka.ws.pass.breaker.messages.RequestTotalSpentTimeMessage;
 import akka.ws.pass.breaker.messages.StartNewProcessMessage;
+import akka.ws.pass.breaker.messages.TotalSpentTimeMessage;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,9 +30,14 @@ public class PasswordChecker extends UntypedActor {
 	private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 	private static final AtomicSequence sequence = new AtomicSequence();
 	
+	private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+	
+	private BigInteger totalSpentCPUTime = BigInteger.ZERO;
+	
 	private Map<Long, ZipFile> runningProcesses = new HashMap<>();
 
 	public void onReceive(Object message) throws Exception {
+		final long startTime = threadMXBean.getCurrentThreadCpuTime();
 		if(log.isDebugEnabled()) {
 			log.debug("PasswordChecker received " + message.getClass());
 		}
@@ -50,14 +60,20 @@ public class PasswordChecker extends UntypedActor {
 			EndProcessMessage inMessage = (EndProcessMessage) message;
 			runningProcesses.remove(inMessage.getProcessId());
 			
+		} else if (message instanceof RequestTotalSpentTimeMessage) {
+			TotalSpentTimeMessage outMessage = new TotalSpentTimeMessage(totalSpentCPUTime);
+			getSender().tell(outMessage, getSelf());
+			
 		} else {
 			throw new IllegalArgumentException("Unsupported message type: " + message.getClass());
 		}
+		final long endTime = threadMXBean.getCurrentThreadCpuTime();
+		totalSpentCPUTime = totalSpentCPUTime.add(BigInteger.valueOf(endTime - startTime));
 	}
 	
 	private void processOnePassword(final ZipFile zipFile, final String password, final long processId) {
 		if (checkPassword(zipFile, password)) {
-			log.info("PASSWORD BROKEN ******************!\nFound password:" + password);
+			log.info("\nPASSWORD BROKEN ******************!\nFound password:" + password);
 			runningProcesses.remove(processId);
 			FoundPasswordMessage outMessage = new FoundPasswordMessage(processId, password);
 			getSender().tell(outMessage, getSelf());
@@ -68,9 +84,6 @@ public class PasswordChecker extends UntypedActor {
 			}
 		}
 	}
-	
-	
-	
 
 	/**
 	 * {@inheritDoc}

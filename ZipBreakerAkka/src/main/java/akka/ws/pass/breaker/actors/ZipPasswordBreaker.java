@@ -40,20 +40,19 @@ public class ZipPasswordBreaker extends UntypedActor {
 	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
 	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
 
-	private ActorRef routingActor;
-	private ActorRef passwordProvider;
+	ActorRef workDispatcher;
+	ActorRef passwordProvider;
 
 	private SupervisorStrategy strategy;
 	
 	private Set<Long> runningProcessesIds = new HashSet<>();
 	
-	private Random random;
+	private Random random = new Random();
 
 	public void onReceive(Object message) throws Exception {
 
 		if (message instanceof BreakArchiveMessage) {
 			System.out.println("Master received start message");
-			initialiseChildren((BreakArchiveMessage) message);
 
 			BreakArchiveMessage inMessage = (BreakArchiveMessage) message;
 			final String zipFilePath = inMessage.getZipFilePath();
@@ -64,7 +63,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 			Long processId = generateNewProcessId();
 			URL fileURL = makeFileAvailable(new File(inMessage.getZipFilePath()));
 
-			routingActor.tell(new NewProcessMessage(processId, fileURL), getSelf());
+			workDispatcher.tell(new NewProcessMessage(processId, fileURL), getSelf());
 			
 
 		} else if(message instanceof StartFeedingProcessMessage) {
@@ -75,19 +74,24 @@ public class ZipPasswordBreaker extends UntypedActor {
 			
 			PasswordChunkMessage inMessage = (PasswordChunkMessage) message;
 			FeedProcessMessage outMessage = new FeedProcessMessage(inMessage.getPasswordChunk(), inMessage.getProcessId());
-			routingActor.tell(outMessage, getSelf());
+			workDispatcher.tell(outMessage, getSelf());
 		} else if(message instanceof FoundPasswordMessage) {
 			
 			FoundPasswordMessage inMessage = (FoundPasswordMessage) message;
 			EndProcessMessage outMessage = new EndProcessMessage(inMessage.getProcessId());
-			routingActor.tell(outMessage, getSelf());
+			workDispatcher.tell(outMessage, getSelf());
 			passwordProvider.tell(outMessage, getSelf());
 		}
 	}
+	
+	@Override
+	public void preStart() {
+		initialiseChildren();
+	}
 
-	private void initialiseChildren(BreakArchiveMessage message) {
-		if(routingActor == null) {
-			routingActor = getContext().actorOf(Props.create(RoutingActor.class), "routingActor");
+	private void initialiseChildren() {
+		if(workDispatcher == null) {
+			workDispatcher = getContext().actorOf(Props.create(WorkDispatcher.class), "workDispatcher");
 		}
 		if(passwordProvider == null) {
 			passwordProvider = getContext().actorOf(Props.create(PasswordProvider.class), "passwordProvider");

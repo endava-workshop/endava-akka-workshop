@@ -1,12 +1,10 @@
 package akka.ws.pass.breaker;
 
-import akka.ws.pass.breaker.messages.BreakArchiveMessage;
-
-import akka.ws.pass.breaker.actors.ZipPasswordBreaker;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.ws.pass.breaker.actors.ZipPasswordBreaker;
+import akka.ws.pass.breaker.messages.BreakArchiveMessage;
 
 /**
  * Zip password breaker with Akka.
@@ -21,7 +19,7 @@ public class LocalApplication {
 
 		final int NUMBER_OF_WORKERS = 3;
 		final String zipFilePath = "target/classes/experiment.zip";
-		BreakArchiveMessage breakZipMessage = new BreakArchiveMessage(zipFilePath, NUMBER_OF_WORKERS);
+		BreakArchiveMessage breakZipMessage = new BreakArchiveMessage(zipFilePath);
 
 		ActorRef processorActor = actorSystem.actorOf(Props.create(ZipPasswordBreaker.class));
 		processorActor.tell(breakZipMessage, null);
