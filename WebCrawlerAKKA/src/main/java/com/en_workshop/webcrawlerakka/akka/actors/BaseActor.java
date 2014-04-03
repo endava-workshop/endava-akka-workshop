@@ -20,15 +20,30 @@ public abstract class BaseActor extends UntypedActor {
     private static final Logger LOG = Logger.getLogger(BaseActor.class);
 
     /**
-     * Find an actor specified by name and do some work with it
+     * Find an local actor specified by name and do some work with it
      *
      * @param partialName The partial actor name
      * @param onSuccess   On success action
      * @param onFailure   On failure action
      */
-    protected void findActor(String partialName, OnSuccess<ActorRef> onSuccess, OnFailure onFailure) {
-        Future<ActorRef> actorRef = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME + "/" +
+    protected void findLocalActor(final String partialName, final OnSuccess<ActorRef> onSuccess, final OnFailure onFailure) {
+        final Future<ActorRef> actorRef = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME + "/" +
                 partialName).resolveOne(Duration.create(1, TimeUnit.SECONDS));
+
+        actorRef.onSuccess(onSuccess, getContext().dispatcher());
+        actorRef.onFailure(onFailure, getContext().dispatcher());
+    }
+
+    /**
+     * Find an remote actor specified by name and do some work with it
+     *
+     * @param pathFromUser The partial path from: /user/[pathFromUser]
+     * @param onSuccess    On success action
+     * @param onFailure    On failure action
+     */
+    protected void findRemoteActor(final String remoteSystemIdentification, final String pathFromUser, final OnSuccess<ActorRef> onSuccess, final OnFailure onFailure) {
+        final Future<ActorRef> actorRef = getContext().actorSelection("akka.tcp://" + remoteSystemIdentification + "/user/" + pathFromUser).resolveOne(
+                Duration.create(5, TimeUnit.SECONDS));
 
         actorRef.onSuccess(onSuccess, getContext().dispatcher());
         actorRef.onFailure(onFailure, getContext().dispatcher());

@@ -56,7 +56,7 @@ public class DomainMasterActor extends BaseActor {
     public void onReceive(Object message) {
         if (message instanceof RefreshDomainMasterRequest) {
             /* Send a "find domains" request to the persistence master */
-            findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
                             persistenceMasterActor.tell(new ListDomainsRequest(), getSelf());

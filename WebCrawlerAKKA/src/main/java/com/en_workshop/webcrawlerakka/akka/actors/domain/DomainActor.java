@@ -49,7 +49,7 @@ public class DomainActor extends BaseActor {
             final CrawlDomainRequest request = (CrawlDomainRequest) message;
 
             /* Send a "find next link for domain" request to the persistence master */
-            findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
                             persistenceMasterActor.tell(new NextLinkRequest(request.getDomain()), getSelf());
@@ -80,9 +80,8 @@ public class DomainActor extends BaseActor {
             LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
 
             /* Send a "download URL" request */
-            findActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
-                    getActorName(response.getNextLinkRequest().getDomain().getName()), new OnSuccess<ActorRef>() {
+            findLocalActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
+                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
@@ -90,8 +89,7 @@ public class DomainActor extends BaseActor {
                     }, new OnFailure() {
                         @Override
                         public void onFailure(Throwable throwable) throws Throwable {
-                            ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_PART_NAME +
-                                    getActorName(response.getNextLinkRequest().getDomain().getName()));
+                            ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME);
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
                         }
                     }

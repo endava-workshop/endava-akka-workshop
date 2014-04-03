@@ -56,7 +56,7 @@ public class DownloadUrlActor extends BaseActor {
                 LOG.debug(request.getLink().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
 
                 /* Send to processing master */
-                findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef processingMasterActor) throws Throwable {
                                 processingMasterActor.tell(new ProcessContentRequest(request.getLink(), pageContent), getSelf());
@@ -89,7 +89,7 @@ public class DownloadUrlActor extends BaseActor {
      */
     private void finishWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
         /* Persist the new link status */
-        findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
                         final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getUrl(), urlStatus);

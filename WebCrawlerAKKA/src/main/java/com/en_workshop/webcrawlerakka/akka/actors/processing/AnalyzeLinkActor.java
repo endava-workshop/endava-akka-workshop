@@ -71,7 +71,7 @@ public class AnalyzeLinkActor extends BaseActor {
      */
     private void persistLink(final String domainName, final String link) {
         //call to persist the normalized link
-        findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
                         persistenceMasterActor.tell(new PersistLinkRequest(new Link(domainName, link)), getSelf());
@@ -92,7 +92,7 @@ public class AnalyzeLinkActor extends BaseActor {
      */
     private void persistDomain(final Domain domain) {
         //call to persist the normalized link
-        findActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
                         persistenceMasterActor.tell(new PersistDomainRequest(domain), getSelf());

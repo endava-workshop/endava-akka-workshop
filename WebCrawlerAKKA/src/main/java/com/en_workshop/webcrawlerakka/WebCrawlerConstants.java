@@ -12,9 +12,11 @@ public class WebCrawlerConstants {
     public static final String DOMAIN_MASTER_ACTOR_NAME = "domainMasterActor";
     public static final String PROCESSING_MASTER_ACTOR_NAME = "processingMasterActor";
     public static final String PERSISTENCE_MASTER_ACTOR_NAME = "persistenceMasterActor";
+    public static final String DOWNLOAD_URL_ACTOR_NAME = "downloadUrlActor";
 
     public static final String DOMAIN_ACTOR_PART_NAME = "domainActor_";
-    public static final String DOWNLOAD_URL_ACTOR_PART_NAME = "downloadUrlActor_";
+
+    public static final String ACTOR_SYSTEM_NETWORK_ADDRESS = "";
 
     /* HTTP related constants */
     public static final String HTTP_CUSTOM_HEADER_RESPONSE_CODE = "CRAWL-ResponseCode";
@@ -24,8 +26,9 @@ public class WebCrawlerConstants {
 
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
 
+    public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
+
     /* Other */
     public static final long DOMAINS_REFRESH_PERIOD = 5 * 60 * 1000; // 5 minutes
     public static final long DOMAIN_DEFAULT_COOLDOWN = 60 * 1000; // 60 seconds
-    public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
 }

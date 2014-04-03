@@ -10,6 +10,10 @@ import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 /**
  * @author Radu Ciumag
  */
@@ -37,5 +41,25 @@ public class WebCrawler {
         ActorRef masterActor = actorSystem.actorOf(Props.create(MasterActor.class), WebCrawlerConstants.MASTER_ACTOR_NAME);
         masterActor.tell(new StartMasterRequest(), ActorRef.noSender());
         LOG.debug("Actor system initialize: DONE");
+
+        microConsole();
+    }
+
+    private static void microConsole() {
+        try {
+            System.out.print("crawler> ");
+
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String input = reader.readLine();
+            while (!"exit".equals(input)) {
+                /* Process the inputted command */
+
+
+                System.out.print("crawler> ");
+                input = reader.readLine();
+            }
+        } catch (IOException exc) {
+            LOG.error(exc.getMessage(), exc);
+        }
     }
 }

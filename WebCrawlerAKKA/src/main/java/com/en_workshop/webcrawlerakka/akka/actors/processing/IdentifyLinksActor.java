@@ -43,7 +43,7 @@ public class IdentifyLinksActor extends BaseActor {
                 LOG.info("Normalized link: " + link);
 
                 //call to analyze the normalized link
-                findActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef processingMasterActor) throws Throwable {
                                 processingMasterActor.tell(new AnalyzeLinkRequest(contentToBeProcessed.getSource().getDomain(), normalizedLink), getSelf());
