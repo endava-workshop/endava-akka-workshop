@@ -1,11 +1,12 @@
 package com.en_workshop.webcrawlerakka.akka.actors.persistence;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Link;
-import org.apache.log4j.Logger;
 
 /**
  * Identify the next link to be crawled for a specific web domain
@@ -13,7 +14,7 @@ import org.apache.log4j.Logger;
  * @author Radu Ciumag
  */
 public class NextLinkActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(NextLinkActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**
      * {@inheritDoc}

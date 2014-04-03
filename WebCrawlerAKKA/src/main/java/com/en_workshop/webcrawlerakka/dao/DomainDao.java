@@ -2,7 +2,8 @@ package com.en_workshop.webcrawlerakka.dao;
 
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @author Radu Ciumag
  */
 public class DomainDao {
-    private static final Logger LOG = Logger.getLogger(DomainDao.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DomainDao.class);
 
     /**
      * Add a {@link com.en_workshop.webcrawlerakka.entities.Domain} to the collection

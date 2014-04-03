@@ -2,7 +2,6 @@ package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageResponse;
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import org.apache.log4j.Logger;
 
 import java.util.List;
 
@@ -12,7 +11,6 @@ import java.util.List;
  * @author Radu Ciumag
  */
 public class ListDomainsResponse extends MessageResponse {
-    private static final Logger LOG = Logger.getLogger(ListDomainsResponse.class);
 
     private final List<Domain> domains;
 

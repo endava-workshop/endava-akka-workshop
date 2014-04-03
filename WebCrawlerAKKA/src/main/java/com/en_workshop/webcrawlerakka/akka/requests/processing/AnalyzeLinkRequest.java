@@ -1,8 +1,6 @@
 package com.en_workshop.webcrawlerakka.akka.requests.processing;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
-import com.en_workshop.webcrawlerakka.entities.Domain;
-import org.apache.log4j.Logger;
 
 /**
  * Request to analyze the links.
@@ -10,8 +8,6 @@ import org.apache.log4j.Logger;
  * Created by roxana on 3/13/14.
  */
 public class AnalyzeLinkRequest extends MessageRequest {
-
-    private static final Logger LOG = Logger.getLogger(AnalyzeLinkRequest.class);
 
     private final String sourceDomainName;
     private final String link;

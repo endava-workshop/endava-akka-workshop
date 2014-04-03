@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class MasterActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private final SupervisorStrategy supervisorStrategy = new AllForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),

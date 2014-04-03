@@ -17,13 +17,11 @@ import org.jsoup.select.Elements;
 
 /**
  * Actor that will identify the links and send them to the Persistence Master.
- *
+ * <p/>
  * Created by roxana on 3/12/14.
  */
 public class IdentifyLinksActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
-
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -58,7 +56,7 @@ public class IdentifyLinksActor extends BaseActor {
             }
 
             LOG.debug("Identify the links in the content - DONE.");
-        }else {
+        } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }

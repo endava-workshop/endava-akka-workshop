@@ -1,7 +1,8 @@
 package com.en_workshop.webcrawlerakka.tools;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,7 +11,7 @@ import java.net.URL;
  * @author Radu Ciumag
  */
 public class WebContentTools {
-    private static final Logger LOG = Logger.getLogger(WebContentTools.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebContentTools.class);
 
     /* TODO: Add ALPHA (%41–%5A and %61–%7A) */
     private static final String[] URL_FRAGMENT_REPLACE_SRC = new String[]{"%30", "%31", "%32", "%33", "%34", "%35", "%36", "%37", "%38", "%39",

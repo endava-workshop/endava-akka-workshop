@@ -6,6 +6,8 @@ import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
@@ -15,7 +17,6 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class DomainActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(DomainActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
             new Function<Throwable, SupervisorStrategy.Directive>() {

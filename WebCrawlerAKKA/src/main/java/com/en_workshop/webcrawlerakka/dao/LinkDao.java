@@ -4,13 +4,14 @@ import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Radu Ciumag
  */
 public class LinkDao {
-    private static final Logger LOG = Logger.getLogger(LinkDao.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LinkDao.class);
 
     /**
      * Add a {@link com.en_workshop.webcrawlerakka.entities.Link} to the urls list

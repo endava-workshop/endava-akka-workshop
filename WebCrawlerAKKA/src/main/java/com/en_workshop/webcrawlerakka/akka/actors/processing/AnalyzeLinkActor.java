@@ -21,7 +21,6 @@ import java.net.URL;
  * Created by roxana on 3/13/14.
  */
 public class AnalyzeLinkActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**

@@ -12,7 +12,6 @@ import com.en_workshop.webcrawlerakka.dao.LinkDao;
  * Created by roxana on 3/13/14.
  */
 public class PersistLinkActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**

@@ -8,7 +8,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.util.Map;
  * @author Radu Ciumag
  */
 public class WebClient {
-    private static final Logger LOG = Logger.getLogger(WebClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebClient.class);
 
     public static final String PROTOCOL_HTTP = "http";
     public static final int PROTOCOL_HTTP_PORT = 80;

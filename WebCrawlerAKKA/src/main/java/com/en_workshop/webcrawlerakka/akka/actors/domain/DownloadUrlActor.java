@@ -3,6 +3,8 @@ package com.en_workshop.webcrawlerakka.akka.actors.domain;
 import akka.actor.ActorRef;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
@@ -12,7 +14,6 @@ import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentReq
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.Map;
  * @author Radu Ciumag
  */
 public class DownloadUrlActor extends BaseActor {
-    private static final Logger LOG = Logger.getLogger(DownloadUrlActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**
      * {@inheritDoc}

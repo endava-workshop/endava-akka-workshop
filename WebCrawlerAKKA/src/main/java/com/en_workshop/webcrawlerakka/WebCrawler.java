@@ -8,7 +8,8 @@ import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.io.InputStreamReader;
  * @author Radu Ciumag
  */
 public class WebCrawler {
-    private static final Logger LOG = Logger.getLogger(WebCrawler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebCrawler.class);
 
     public static void main(String[] args) {
         LOG.info("Web crawler starting ...");

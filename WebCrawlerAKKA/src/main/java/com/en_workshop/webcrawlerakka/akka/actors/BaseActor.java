@@ -4,8 +4,9 @@ import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
-import org.apache.log4j.Logger;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public abstract class BaseActor extends UntypedActor {
-    private static final Logger LOG = Logger.getLogger(BaseActor.class);
+    private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     /**
      * Find an local actor specified by name and do some work with it

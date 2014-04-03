@@ -9,8 +9,8 @@ import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import scala.concurrent.duration.Duration;
@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class PersistenceMasterActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private final ActorRef listDomainsRouter;

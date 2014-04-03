@@ -9,11 +9,8 @@ import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.actors.persistence.ListDomainsActor;
-import com.en_workshop.webcrawlerakka.akka.actors.persistence.NextLinkActor;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import org.apache.log4j.Logger;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -24,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * @author Radu Ciumag
  */
 public class ProcessingMasterActor extends BaseActor {
-
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     //define the routers
