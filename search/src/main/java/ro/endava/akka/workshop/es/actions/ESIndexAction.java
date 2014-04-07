@@ -4,7 +4,7 @@ package ro.endava.akka.workshop.es.actions;
  * Created by cosmin on 4/6/14.
  * Indexing action for ES
  */
-public class ESIndexAction extends ESAbstractAction {
+public class ESIndexAction extends ESAbstractAction implements ESBulky{
 
     private ESIndexAction(Builder builder) {
         super(builder);
@@ -21,6 +21,11 @@ public class ESIndexAction extends ESAbstractAction {
     @Override
     public Object getBody() {
         return body;
+    }
+
+    @Override
+    public String getESActionName() {
+        return "index";
     }
 
     public static class Builder extends ESAbstractAction.Builder<ESIndexAction, Builder> {
