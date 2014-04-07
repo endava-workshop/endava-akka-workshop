@@ -1,22 +1,16 @@
 package ro.endava.akka.workshop.es.actions;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 /**
  * Created by cosmin on 4/6/14.
+ * Analyze action for ES
  */
 public class ESAnalyzeAction extends ESAbstractAction {
 
-    private Object source;
     private String analyzer;
-    private String method;
 
     private ESAnalyzeAction(Builder builder) {
         super(builder);
-        this.source = builder.source;
+        this.body = builder.body;
         this.analyzer = builder.analyzer;
         this.url = buildUrl();
         this.method = "POST";
@@ -29,11 +23,7 @@ public class ESAnalyzeAction extends ESAbstractAction {
 
     @Override
     public Object getBody() {
-        return source;
-    }
-
-    public Object getSource() {
-        return source;
+        return body;
     }
 
     public String getAnalyzer() {
@@ -52,13 +42,7 @@ public class ESAnalyzeAction extends ESAbstractAction {
     }
 
     public static class Builder extends ESAbstractAction.Builder<ESAnalyzeAction, Builder> {
-        private Object source;
         private String analyzer;
-
-        public Builder source(Object source) {
-            this.source = source;
-            return this;
-        }
 
         public Builder analyzer(String analyzer) {
             this.analyzer = analyzer;

@@ -1,7 +1,5 @@
 package ro.endava.akka.workshop.messages;
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 
 /**
@@ -15,26 +13,18 @@ public class PasswordMessage implements Serializable {
 
     private String password;
 
-    private DateTime indexedDate;
-
-    public PasswordMessage(String password, DateTime indexedDate) {
+    public PasswordMessage(String password) {
         this.password = password;
-        this.indexedDate = indexedDate;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public DateTime getIndexedDate() {
-        return indexedDate;
-    }
-
     @Override
     public String toString() {
         return "PasswordMessage{" +
                 "password='" + password + '\'' +
-                ", indexedDate=" + indexedDate +
                 '}';
     }
 }

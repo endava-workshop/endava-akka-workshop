@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 
 /**
  * Created by cosmin on 4/6/14.
+ * Settings to use when creating {@link ro.endava.akka.workshop.es.client.ESRestClient}
+ * server - the server url
+ * gson - custom {@link com.google.gson.Gson} object
  */
 public class ESRestClientSettings {
 
@@ -27,6 +30,9 @@ public class ESRestClientSettings {
         return new Builder();
     }
 
+    /**
+     * Builder for settings
+     */
     public static class Builder {
         private String server;
         private Gson gson;

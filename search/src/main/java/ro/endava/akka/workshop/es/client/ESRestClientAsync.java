@@ -1,17 +1,16 @@
 package ro.endava.akka.workshop.es.client;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.*;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ro.endava.akka.workshop.es.actions.*;
-import com.google.gson.Gson;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 
 import java.io.IOException;
@@ -47,13 +46,18 @@ public class ESRestClientAsync implements ESRestClient {
         HttpResponse httpResponse = null;
         try {
             httpResponse = future.get();
+            LOGGER.info("Successful async blocking request");
+            closeClient();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Error in request async blocking: {}", e);
+            closeClient();
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            LOGGER.error("Error in request async blocking: {}", e);
+            closeClient();
         }
 
-        return null;
+        ESResponse esResponse = buildResponse(httpResponse);
+        return esResponse;
     }
 
     @Override
@@ -147,6 +151,37 @@ public class ESRestClientAsync implements ESRestClient {
         } catch (IOException e) {
             LOGGER.error("Error in closing client: {}", e);
         }
+    }
+
+    private ESResponse buildResponse(HttpResponse response) {
+        if (response != null) {
+            try {
+                String json = null;
+                json = response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
+                JsonObject jsonMap = convertJsonStringToMapObject(json);
+                StatusLine statusLine = response.getStatusLine();
+                boolean isOk = false;
+                if ((statusLine.getStatusCode() / 100) == 2) {
+                    isOk = true;
+                }
+                ESResponse esResponse = new ESResponse(jsonMap, json, isOk, null, gson);
+                return esResponse;
+            } catch (IOException e) {
+                LOGGER.error("Error in building response: {}", e);
+            }
+        }
+        return null;
+    }
+
+    protected JsonObject convertJsonStringToMapObject(String jsonTxt) {
+        if (jsonTxt != null && !jsonTxt.trim().isEmpty()) {
+            try {
+                return new JsonParser().parse(jsonTxt).getAsJsonObject();
+            } catch (Exception e) {
+                LOGGER.error("An exception occurred while converting json string to map object: {}", e);
+            }
+        }
+        return new JsonObject();
     }
 
     public String getServer() {

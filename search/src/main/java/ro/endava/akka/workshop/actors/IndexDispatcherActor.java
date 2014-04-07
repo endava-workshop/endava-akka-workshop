@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
-import ro.endava.akka.workshop.messages.BulkIndexMessage;
 import ro.endava.akka.workshop.messages.IndexMessage;
 
 /**

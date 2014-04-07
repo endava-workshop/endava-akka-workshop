@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 
 /**
  * Created by cosmin on 4/6/14.
+ * Abstract class for default implementation of actions done on ES
  */
 public abstract class ESAbstractAction implements ESAction {
 
@@ -16,6 +17,8 @@ public abstract class ESAbstractAction implements ESAction {
     protected String type;
     protected String id;
     protected String url;
+    protected Object body;
+    protected String method;
 
     protected ESAbstractAction(Builder builder) {
         this.index = builder.index;
@@ -80,6 +83,8 @@ public abstract class ESAbstractAction implements ESAction {
         protected String index;
         protected String type;
         protected String id;
+        protected Object body;
+
 
         abstract public T build();
 
@@ -97,5 +102,11 @@ public abstract class ESAbstractAction implements ESAction {
             this.id = id;
             return (E) this;
         }
+
+        public E body(Object body) {
+            this.body = body;
+            return (E) this;
+        }
+
     }
 }

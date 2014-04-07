@@ -1,15 +1,13 @@
-package ro.endava.akka.workshop.dto;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+package ro.endava.akka.workshop.es.responses;
 
 import java.util.List;
 
 /**
  * Created by cosmin on 3/13/14.
+ * Response for analyze actions from ES
  */
 public class ESAnalyzeResponse {
 
-    @JsonProperty(value = "tokens")
     private List<ESToken> tokens;
 
     public ESAnalyzeResponse() {

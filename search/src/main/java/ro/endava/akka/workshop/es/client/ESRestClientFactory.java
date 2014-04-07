@@ -6,6 +6,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 /**
  * Created by cosmin on 4/6/14.
+ * Factory for creating {@link ro.endava.akka.workshop.es.client.ESRestClient}
  */
 public class ESRestClientFactory {
 

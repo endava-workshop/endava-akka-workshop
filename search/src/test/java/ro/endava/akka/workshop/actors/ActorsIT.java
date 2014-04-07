@@ -9,9 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import ro.endava.akka.workshop.messages.IndexMessage;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by cosmin on 3/10/14.
  */
@@ -48,13 +45,9 @@ public class ActorsIT {
     }
 
     private IndexMessage createDummyRequest() {
-        List domainLinks = new ArrayList();
-        domainLinks.add("domainLink1");
-        List externalLinks = new ArrayList();
-        externalLinks.add("externalLink1");
         String domain = "domain";
         String content = "Buna ziua, ce mai faceti? si cand mai veniti pe la noi?";
-        IndexMessage indexMessage = new IndexMessage(domain, content, domainLinks, externalLinks);
+        IndexMessage indexMessage = new IndexMessage(domain, content);
         return indexMessage;
     }
 }

@@ -1,6 +1,4 @@
-package ro.endava.akka.workshop.dto;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+package ro.endava.akka.workshop.es.responses;
 
 /**
  * Created by cosmin on 3/13/14.
@@ -8,19 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ESToken {
 
-    @JsonProperty(value = "token")
     private String token;
 
-    @JsonProperty(value = "start_offset")
     private Integer startOffset;
 
-    @JsonProperty(value = "end_offset")
     private Integer endOffset;
 
-    @JsonProperty(value = "type")
     private String type;
 
-    @JsonProperty(value = "position")
     private Integer position;
 
     public ESToken() {
