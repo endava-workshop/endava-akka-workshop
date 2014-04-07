@@ -37,7 +37,7 @@ public class ActorsIT {
             final ActorRef subject = system.actorOf(props);
 
             // the run() method needs to finish within 3 seconds
-            new Within(duration("3 seconds")) {
+            new Within(duration("60 seconds")) {
                 protected void run() {
                     subject.tell(createDummyRequest(), getRef());
                     // Will wait for the rest of the 3 seconds

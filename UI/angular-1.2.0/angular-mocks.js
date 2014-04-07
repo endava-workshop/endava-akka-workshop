@@ -241,7 +241,7 @@ angular.mock.$ExceptionHandlerProvider = function() {
    * @description
    * Sets the logging mode.
    *
-   * @param {string} mode Mode of operation, defaults to `rethrow`.
+   * @param {string} mode Mode of actions, defaults to `rethrow`.
    *
    *   - `rethrow`: If any errors are passed into the handler in tests, it typically
    *                means that there is a bug in the application or test, so this mock will

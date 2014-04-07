@@ -15,7 +15,35 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <properties>
+        <httpcore.version>4.3.2</httpcore.version>
+        <httpclient.version>4.3.3</httpclient.version>
+        <httpAsyncClient.version>4.0</httpAsyncClient.version>
+        <httpclientandroidlib.version>1.1.2</httpclientandroidlib.version>
+
+        <slf4j.version>1.7.6</slf4j.version>
+        <log4j.version>1.2.17</log4j.version>
+
+        <guava.version>16.0.1</guava.version>
+        <gson.version>2.2.4</gson.version>
+        <mockito.version>1.9.5</mockito.version>
+
+        <commonsLang.version>3.3.1</commonsLang.version>
+    </properties>
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <name>Sonatype Groups</name>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+    </repositories>
     <dependencies>
+
+        <dependency>
+            <groupId>io.searchbox</groupId>
+            <artifactId>jest</artifactId>
+            <version>0.0.5</version>
+        </dependency>
 
         <dependency>
             <groupId>org.elasticsearch</groupId>
@@ -65,10 +93,45 @@
             <version>1.2</version>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>13.0.1</version>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commonsLang.version}</version>
+        </dependency>
+
+        <!-- Http components -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+            <version>${httpcore.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+            <version>${httpAsyncClient.version}</version>
         </dependency>
 
         <dependency>

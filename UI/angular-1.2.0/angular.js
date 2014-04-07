@@ -10816,7 +10816,7 @@ function qFactory(nextTick, exceptionHandler) {
  * The design decisions behind the scope are heavily favored for speed and memory consumption.
  *
  * The typical use of scope is to watch the expressions, which most of the time return the same
- * value as last time so we optimize the operation.
+ * value as last time so we optimize the actions.
  *
  * Closures construction is expensive in terms of speed as well as memory:
  *   - No closures, instead use prototypical inheritance for API
@@ -11173,7 +11173,7 @@ function $RootScopeProvider(){
        * (for arrays, this implies watching the array items; for object maps, this implies watching
        * the properties). If a change is detected, the `listener` callback is fired.
        *
-       * - The `obj` collection is observed via standard $watch operation and is examined on every
+       * - The `obj` collection is observed via standard $watch actions and is examined on every
        *   call to $digest() to see if any items have been added, removed, or moved.
        * - The `listener` is called whenever anything within the `obj` has changed. Examples include
        *   adding, removing, and moving items belonging to an object or array.
@@ -11214,7 +11214,7 @@ function $RootScopeProvider(){
        *    The `scope` refers to the current scope.
        *
        * @returns {function()} Returns a de-registration function for this listener. When the
-       *    de-registration function is executed, the internal watch operation is terminated.
+       *    de-registration function is executed, the internal watch actions is terminated.
        */
       $watchCollection: function(obj, listener) {
         var self = this;
@@ -12550,7 +12550,7 @@ function $SceProvider() {
    * - valueOf(value)
    *     For values that were not produced by trustAs(), return them as is.  For values that were
    *     produced by trustAs(), return the corresponding input value to trustAs.  Basically, if
-   *     trustAs is wrapping the given values into some type, this operation unwraps it when given
+   *     trustAs is wrapping the given values into some type, this actions unwraps it when given
    *     such a value.
    *
    * - getTrusted(contextEnum, value)
@@ -13003,7 +13003,7 @@ function $SnifferProvider() {
       hasEvent: function(event) {
         // IE9 implements 'input' event it's so fubared that we rather pretend that it doesn't have
         // it. In particular the event is not fired when backspace or delete key are pressed or
-        // when cut operation is performed.
+        // when cut actions is performed.
         if (event == 'input' && msie == 9) return false;
 
         if (isUndefined(eventSupport[event])) {

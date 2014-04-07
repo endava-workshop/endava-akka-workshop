@@ -26,11 +26,7 @@ public class IndexDispatcherActor extends UntypedActor {
             this.getContext().actorOf(Props.create(IndexArticleActor.class)).tell(indexMessage, getSelf());
             this.getContext().actorOf(Props.create(IndexTokenizerActor.class)).tell(indexMessage, getSelf());
         } else {
-            if (message instanceof BulkIndexMessage) {
-                throw new ApplicationException("Not yet implemented.", ErrorCode.NOT_IMPLEMENTED);
-            } else {
-                throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
-            }
+            throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
         }
     }
 }

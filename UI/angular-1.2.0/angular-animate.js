@@ -136,7 +136,7 @@
  * has no CSS transition/animation classes applied to it.
  *
  * <h3>CSS Staggering Animations</h3>
- * A Staggering animation is a collection of animations that are issued with a slight delay in between each successive operation resulting in a
+ * A Staggering animation is a collection of animations that are issued with a slight delay in between each successive actions resulting in a
  * curtain-like effect. The ngAnimate module, as of 1.2.0, supports staggering animations and the stagger effect can be
  * performed by creating a **ng-EVENT-stagger** CSS class and attaching that class to the base CSS class used for
  * the animation. The style property expected within the stagger class can either be a **transition-delay** or an
@@ -167,7 +167,7 @@
  *
  * Staggering animations work by default in ngRepeat (so long as the CSS class is defiend). Outside of ngRepeat, to use staggering animations
  * on your own, they can be triggered by firing multiple calls to the same event on $animate. However, the restrictions surrounding this
- * are that each of the elements must have the same CSS className value as well as the same parent element. A stagger operation
+ * are that each of the elements must have the same CSS className value as well as the same parent element. A stagger actions
  * will also be reset if more than 10ms has passed after the last animation has been fired.
  *
  * The following code will issue the **ng-leave-stagger** event on the element provided:
@@ -281,7 +281,7 @@ angular.module('ngAnimate', ['ng'])
               classes = name.substr(1).split('.');
 
           //the empty string value is the default animation
-          //operation which performs CSS transition and keyframe
+          //actions which performs CSS transition and keyframe
           //animations sniffing. This is always included for each
           //element animation procedure if the browser supports
           //transitions and/or keyframe animations
@@ -310,7 +310,7 @@ angular.module('ngAnimate', ['ng'])
        * The `$animate` service provides animation detection support while performing DOM operations (enter, leave and move) as well as during addClass and removeClass operations.
        * When any of these operations are run, the $animate service
        * will examine any JavaScript-defined animations (which are defined by using the $animateProvider provider object)
-       * as well as any CSS-defined animations against the CSS classes present on the element once the DOM operation is run.
+       * as well as any CSS-defined animations against the CSS classes present on the element once the DOM actions is run.
        *
        * The `$animate` service is used behind the scenes with pre-existing directives and animation with these directives
        * will work out of the box without any extra configuration.
@@ -366,7 +366,7 @@ angular.module('ngAnimate', ['ng'])
          * @function
          *
          * @description
-         * Runs the leave animation operation and, upon completion, removes the element from the DOM. Once
+         * Runs the leave animation actions and, upon completion, removes the element from the DOM. Once
          * the animation is started, the following CSS classes will be added for the duration of the animation:
          *
          * Below is a breakdown of each step that occurs during enter animation:
@@ -404,7 +404,7 @@ angular.module('ngAnimate', ['ng'])
          * @function
          *
          * @description
-         * Fires the move DOM operation. Just before the animation starts, the animate service will either append it into the parentElement container or
+         * Fires the move DOM actions. Just before the animation starts, the animate service will either append it into the parentElement container or
          * add the element directly after the afterElement element if present. Then the move animation will be run. Once
          * the animation is started, the following CSS classes will be added for the duration of the animation:
          *
@@ -639,7 +639,7 @@ angular.module('ngAnimate', ['ng'])
         });
 
         //first we run the before animations and when all of those are complete
-        //then we perform the DOM operation and run the next set of animations
+        //then we perform the DOM actions and run the next set of animations
         invokeRegisteredAnimationFns(animations, 'before', onBeforeAnimationsComplete);
 
         function onBeforeAnimationsComplete(cancelled) {
