@@ -156,8 +156,7 @@ public class ESRestClientAsync implements ESRestClient {
     private ESResponse buildResponse(HttpResponse response) {
         if (response != null) {
             try {
-                String json = null;
-                json = response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
+                String json = response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : null;
                 JsonObject jsonMap = convertJsonStringToMapObject(json);
                 StatusLine statusLine = response.getStatusLine();
                 boolean isOk = false;
