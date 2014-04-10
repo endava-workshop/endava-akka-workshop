@@ -83,7 +83,7 @@ public class DomainActor extends BaseActor {
 
             /* Send a "download URL" request */
             findLocalActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                            getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                        getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());

@@ -11,6 +11,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
@@ -108,5 +109,19 @@ public class DownloadUrlActor extends BaseActor {
         /* Report back to the domain actor */
         DownloadUrlResponse response = new DownloadUrlResponse(request);
         getSender().tell(response, getSelf());
+
+        /* Report to the statistics actor  */
+        findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                    @Override
+                    public void onSuccess(ActorRef statisticsActor) throws Throwable {
+                        statisticsActor.tell(new AddLinkRequest(request.getDomain().getName(), request.getLink()), getSelf());
+                    }
+                }, new OnFailure() {
+                    @Override
+                    public void onFailure(Throwable throwable) throws Throwable {
+                        LOG.error("Cannot find Statistics Actor.");
+                    }
+                }
+        );
     }
 }

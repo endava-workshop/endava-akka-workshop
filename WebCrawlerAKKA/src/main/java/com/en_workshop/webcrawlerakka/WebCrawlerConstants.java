@@ -21,6 +21,8 @@ public class WebCrawlerConstants {
 
     public static final String ACTOR_SYSTEM_NETWORK_ADDRESS = "";
 
+    public static final String STATISTICS_ACTOR_NAME = "statisticsActor";
+
     /* HTTP related constants */
     public static final String HTTP_CUSTOM_HEADER_RESPONSE_CODE = "CRAWL-ResponseCode";
 

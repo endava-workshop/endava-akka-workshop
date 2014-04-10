@@ -5,7 +5,8 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.en_workshop.webcrawlerakka.akka.actors.other.ControlActor;
 import com.en_workshop.webcrawlerakka.akka.actors.other.StatusActor;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStartMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.actors.statistics.StatisticsActor;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStartMasterRequest;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
@@ -40,9 +41,11 @@ public class WebCrawler {
         controlActor.tell(new ControlStartMasterRequest(), ActorRef.noSender());
 
         final ActorRef statusActor = actorSystem.actorOf(Props.create(StatusActor.class), WebCrawlerConstants.STATUS_ACTOR_NAME);
+        final ActorRef statisticsActor = actorSystem.actorOf(Props.create(StatisticsActor.class), WebCrawlerConstants.STATISTICS_ACTOR_NAME);
+
         LOG.debug("Actor system initialize: DONE");
 
         /* Display the micro console UI */
-        WebCrawlerConsole.microConsole(actorSystem, controlActor, statusActor);
+        WebCrawlerConsole.microConsole(actorSystem, controlActor, statusActor, statisticsActor);
     }
 }
