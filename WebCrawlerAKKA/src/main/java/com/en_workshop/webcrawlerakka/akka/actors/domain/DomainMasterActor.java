@@ -22,12 +22,14 @@ import scala.concurrent.duration.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Domains master actor
- * TODO Remove DomainActors when they fail / have no more data to process
- * TODO Stop actors that do not respond for 5 requests
+ * TODO Remove DomainActors when they fail / have no more data to process.
+ * TODO Stop actors that do not respond for 5 requests.
+ * TODO The stopped domains shouldn't be removed from the domains map? They are occupying slots for nothing.
  *
  * @author Radu Ciumag
  */
@@ -47,8 +49,8 @@ public class DomainMasterActor extends BaseActor {
             }
     );
 
-    private final HashMap<String, ActorRef> domainActors;
-    private final List<String> stoppedDoamins;
+    private final Map<String, ActorRef> domainActors;
+    private final List<String> stoppedDomains;
 
     private final ActorRef downloadUrlsRouter;
 
@@ -57,7 +59,7 @@ public class DomainMasterActor extends BaseActor {
      */
     public DomainMasterActor() {
         this.domainActors = new HashMap<>();
-        this.stoppedDoamins = new ArrayList<>();
+        this.stoppedDomains = new ArrayList<>();
 
         final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
@@ -107,7 +109,7 @@ public class DomainMasterActor extends BaseActor {
             /* Start an actor for each domain, if not already started */
             for (final Domain domain : response.getDomains()) {
                 /* Is this domain stopped? */
-                if (stoppedDoamins.contains(domain.getName())) {
+                if (stoppedDomains.contains(domain.getName())) {
                     LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
                     continue;
                 }
@@ -144,5 +146,9 @@ public class DomainMasterActor extends BaseActor {
     @Override
     public SupervisorStrategy supervisorStrategy() {
         return supervisorStrategy;
+    }
+
+    public List<String> getStoppedDomains() {
+        return stoppedDomains;
     }
 }
