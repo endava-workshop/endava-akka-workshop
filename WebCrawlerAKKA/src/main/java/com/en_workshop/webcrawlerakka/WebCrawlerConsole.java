@@ -82,6 +82,7 @@ public class WebCrawlerConsole {
                 /* Display the commands list */
                 if ("?".equals(input)) {
                     INSTANCE.displaySupportedCommands();
+                    continue;
                 }
 
                 /* Process the input */

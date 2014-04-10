@@ -32,6 +32,7 @@ public class WebCrawlerConstants {
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
 
     /* Other */
-    public static final long DOMAINS_REFRESH_PERIOD = 2 * 60 * 1000; // 5 minutes
-    public static final long DOMAIN_DEFAULT_COOLDOWN = 30 * 1000; // 60 seconds
+    public static final int DOMAINS_CRAWL_MAX_COUNT = 100; // Maximum number of domains to crawl at one time
+    public static final long DOMAINS_REFRESH_PERIOD = 1 * 60 * 1000; // 10 minutes
+    public static final long DOMAIN_DEFAULT_COOLDOWN = 20 * 1000; // 60 seconds
 }

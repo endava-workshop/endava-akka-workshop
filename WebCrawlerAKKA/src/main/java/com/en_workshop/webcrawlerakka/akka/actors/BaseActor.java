@@ -22,7 +22,17 @@ import java.util.concurrent.TimeUnit;
 public abstract class BaseActor extends UntypedActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
-    private static final FiniteDuration ACTOR_FIND_TIMEOUT = Duration.create(2, TimeUnit.SECONDS);
+    private static final FiniteDuration ACTOR_FIND_TIMEOUT = Duration.create(10, TimeUnit.SECONDS);
+
+    /**
+     * Get the actor local path
+     *
+     * @param partialName The actor partial name
+     * @return The actor path
+     */
+    protected String getActorPath(final String partialName) {
+        return "akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME + (null != partialName ? ("/" + partialName) : "");
+    }
 
     /**
      * Find an local actor specified by name and do some work with it
@@ -32,8 +42,7 @@ public abstract class BaseActor extends UntypedActor {
      * @param onFailure   On failure action
      */
     protected void findLocalActor(final String partialName, final OnSuccess<ActorRef> onSuccess, final OnFailure onFailure) {
-        final Future<ActorRef> actorRef = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME +
-                (null != partialName ? ("/" + partialName) : "")).resolveOne(ACTOR_FIND_TIMEOUT);
+        final Future<ActorRef> actorRef = getContext().actorSelection(getActorPath(partialName)).resolveOne(ACTOR_FIND_TIMEOUT);
 
         actorRef.onSuccess(onSuccess, getContext().dispatcher());
         actorRef.onFailure(onFailure, getContext().dispatcher());
@@ -46,8 +55,7 @@ public abstract class BaseActor extends UntypedActor {
      * @return The found {@link akka.actor.ActorRef} or {@code null}
      */
     protected ActorRef findLocalActor(final String partialName) throws Exception {
-        final Future<ActorRef> actorRefFuture = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME +
-                (null != partialName ? ("/" + partialName) : "")).resolveOne(ACTOR_FIND_TIMEOUT);
+        final Future<ActorRef> actorRefFuture = getContext().actorSelection(getActorPath(partialName)).resolveOne(ACTOR_FIND_TIMEOUT);
 
         return Await.result(actorRefFuture, ACTOR_FIND_TIMEOUT);
     }
@@ -74,6 +82,6 @@ public abstract class BaseActor extends UntypedActor {
      * @return The valid actor name
      */
     protected String getActorName(String name) {
-        return name.replace('.', '_');
+        return name.replace('.', '_').replace(':', '_').replace('/', '_');
     }
 }

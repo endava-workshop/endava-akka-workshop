@@ -2,7 +2,6 @@ package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
 import akka.actor.ActorRef;
 import akka.actor.OneForOneStrategy;
-import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
@@ -41,6 +40,17 @@ public class DomainActor extends BaseActor {
                 }
             }
     );
+
+    private final ActorRef downloadUrlsRouter;
+
+    /**
+     * The constructor
+     *
+     * @param downloadUrlsRouter
+     */
+    public DomainActor(final ActorRef downloadUrlsRouter) {
+        this.downloadUrlsRouter = downloadUrlsRouter;
+    }
 
     /**
      * {@inheritDoc}
@@ -82,32 +92,15 @@ public class DomainActor extends BaseActor {
             LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
 
             /* Send a "download URL" request */
-            findLocalActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                            getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
-                            downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("DownloadUrlActor actor with name \"" + WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME + "\" idenfitication" +
-                                    "error: " + throwable.getClass() + " - " + throwable.getMessage());
-
-                            final ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME);
-                            downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
-                        }
-                    }
-            );
+            downloadUrlsRouter.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
 
         } else if (message instanceof DownloadUrlResponse) {
-            DownloadUrlResponse response = (DownloadUrlResponse) message;
+            final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
 
             /* Schedule a new crawl for the downloaded domain after the cool down period */
-            getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS),
-                    getSelf(), new CrawlDomainRequest(domain), getContext().system().dispatcher(), getSelf());
+            getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS), getSelf(),
+                    new CrawlDomainRequest(domain), getContext().system().dispatcher(), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

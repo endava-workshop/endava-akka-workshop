@@ -65,7 +65,8 @@ public class DownloadUrlActor extends BaseActor {
                         }, new OnFailure() {
                             @Override
                             public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error(request.getLink().getUrl() + " - Cannot find Processing Master");
+                                LOG.error(request.getLink().getUrl() + " - Cannot find " + getActorPath(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME) +
+                                        ". Error: " + throwable.getMessage());
                             }
                         }
                 );
@@ -100,7 +101,8 @@ public class DownloadUrlActor extends BaseActor {
                 }, new OnFailure() {
                     @Override
                     public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error("Cannot find Persistence Master");
+                        LOG.error(request.getLink().getUrl() + " - Cannot find " + getActorPath(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME) +
+                                ". Error: " + throwable.getMessage());
                     }
                 }
         );
