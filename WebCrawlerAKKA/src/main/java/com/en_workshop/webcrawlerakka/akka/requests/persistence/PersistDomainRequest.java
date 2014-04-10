@@ -7,7 +7,7 @@ import com.en_workshop.webcrawlerakka.entities.Domain;
  *
  * Created by roxana on 3/13/14.
  */
-public class PersistDomainRequest extends MessageRequest implements PersistenceRequest{
+public class PersistDomainRequest extends MessageRequest {
 
     private final Domain domain;
 

@@ -19,7 +19,7 @@ public class DomainDao {
      * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to add
      * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} addded or {@code null}
      */
-    public synchronized static Domain add(final Domain domain) {
+    public static Domain add(final Domain domain) {
         /* Validation */
         if (null == domain) {
             LOG.error("Cannot create a null Domain.");
@@ -43,7 +43,7 @@ public class DomainDao {
      * @param webDomainName The web domain's name.
      * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} found or {@code null}
      */
-    public synchronized static Domain find(final String webDomainName) {
+    public static Domain find(final String webDomainName) {
         if (StringUtils.isBlank(webDomainName)) {
             return null;
         }
@@ -71,7 +71,7 @@ public class DomainDao {
      *
      * @param newDomain The new {@link com.en_workshop.webcrawlerakka.entities.Domain} to persist
      */
-    public synchronized static void update(final Domain newDomain) {
+    public static void update(final Domain newDomain) {
         /* Validation */
         if (null == newDomain) {
             LOG.error("Cannot update a null Domain");

@@ -7,7 +7,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
  *
  * @author Radu Ciumag
  */
-public class ListDomainsRequest extends MessageRequest implements PersistenceRequest{
+public class ListDomainsRequest extends MessageRequest {
 
     /**
      * The default constructor

@@ -9,7 +9,6 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import com.en_workshop.webcrawlerakka.tools.WebContentTools;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -54,20 +53,6 @@ public class IdentifyLinksActor extends BaseActor {
                             }
                         }
                 );
-
-                /* Report to the statistics actor. */
-                findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                            @Override
-                            public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                                statisticsActor.tell(new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource()), getSelf());
-                            }
-                        }, new OnFailure() {
-                            @Override
-                            public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error("Cannot find Statistics Actor.");
-                            }
-                        }
-                );
             }
 
             LOG.debug("Identify the links in the content - DONE.");
@@ -75,5 +60,6 @@ public class IdentifyLinksActor extends BaseActor {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
+
     }
 }

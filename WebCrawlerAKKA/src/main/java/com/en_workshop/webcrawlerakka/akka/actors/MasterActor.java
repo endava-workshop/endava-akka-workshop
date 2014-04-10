@@ -11,7 +11,6 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.domain.DomainMasterActor;
 import com.en_workshop.webcrawlerakka.akka.actors.persistence.PersistenceMasterActor;
 import com.en_workshop.webcrawlerakka.akka.actors.processing.ProcessingMasterActor;
-import com.en_workshop.webcrawlerakka.akka.actors.statistics.StatisticsActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
 import scala.concurrent.duration.Duration;
@@ -47,20 +46,18 @@ public class MasterActor extends BaseActor {
             /* Start the domain master actor */
             final ActorRef domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
             domainMasterActor.tell(new RefreshDomainMasterRequest(), getSelf());
+
             LOG.debug("Started Domain Master...");
 
             /* Start the processing actor */
             getContext().actorOf(Props.create(ProcessingMasterActor.class), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
+
             LOG.debug("Started Processing Master...");
 
             /* Start the persistence actor */
             getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
+
             LOG.debug("Started Persistence Master...");
-
-            /* Start the statistics actor */
-            getContext().actorOf(Props.create(StatisticsActor.class), WebCrawlerConstants.STATISTICS_ACTOR_NAME);
-            LOG.debug("Started Statistics actor...");
-
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

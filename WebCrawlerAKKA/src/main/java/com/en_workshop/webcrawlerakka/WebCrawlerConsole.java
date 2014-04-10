@@ -8,10 +8,8 @@ import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlResponse;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStartMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStopMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStartMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStopMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.status.StatusMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.status.StatusRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.status.StatusResponse;
@@ -40,7 +38,6 @@ public class WebCrawlerConsole {
     private static final String COMMAND_STS_MASTER = "statusMaster";
     private static final String COMMAND_CTRL_START_MASTER = "startMaster";
     private static final String COMMAND_CTRL_STOP_MASTER = "stopMaster";
-    private static final String COMMAND_CTRL_SHOW_STATISTICS = "showStats";
     private static final String COMMAND_EXIT = "exit";
 
     private static final Map<String, String> COMMANDS = new HashMap<String, String>() {
@@ -50,8 +47,6 @@ public class WebCrawlerConsole {
             put(COMMAND_CTRL_START_MASTER, "Start MasterActor and all sub-actors");
             put(COMMAND_CTRL_STOP_MASTER, "Stop MasterActor and all sub-actors");
 
-            put(COMMAND_CTRL_SHOW_STATISTICS, "Show the statistics that were collected.");
-
             put(COMMAND_EXIT, "Stop the console and exit the actor system and the application");
         }
     };
@@ -59,17 +54,15 @@ public class WebCrawlerConsole {
     private ActorSystem actorSystem;
     private ActorRef controlActor;
     private ActorRef statusActor;
-    private ActorRef statisticsActor;
 
     /**
      * Micro console supported commands:
      * {@see COMMANDS}
      */
-    public static void microConsole(final ActorSystem actorSystem, final ActorRef controlActor, final ActorRef statusActor, final ActorRef statisticsActor) {
+    public static void microConsole(final ActorSystem actorSystem, final ActorRef controlActor, final ActorRef statusActor) {
         INSTANCE.actorSystem = actorSystem;
         INSTANCE.controlActor = controlActor;
         INSTANCE.statusActor = statusActor;
-        INSTANCE.statisticsActor = statisticsActor;
 
         //TODO Validate parameters
 
@@ -98,10 +91,6 @@ public class WebCrawlerConsole {
                     INSTANCE.commandStartMaster();
                 } else if (COMMAND_CTRL_STOP_MASTER.equals(input)) {
                     INSTANCE.commandStopMaster();
-                } else if (COMMAND_STS_MASTER.equals(input)) {
-                    INSTANCE.commandStopMaster();
-                } else if (COMMAND_CTRL_SHOW_STATISTICS.equals(input)) {
-                    INSTANCE.commandShowStats();
                 } else if (!COMMAND_EXIT.equals(input)) {
                     LOG.debug("Command " + input + " is not known. Type ? for all known commands.");
                 }
@@ -145,13 +134,6 @@ public class WebCrawlerConsole {
     }
 
     /**
-     * COMMAND_CTRL_SHOW_STATISTICS
-     */
-    private void commandShowStats() {
-        doAsyncStatisticsCommand(new ShowStatisticsRequest(), COMMAND_CTRL_SHOW_STATISTICS);
-    }
-
-    /**
      * Execute a control command
      *
      * @param message       The control message
@@ -192,33 +174,6 @@ public class WebCrawlerConsole {
                 if (object instanceof StatusResponse) {
                     final StatusResponse statusResponse = (StatusResponse) object;
                     LOG.info("\"" + commandString + "\" succeeded with result: " + statusResponse.getStatus() + ". Message: " + statusResponse.getMessage());
-                } else {
-                    LOG.info("\"" + commandString + "\" succeeded with result: " + object);
-                }
-            }
-        }, actorSystem.dispatcher());
-        result.onFailure(new OnFailure() {
-            @Override
-            public void onFailure(final Throwable throwable) throws Throwable {
-                LOG.error("\"" + commandString + "\" failed with exception: " + throwable.getMessage(), throwable);
-            }
-        }, actorSystem.dispatcher());
-    }
-
-    /**
-     * Execute a statistics command.
-     *
-     * @param message       The statistics request.
-     * @param commandString The command string
-     */
-    private void doAsyncStatisticsCommand(final ShowStatisticsRequest message, final String commandString) {
-        final Future<Object> result = Patterns.ask(statisticsActor, message, TIMEOUT);
-        result.onSuccess(new OnSuccess<Object>() {
-            @Override
-            public void onSuccess(final Object object) throws Throwable {
-                if (object instanceof ShowStatisticsResponse) {
-                    final ShowStatisticsResponse showStatisticsResponse = (ShowStatisticsResponse) object;
-                    LOG.info("\"" + commandString + "\" succeeded with result: " + showStatisticsResponse.getStatistics() + ".\n Message: " + showStatisticsResponse.getMessage());
                 } else {
                     LOG.info("\"" + commandString + "\" succeeded with result: " + object);
                 }

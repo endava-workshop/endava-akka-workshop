@@ -1,6 +1,5 @@
-package com.en_workshop.webcrawlerakka.akka.requests.other.control.master;
+package com.en_workshop.webcrawlerakka.akka.requests.other.control;
 
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlResponse;
 import com.en_workshop.webcrawlerakka.enums.ControlActionStatus;
 
 /**

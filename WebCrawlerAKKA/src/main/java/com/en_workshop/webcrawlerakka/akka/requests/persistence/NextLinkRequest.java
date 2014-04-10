@@ -8,7 +8,7 @@ import com.en_workshop.webcrawlerakka.entities.Domain;
  *
  * @author Radu Ciumag
  */
-public class NextLinkRequest extends MessageRequest implements PersistenceRequest{
+public class NextLinkRequest extends MessageRequest {
 
     private final Domain domain;
 

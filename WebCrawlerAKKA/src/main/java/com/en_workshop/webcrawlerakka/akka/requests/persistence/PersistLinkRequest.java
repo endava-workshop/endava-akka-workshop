@@ -8,7 +8,7 @@ import com.en_workshop.webcrawlerakka.entities.Link;
  *
  * Created by roxana on 3/12/14.
  */
-public class PersistLinkRequest extends MessageRequest implements PersistenceRequest{
+public class PersistLinkRequest extends MessageRequest {
 
     private final Link link;
 

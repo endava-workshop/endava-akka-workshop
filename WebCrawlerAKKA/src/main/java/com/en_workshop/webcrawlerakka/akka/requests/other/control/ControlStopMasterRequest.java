@@ -1,6 +1,4 @@
-package com.en_workshop.webcrawlerakka.akka.requests.other.control.master;
-
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlRequest;
+package com.en_workshop.webcrawlerakka.akka.requests.other.control;
 
 /**
  * Stop MasterActor request

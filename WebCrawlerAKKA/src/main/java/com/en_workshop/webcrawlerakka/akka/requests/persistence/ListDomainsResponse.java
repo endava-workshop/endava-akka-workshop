@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Radu Ciumag
  */
-public class ListDomainsResponse extends MessageResponse implements PersistenceRequest{
+public class ListDomainsResponse extends MessageResponse {
 
     private final List<Domain> domains;
 

@@ -8,10 +8,10 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.actors.MasterActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStartMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStartMasterResponse;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStopMasterRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStopMasterResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStartMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStartMasterResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStopMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStopMasterResponse;
 import com.en_workshop.webcrawlerakka.enums.ControlActionStatus;
 
 /**

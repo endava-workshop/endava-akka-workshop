@@ -15,7 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.*;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +40,6 @@ public class WebClient {
      * @return The list of {@link org.apache.http.Header}s
      */
     public static synchronized Map<String, String> getPageHeaders(final String link) {
-
         final Map<String, String> headersMap = new HashMap<>();
 
         final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -116,29 +115,5 @@ public class WebClient {
         }
 
         return content;
-    }
-
-    /**
-     * Verify if an {@link java.net.URL} can be obtained from the specified link.
-     *
-     * @param link the link.
-     * @return {@code true} if an {@link java.net.URL} can be obtained from the specified link, {@code false} otherwise.
-     */
-    public static synchronized boolean isValid(String link) {
-        URL url = null;
-
-        try {
-            url = new URL(link);
-        } catch (MalformedURLException e) {
-            return false;
-        }
-
-        try {
-            url.toURI();
-        } catch (URISyntaxException e) {
-            return false;
-        }
-
-        return true;
     }
 }

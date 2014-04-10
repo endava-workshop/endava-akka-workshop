@@ -20,7 +20,7 @@ public class LinkDao {
      * @param url    The url
      * @return The {@link com.en_workshop.webcrawlerakka.entities.Link} added or {@code null}
      */
-    public synchronized static Link add(final Domain domain, final String url) {
+    public static Link add(final Domain domain, final String url) {
         /* Validation */
         if (null == domain || StringUtils.isBlank(url)) {
             LOG.error("Cannot create Link with params: " + domain + "; " + url + "; " + url);
@@ -46,7 +46,7 @@ public class LinkDao {
      * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to scan
      * @return The first {@link com.en_workshop.webcrawlerakka.entities.Link} not visited found or {@code null}
      */
-    public synchronized static Link getNextForCrawling(final Domain domain) {
+    public static Link getNextForCrawling(final Domain domain) {
         /* Validation */
         if (null == domain) {
             LOG.error("Cannot scan a null Domain");
@@ -67,7 +67,7 @@ public class LinkDao {
      *
      * @param newLink The new {@link com.en_workshop.webcrawlerakka.entities.Link} to persist
      */
-    public synchronized static void update(final Link newLink) {
+    public static void update(final Link newLink) {
         /* Validation */
         if (null == newLink) {
             LOG.error("Cannot update a null Link");
