@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,10 @@ public class WebClient {
 
             /* Add the page response code to headers */
             headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
+        } catch (UnknownHostException exc) {
+            LOG.error("Unknown host for link: " + link);
+
+            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, WebCrawlerConstants.HTTP_RESPONSE_CODE_NONE);
         } catch (Exception exc) {
             LOG.error("Cannot process page: " + exc.getMessage(), exc);
 

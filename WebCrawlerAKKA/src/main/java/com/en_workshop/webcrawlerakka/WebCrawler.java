@@ -3,17 +3,14 @@ package com.en_workshop.webcrawlerakka;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.en_workshop.webcrawlerakka.akka.actors.MasterActor;
-import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.actors.other.ControlActor;
+import com.en_workshop.webcrawlerakka.akka.actors.other.StatusActor;
+import com.en_workshop.webcrawlerakka.akka.requests.other.control.ControlStartMasterRequest;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 /**
  * @author Radu Ciumag
@@ -37,30 +34,15 @@ public class WebCrawler {
         LOG.debug("Add sample (test) data: DONE");
 
         LOG.debug("Actor system initializing ...");
-        ActorSystem actorSystem = ActorSystem.create(WebCrawlerConstants.SYSTEM_NAME);
+        final ActorSystem actorSystem = ActorSystem.create(WebCrawlerConstants.SYSTEM_NAME);
 
-        ActorRef masterActor = actorSystem.actorOf(Props.create(MasterActor.class), WebCrawlerConstants.MASTER_ACTOR_NAME);
-        masterActor.tell(new StartMasterRequest(), ActorRef.noSender());
+        final ActorRef controlActor = actorSystem.actorOf(Props.create(ControlActor.class), WebCrawlerConstants.CONTROL_ACTOR_NAME);
+        controlActor.tell(new ControlStartMasterRequest(), ActorRef.noSender());
+
+        final ActorRef statusActor = actorSystem.actorOf(Props.create(StatusActor.class), WebCrawlerConstants.STATUS_ACTOR_NAME);
         LOG.debug("Actor system initialize: DONE");
 
-        microConsole();
-    }
-
-    private static void microConsole() {
-        try {
-            System.out.print("crawler> ");
-
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String input = reader.readLine();
-            while (!"exit".equals(input)) {
-                /* Process the inputted command */
-
-
-                System.out.print("crawler> ");
-                input = reader.readLine();
-            }
-        } catch (IOException exc) {
-            LOG.error(exc.getMessage(), exc);
-        }
+        /* Display the micro console UI */
+        WebCrawlerConsole.microConsole(actorSystem, controlActor, statusActor);
     }
 }

@@ -7,8 +7,10 @@ import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
+import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 public abstract class BaseActor extends UntypedActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
+    private static final FiniteDuration ACTOR_FIND_TIMEOUT = Duration.create(2, TimeUnit.SECONDS);
+
     /**
      * Find an local actor specified by name and do some work with it
      *
@@ -28,11 +32,24 @@ public abstract class BaseActor extends UntypedActor {
      * @param onFailure   On failure action
      */
     protected void findLocalActor(final String partialName, final OnSuccess<ActorRef> onSuccess, final OnFailure onFailure) {
-        final Future<ActorRef> actorRef = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME + "/" +
-                partialName).resolveOne(Duration.create(1, TimeUnit.SECONDS));
+        final Future<ActorRef> actorRef = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME +
+                (null != partialName ? ("/" + partialName) : "")).resolveOne(ACTOR_FIND_TIMEOUT);
 
         actorRef.onSuccess(onSuccess, getContext().dispatcher());
         actorRef.onFailure(onFailure, getContext().dispatcher());
+    }
+
+    /**
+     * Find an local actor specified by name and return the {@link akka.actor.ActorRef}
+     *
+     * @param partialName The partial actor name
+     * @return The found {@link akka.actor.ActorRef} or {@code null}
+     */
+    protected ActorRef findLocalActor(final String partialName) throws Exception {
+        final Future<ActorRef> actorRefFuture = getContext().actorSelection("akka://" + WebCrawlerConstants.SYSTEM_NAME + "/user/" + WebCrawlerConstants.MASTER_ACTOR_NAME +
+                (null != partialName ? ("/" + partialName) : "")).resolveOne(ACTOR_FIND_TIMEOUT);
+
+        return Await.result(actorRefFuture, ACTOR_FIND_TIMEOUT);
     }
 
     /**

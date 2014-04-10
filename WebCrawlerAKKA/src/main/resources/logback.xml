@@ -31,6 +31,9 @@
         <appender-ref ref="fileActors"/>
     </logger>
 
+    <logger name="org.apache.http" level="error"/>
+    <logger name="httpclient.wire" level="error"/>
+
     <!-- Root -->
     <root level="debug">
         <appender-ref ref="console"/>

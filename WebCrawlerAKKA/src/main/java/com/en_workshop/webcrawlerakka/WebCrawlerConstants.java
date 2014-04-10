@@ -9,6 +9,9 @@ public class WebCrawlerConstants {
     public static final String SYSTEM_NAME = "webCrawlerSystem";
     public static final String MASTER_ACTOR_NAME = "masterActor";
 
+    public static final String CONTROL_ACTOR_NAME = "controlActor";
+    public static final String STATUS_ACTOR_NAME = "statusActor";
+
     public static final String DOMAIN_MASTER_ACTOR_NAME = "domainMasterActor";
     public static final String PROCESSING_MASTER_ACTOR_NAME = "processingMasterActor";
     public static final String PERSISTENCE_MASTER_ACTOR_NAME = "persistenceMasterActor";
@@ -29,6 +32,6 @@ public class WebCrawlerConstants {
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
 
     /* Other */
-    public static final long DOMAINS_REFRESH_PERIOD = 5 * 60 * 1000; // 5 minutes
-    public static final long DOMAIN_DEFAULT_COOLDOWN = 60 * 1000; // 60 seconds
+    public static final long DOMAINS_REFRESH_PERIOD = 2 * 60 * 1000; // 5 minutes
+    public static final long DOMAIN_DEFAULT_COOLDOWN = 30 * 1000; // 60 seconds
 }

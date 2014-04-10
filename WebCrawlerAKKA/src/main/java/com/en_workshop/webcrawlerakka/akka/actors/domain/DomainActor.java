@@ -39,7 +39,8 @@ public class DomainActor extends BaseActor {
 
                     return SupervisorStrategy.stop();
                 }
-            });
+            }
+    );
 
     /**
      * {@inheritDoc}
@@ -82,7 +83,7 @@ public class DomainActor extends BaseActor {
 
             /* Send a "download URL" request */
             findLocalActor(WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                            getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef downloadUrlActor) throws Throwable {
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
@@ -90,7 +91,11 @@ public class DomainActor extends BaseActor {
                     }, new OnFailure() {
                         @Override
                         public void onFailure(Throwable throwable) throws Throwable {
-                            ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME);
+                            LOG.error("DownloadUrlActor actor with name \"" + WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME + "/" + WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
+                                    getActorName(response.getNextLinkRequest().getDomain().getName()) + "/" + WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME + "\" idenfitication" +
+                                    "error: " + throwable.getClass() + " - " + throwable.getMessage());
+
+                            final ActorRef downloadUrlActor = getContext().actorOf(Props.create(DownloadUrlActor.class), WebCrawlerConstants.DOWNLOAD_URL_ACTOR_NAME);
                             downloadUrlActor.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
                         }
                     }
