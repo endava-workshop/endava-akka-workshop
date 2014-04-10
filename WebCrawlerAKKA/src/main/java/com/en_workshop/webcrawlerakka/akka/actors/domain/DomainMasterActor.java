@@ -16,6 +16,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddDomainRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import scala.concurrent.duration.Duration;
 
@@ -138,6 +139,37 @@ public class DomainMasterActor extends BaseActor {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
+    }
+
+    /**
+     * Creates an actor for the new domain, sends a crawl request and calls the statistics actor.
+     *
+     * @param domain the new domain.
+     */
+    private void startNewDomain(final Domain domain) {
+        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class),
+                WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + domain.getName().replace('.','_').replace(':', '_').replace('/', '_'));
+
+        /* Add to the domain map and ensure one actor per domain */
+        domainActors.put(domain.getName(), domainActor);
+
+        LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
+
+        domainActor.tell(new CrawlDomainRequest(domain), getSelf());
+
+        /* Report to the statistics actor. */
+        findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                    @Override
+                    public void onSuccess(ActorRef statisticsActor) throws Throwable {
+                        statisticsActor.tell(new AddDomainRequest(domain), getSelf());
+                    }
+                }, new OnFailure() {
+                    @Override
+                    public void onFailure(Throwable throwable) throws Throwable {
+                        LOG.error("Cannot find Statistics Actor.");
+                    }
+                }
+        );
     }
 
     /**

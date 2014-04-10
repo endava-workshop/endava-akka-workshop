@@ -12,6 +12,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkReque
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
+import com.en_workshop.webcrawlerakka.tools.WebClient;
 
 import java.net.URL;
 
@@ -40,19 +41,22 @@ public class AnalyzeLinkActor extends BaseActor {
             LOG.info("Received link: " + link + " and domain " + sourceUrl);
 
             //if the initial domain is not the same as the domain of the link, persist both domain and link
-            URL url = new URL(link);
-            String linkDomain = url.getHost();
+            if (WebClient.isValid(link))  {
+                URL url = new URL(link);
+                String linkDomain = url.getHost();
 
-            LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
+                LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
-            Domain newDomain = null;
-            if (!linkDomain.equals(sourceUrl)) {
-                newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
-                persistDomain(newDomain);
+                Domain newDomain = null;
+                if (!linkDomain.equals(sourceUrl)) {
+                    newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
+                    persistDomain(newDomain);
+                }
+
+                persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
+            } else {
+                LOG.debug("Invalid URL received [" + link + "]");
             }
-
-            persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
-
             LOG.debug("Analyzing link - STOP");
 
         } else {

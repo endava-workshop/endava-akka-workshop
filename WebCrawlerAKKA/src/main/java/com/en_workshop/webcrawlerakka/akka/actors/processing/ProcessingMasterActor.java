@@ -34,9 +34,11 @@ public class ProcessingMasterActor extends BaseActor {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
                         if (throwable instanceof Exception) {
+                            LOG.error("Exception in ProcessingMasterActor: type [" + throwable.getClass() + "]. Will restart.");
                             return SupervisorStrategy.restart();
                         }
 
+                        LOG.error("Exception in ProcessingMasterActor: type [" + throwable.getClass() + "]. Will restart.");
                         return SupervisorStrategy.stop();
                     }
                 });

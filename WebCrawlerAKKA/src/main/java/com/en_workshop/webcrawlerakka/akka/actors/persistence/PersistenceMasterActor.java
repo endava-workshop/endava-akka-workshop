@@ -9,10 +9,7 @@ import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.*;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -25,10 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class PersistenceMasterActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
-    private final ActorRef listDomainsRouter;
-    private final ActorRef nextLinkRouter;
-    private final ActorRef persistLinkRouter;
-    private final ActorRef persistDomainRouter;
+    private final ActorRef persistenceRouter;
 
     /**
      * The default constructor
@@ -39,21 +33,17 @@ public class PersistenceMasterActor extends BaseActor {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
                         if (throwable instanceof Exception) {
+                            LOG.error("Exception in PersistenceMasterActor: type [" + throwable.getClass() + "]. Will RESTART.");
                             return SupervisorStrategy.restart();
                         }
-
+                        LOG.error("Exception in PersistenceMasterActor: type [" + throwable.getClass() + "]. Will STOP.");
                         return SupervisorStrategy.stop();
                     }
                 });
 
-        this.listDomainsRouter = getContext().actorOf(Props.create(ListDomainsActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
-                "listDomainsRouter");
-        this.nextLinkRouter = getContext().actorOf(Props.create(NextLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
-                "nextLinkRouter");
-        this.persistLinkRouter = getContext().actorOf(Props.create(PersistLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
-                "persistLinkRouter");
-        this.persistDomainRouter = getContext().actorOf(Props.create(PersistDomainActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
-                "persistDomainRouter");
+        this.persistenceRouter = getContext().actorOf(Props.create(PersistenceActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+                "persistenceRouter");
+
     }
 
     /**
@@ -61,14 +51,8 @@ public class PersistenceMasterActor extends BaseActor {
      */
     @Override
     public void onReceive(Object message) {
-        if (message instanceof ListDomainsRequest) {
-            listDomainsRouter.tell(message, getSender());
-        } else if (message instanceof NextLinkRequest) {
-            nextLinkRouter.tell(message, getSender());
-        }  else if (message instanceof PersistLinkRequest) {
-            persistLinkRouter.tell(message, getSender());
-        } else if (message instanceof PersistDomainRequest) {
-            persistDomainRouter.tell(message, getSender());
+        if (message instanceof PersistenceRequest) {
+            persistenceRouter.tell(message, getSender());
         } else {
             LOG.error("Unknown message: " + message);
         }
