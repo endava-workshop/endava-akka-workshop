@@ -22,20 +22,6 @@ public class RemoteAddressProvider {
 	public static final String REMOTE_ADDRESSES_ARRAY_KEY = "remoteAddresses";
 	public static final String REMOTE_ADDRESSES_FILE_NAME = "remoteAddresses.json";
 	
-
-	public static void main(String[] args) throws Exception {
-		
-		List<RemoteAddress> availableAddresses = getAvailableRemoteAddresses();
-		for(RemoteAddress address : availableAddresses) {
-			System.out.println("******************** address *****************");
-			System.out.println("alias: " + address.getAlias());
-			System.out.println("ip: " + address.getIp());
-			System.out.println("port: " + address.getPort());
-			System.out.println("protocol: " + address.getProtocol());
-			System.out.println("actorSystem: " + address.getActorSystemName());
-		}
-	}
-	
 	public static List<RemoteAddress> getAvailableRemoteAddresses() {
 
 		String source = null;
