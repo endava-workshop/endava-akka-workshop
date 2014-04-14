@@ -1,6 +1,6 @@
 Index used (I use Sense plugin)
 
-articles index
+Creating indexes
 
 POST articles/
 PUT /articles/article/_mapping
@@ -12,19 +12,25 @@ PUT /articles/article/_mapping
             },
             "content": {
                 "type": "string"
-            },
-            "internalLinks": {
-                "type": "string"   
-            },
-            "externalLinks": {
-                "type": "string"   
             }
-        } 
-        
+        }
     }
 }
 
-for tokenizeing
+
+POST /passwords/
+
+PUT /passwords/password/_mapping
+{
+    "password": {
+        "properties": {
+            "password": {
+                "type": "string"
+            }
+        }
+
+    }
+}
 
 POST /analyzerindex
 {
@@ -50,30 +56,4 @@ POST /analyzerindex
 	}
 }
 
-GET /analyzerindex/_analyze?analyzer=myanalyzer&text=?ce mAi. faceti doamnelor si domnilor!
 
-Passwords index
-
-POST /passwords/
-
-PUT /passwords/password/_mapping
-{
-    "password": {
-        "properties": {
-            "password": {
-                "type": "string"
-            },
-            "indexedDate": {
-                "type": "date"
-            }
-        } 
-        
-    }
-}
-
-For bulk indexing(not yet done) the json should  be something like this
-POST /_bulk 
-    { "index": {"_index": "articles", "_type": "article"}}
-    {"domain": "bla","content": "bla","internalLinks": "bla","externalLinks": "bla"}
-     { "index": {"_index": "articles", "_type": "article"}}
-    {"domain": "bla","content": "bla","internalLinks": "bla","externalLinks": "bla"}
