@@ -28,6 +28,7 @@ public class ESRestClientFactory {
         switch (type) {
             case ASYNC:
                 CloseableHttpAsyncClient asyncClient = HttpAsyncClients.createDefault();
+                asyncClient.start();
                 esRestClient = new ESRestClientAsync(server, gson, asyncClient);
 
         }

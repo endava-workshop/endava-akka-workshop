@@ -31,7 +31,7 @@ public class ESRestClientAsync implements ESRestClient {
     private Gson gson;
     private CloseableHttpAsyncClient asyncClient;
 
-    public ESRestClientAsync(String server, Gson gson, CloseableHttpAsyncClient asyncClient) {
+    ESRestClientAsync(String server, Gson gson, CloseableHttpAsyncClient asyncClient) {
         this.server = server;
         this.gson = gson;
         this.asyncClient = asyncClient;
@@ -40,20 +40,19 @@ public class ESRestClientAsync implements ESRestClient {
     @Override
     public ESResponse executeAsyncBlocking(ESAction esAction) {
         HttpUriRequest request = buildRequest(esAction);
-        asyncClient.start();
         Future<HttpResponse> future = asyncClient.execute(request, null);
 
         HttpResponse httpResponse = null;
         try {
             httpResponse = future.get();
             LOGGER.info("Successful async blocking request");
-            closeClient();
+            //closeClient();
         } catch (InterruptedException e) {
             LOGGER.error("Error in request async blocking: {}", e);
-            closeClient();
+            //closeClient();
         } catch (ExecutionException e) {
             LOGGER.error("Error in request async blocking: {}", e);
-            closeClient();
+            //closeClient();
         }
 
         ESResponse esResponse = buildResponse(httpResponse);
@@ -63,25 +62,25 @@ public class ESRestClientAsync implements ESRestClient {
     @Override
     public void executeAsyncNonBlocking(ESAction esAction) {
         HttpUriRequest request = buildRequest(esAction);
-        asyncClient.start();
+        //asyncClient.start();
         asyncClient.execute(request, new FutureCallback<HttpResponse>() {
 
             @Override
             public void completed(final HttpResponse response) {
                 LOGGER.info("Successful async non blocking request");
-                closeClient();
+                //closeClient();
             }
 
             @Override
             public void failed(final Exception ex) {
                 LOGGER.error("Error in request async non blocking: {}", ex);
-                closeClient();
+                //closeClient();
             }
 
             @Override
             public void cancelled() {
                 LOGGER.info("Canceled async non blocking request");
-                closeClient();
+                //closeClient();
             }
         });
     }
@@ -145,7 +144,7 @@ public class ESRestClientAsync implements ESRestClient {
         return sb.toString();
     }
 
-    private void closeClient() {
+    public void closeClient() {
         try {
             asyncClient.close();
         } catch (IOException e) {
