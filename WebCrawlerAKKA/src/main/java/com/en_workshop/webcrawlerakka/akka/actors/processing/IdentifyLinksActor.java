@@ -28,18 +28,14 @@ public class IdentifyLinksActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof ProcessContentRequest) {
-            LOG.debug("Identify the links in the content.");
+            LOG.info("Identify the links in the content.");
 
             final ProcessContentRequest contentToBeProcessed = (ProcessContentRequest) message;
             final String baseUrl = contentToBeProcessed.getSource().getUrl();
             Document document = Jsoup.parse(contentToBeProcessed.getContent(), baseUrl);
             Elements links = document.select("a[href]");
             for (Element link : links) {
-
-                LOG.info("Identified a link: " + link);
-
                 final String normalizedLink = WebContentTools.normalizeURLLink(link.attr("abs:href"));
-                LOG.info("Normalized link: " + link);
 
                 //call to analyze the normalized link
                 findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
@@ -70,7 +66,6 @@ public class IdentifyLinksActor extends BaseActor {
                 );
             }
 
-            LOG.debug("Identify the links in the content - DONE.");
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

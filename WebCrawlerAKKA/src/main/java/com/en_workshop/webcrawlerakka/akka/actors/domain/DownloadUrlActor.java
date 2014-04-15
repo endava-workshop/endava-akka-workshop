@@ -91,11 +91,12 @@ public class DownloadUrlActor extends BaseActor {
      * @param urlStatus The new {@link com.en_workshop.webcrawlerakka.enums.LinkStatus}
      */
     private void finishWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
+        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getUrl(), urlStatus);
         /* Persist the new link status */
         findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getUrl(), urlStatus);
+
 
                         persistenceMasterActor.tell(new PersistLinkRequest(newLink), getSelf());
                     }
@@ -116,7 +117,7 @@ public class DownloadUrlActor extends BaseActor {
         findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                        statisticsActor.tell(new AddLinkRequest(request.getDomain().getName(), request.getLink()), getSelf());
+                        statisticsActor.tell(new AddLinkRequest(request.getDomain().getName(), newLink), getSelf());
                     }
                 }, new OnFailure() {
                     @Override

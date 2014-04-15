@@ -9,6 +9,7 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistContentRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -24,18 +25,18 @@ public class DataExtractorActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof ProcessContentRequest) {
-            LOG.debug("Data extract: START");
+            LOG.debug("Received content to extract");
 
             final ProcessContentRequest processContentRequest = (ProcessContentRequest) message;
             String content = processContentRequest.getContent();
 
             Document document = Jsoup.parse(content);
-            String strippedText = document.body().text();
+            final String strippedText = document.body().text();
 
             findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                         @Override
                         public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(new PersistContentRequest(processContentRequest.getSource(), processContentRequest.getContent()), getSelf());
+                            persistenceMasterActor.tell(new PersistContentRequest(processContentRequest.getSource(), strippedText), getSelf());
                         }
                     }, new OnFailure() {
                         @Override
@@ -45,11 +46,26 @@ public class DataExtractorActor extends BaseActor {
                     }
             );
 
-            LOG.debug("Data extract: STOP");
+            /* Report to the statistics actor. */
+            findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                        @Override
+                        public void onSuccess(ActorRef statisticsActor) throws Throwable {
+                            statisticsActor.tell(new AddLinkRequest(processContentRequest.getSource().getDomain(), processContentRequest.getSource()), getSelf());
+                        }
+                    }, new OnFailure() {
+                        @Override
+                        public void onFailure(Throwable throwable) throws Throwable {
+                            LOG.error("Cannot find Statistics Actor.");
+                        }
+                    }
+            );
+
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
 
     }
+
+
 }

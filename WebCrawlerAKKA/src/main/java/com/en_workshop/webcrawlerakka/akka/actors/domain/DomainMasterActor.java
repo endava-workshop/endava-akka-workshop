@@ -51,7 +51,9 @@ public class DomainMasterActor extends BaseActor {
     );
 
     private final Map<String, ActorRef> domainActors;
+    private Object domainLock = new Object();
     private final List<String> stoppedDomains;
+    private Object stoppedDomainsLock = new Object();
 
     private final ActorRef downloadUrlsRouter;
 
@@ -119,7 +121,9 @@ public class DomainMasterActor extends BaseActor {
                 if (!domainActors.containsKey(domain.getName())) {
                     final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter), WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
                             getActorName(domain.getName()));
-                    domainActors.put(domain.getName(), domainActor);
+                    synchronized (domainLock){
+                        domainActors.put(domain.getName(), domainActor);
+                    }
 
                     LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
 

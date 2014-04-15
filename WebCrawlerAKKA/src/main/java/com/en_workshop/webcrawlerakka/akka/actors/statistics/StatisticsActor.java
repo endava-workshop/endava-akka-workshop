@@ -25,7 +25,8 @@ public class StatisticsActor extends BaseActor {
 
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
-    private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<String, DomainLinkStatistics>();
+    private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<>();
+    private Object domainStatisticsLock = new Object();
 
     /**
      * {@inheritDoc}
@@ -49,8 +50,10 @@ public class StatisticsActor extends BaseActor {
 
     private void addDomainStatistics(AddDomainRequest domainRequest) {
         Domain domain = domainRequest.getDomain();
-        if (domainStatistics.get(domain.getName()) == null) {
-            domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
+        synchronized (domainStatisticsLock) {
+            if (domainStatistics.get(domain.getName()) == null) {
+                domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
+            }
         }
     }
 
@@ -66,7 +69,9 @@ public class StatisticsActor extends BaseActor {
             //log the fact that there should have been an empty entry for this domain
             LOG.error("I must add a statistic object for a domain that should have been in the map.");
             domainStats = new DomainLinkStatistics(domain);
-            domainStatistics.put(domain, domainStats);
+            synchronized (domainStatisticsLock) {
+                domainStatistics.put(domain, domainStats);
+            }
         }
         /* Update the statistics, depending on the status of the link */
         LinkStatus linkStatus = addLinkRequest.getLink().getStatus();
@@ -84,7 +89,7 @@ public class StatisticsActor extends BaseActor {
 
     }
 
-    private String printStatistics() {
+    private synchronized String printStatistics() {
         return Arrays.toString(domainStatistics.entrySet().toArray());
     }
 

@@ -7,6 +7,7 @@ import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
+import scala.Option;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -84,4 +85,18 @@ public abstract class BaseActor extends UntypedActor {
     protected String getActorName(String name) {
         return name.replace('.', '_').replace(':', '_').replace('/', '_');
     }
+
+    @Override
+    public void postStop() throws Exception {
+        LOG.error("Actor " + getSelf().getClass() + " will stop");
+        super.postStop();
+    }
+
+    @Override
+    public void preRestart(Throwable reason, Option<Object> message) throws Exception {
+        LOG.error("Actor " + getSelf().getClass() + " will be restarted. The reason " + reason.getMessage());
+        super.preRestart(reason, message);
+    }
+
+
 }

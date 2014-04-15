@@ -31,8 +31,6 @@ public class AnalyzeLinkActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
 
         if (message instanceof AnalyzeLinkRequest) {
-            LOG.debug("Analyzing link - START");
-
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
             String sourceUrl = analyzeLinkRequest.getSourceDomainName();
@@ -55,9 +53,8 @@ public class AnalyzeLinkActor extends BaseActor {
 
                 persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
             } else {
-                LOG.debug("Invalid URL received [" + link + "]");
+                LOG.error("Invalid URL received [" + link + "]");
             }
-            LOG.debug("Analyzing link - STOP");
 
         } else {
             LOG.error("Unknown message: " + message);
