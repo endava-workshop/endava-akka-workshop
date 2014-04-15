@@ -1,15 +1,15 @@
 package ro.endava.akka.workshop.actors;
 
-import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import ro.endava.akka.workshop.es.actions.ESIndexAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
-import ro.endava.akka.workshop.es.client.ESRestClientSettings;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
 import ro.endava.akka.workshop.messages.IndexMessage;
+import akka.actor.UntypedActor;
 
 
 /**
@@ -36,9 +36,8 @@ public class IndexArticleActor extends UntypedActor {
      * @param indexMessage
      */
     private void indexNonBlocking(IndexMessage indexMessage) {
-        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9200").build();
         ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, settings);
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
         ESIndexAction indexAction = new ESIndexAction.Builder().index("articles").
                 type("article").body(indexMessage).build();

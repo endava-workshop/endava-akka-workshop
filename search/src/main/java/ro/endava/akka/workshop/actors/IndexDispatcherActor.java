@@ -1,12 +1,17 @@
 package ro.endava.akka.workshop.actors;
 
-import akka.actor.Props;
-import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
+import ro.endava.akka.workshop.messages.BulkPasswordMessage;
 import ro.endava.akka.workshop.messages.IndexMessage;
+import ro.endava.akka.workshop.messages.LocalPasswordMessage;
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import akka.actor.UntypedActor;
+import akka.routing.RoundRobinRouter;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -17,6 +22,8 @@ public class IndexDispatcherActor extends UntypedActor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(IndexDispatcherActor.class);
 
+    ActorRef indexPassActorRouter;
+    
     @Override
     public void onReceive(final Object message) throws Exception {
         if (message instanceof IndexMessage) {
@@ -24,8 +31,28 @@ public class IndexDispatcherActor extends UntypedActor {
             LOGGER.info("Index Dispatcher Actor received a message: " + indexMessage);
             this.getContext().actorOf(Props.create(IndexArticleActor.class)).tell(indexMessage, getSelf());
             this.getContext().actorOf(Props.create(IndexTokenizerActor.class)).tell(indexMessage, getSelf());
+            
+        } else  if (message instanceof LocalPasswordMessage) {
+            LOGGER.info("Index Dispatcher Actor received a message: " + message.getClass());
+            this.getContext().actorOf(Props.create(LocalPasswordActor.class)).tell(message, getSelf());
+        } else  if (message instanceof BulkPasswordMessage) {
+//            LOGGER.info("Index Dispatcher Actor received a message: " + BulkPasswordMessage.class);
+            indexPassActorRouter.tell(message, getSelf());
         } else {
             throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
         }
     }
+
+	@Override
+	public void preStart() throws Exception {
+		super.preStart();
+		if (indexPassActorRouter == null) {
+			indexPassActorRouter = getContext().actorOf(
+					Props.create(IndexPasswordActor.class).withRouter(
+							new RoundRobinRouter(50)));
+		}
+		;
+
+	}
+    
 }

@@ -67,7 +67,7 @@ public class ESRestClientAsync implements ESRestClient {
 
             @Override
             public void completed(final HttpResponse response) {
-                LOGGER.info("Successful async non blocking request");
+//                LOGGER.info("Successful async non blocking request");
                 //closeClient();
             }
 

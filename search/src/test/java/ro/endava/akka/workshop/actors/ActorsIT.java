@@ -1,30 +1,31 @@
 package ro.endava.akka.workshop.actors;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.JavaTestKit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import junit.framework.TestCase;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import ro.endava.akka.workshop.es.actions.ESCreateIndexAction;
 import ro.endava.akka.workshop.es.actions.ESPutMappingAction;
 import ro.endava.akka.workshop.es.actions.structures.ESAnalyzer;
 import ro.endava.akka.workshop.es.actions.structures.ESFilter;
 import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
-import ro.endava.akka.workshop.es.client.ESRestClientSettings;
 import ro.endava.akka.workshop.es.responses.ESIndexResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.messages.IndexMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.testkit.JavaTestKit;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -83,9 +84,8 @@ public class ActorsIT {
      */
     @Test
     public void testCreateIndex() {
-        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9201").build();
         ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, settings);
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
         ESCreateIndexAction createIndexAction = new ESCreateIndexAction.Builder().index("randomindex").build();
         ESResponse createIndexResponse = client.executeAsyncBlocking(createIndexAction);
         ESIndexResponse indexResponse = createIndexResponse.getSourceAsObject(ESIndexResponse.class);
@@ -93,7 +93,7 @@ public class ActorsIT {
 
         ESPutMappingAction mappingAction = new ESPutMappingAction.Builder().index("randomindex").type("randomtype").
                 attribute("attr1", "string").build();
-        ESResponse putMappingResponse = client.executeAsyncBlocking(mappingAction);
+        client.executeAsyncBlocking(mappingAction);
     }
 
 
@@ -102,9 +102,8 @@ public class ActorsIT {
      */
     @Test
     public void testCreateIndexWithSettings() {
-        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9201").build();
         ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, settings);
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
         Map<String, Object> props = new HashMap<>();
         props.put("type", "custom");
@@ -129,7 +128,7 @@ public class ActorsIT {
 
         ESPutMappingAction mappingAction = new ESPutMappingAction.Builder().index("randomindex").type("randomtype").
                 attribute("attr1", "string").build();
-        ESResponse putMappingResponse = client.executeAsyncBlocking(mappingAction);
+        client.executeAsyncBlocking(mappingAction);
     }
 
 

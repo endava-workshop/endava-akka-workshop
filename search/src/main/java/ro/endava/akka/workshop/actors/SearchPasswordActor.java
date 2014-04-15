@@ -1,14 +1,16 @@
 package ro.endava.akka.workshop.actors;
 
-import akka.actor.UntypedActor;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import ro.endava.akka.workshop.es.actions.ESSearchAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
-import ro.endava.akka.workshop.es.client.ESRestClientSettings;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.es.responses.custom.PasswordHits;
 import ro.endava.akka.workshop.es.responses.custom.PasswordSearchResponse;
@@ -16,9 +18,7 @@ import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
 import ro.endava.akka.workshop.messages.SearchPasswordMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
-
-import java.util.ArrayList;
-import java.util.List;
+import akka.actor.UntypedActor;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -40,9 +40,8 @@ public class SearchPasswordActor extends UntypedActor {
     }
 
     private void searchPassword(SearchPasswordMessage message) {
-        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9200").build();
         ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, settings);
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.queryString("gigi"));

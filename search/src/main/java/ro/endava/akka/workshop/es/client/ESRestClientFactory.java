@@ -1,8 +1,13 @@
 package ro.endava.akka.workshop.es.client;
 
 import com.google.gson.Gson;
+
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ro.endava.akka.workshop.actors.IndexPasswordActor;
 
 /**
  * Created by cosmin on 4/6/14.
@@ -10,11 +15,22 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
  */
 public class ESRestClientFactory {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(ESRestClientFactory.class);
+
     public enum Type {
         ASYNC
     }
+    
+    private ESRestClient asynchRestClient;
 
-    public ESRestClient getClient(Type type, ESRestClientSettings settings) {
+    public synchronized ESRestClient getClient(Type type, boolean newInstance) {
+    	LOGGER.debug("get client type : " + type + " | new instance : " + newInstance);
+    	if(asynchRestClient != null && !newInstance){
+    		return asynchRestClient;
+    	}
+    	
+        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9200").build();
+
         String server = settings.getServer();
         if (server == null) {
             server = "http://localhost:9200";
@@ -24,14 +40,15 @@ public class ESRestClientFactory {
             gson = new Gson();
         }
 
-        ESRestClient esRestClient = null;
         switch (type) {
             case ASYNC:
                 CloseableHttpAsyncClient asyncClient = HttpAsyncClients.createDefault();
                 asyncClient.start();
-                esRestClient = new ESRestClientAsync(server, gson, asyncClient);
-
+                asynchRestClient = new ESRestClientAsync(server, gson, asyncClient);
+                return asynchRestClient;
+            default:
+            	throw new RuntimeException("unimplemented solution for type : " + type);
         }
-        return esRestClient;
+        
     }
 }

@@ -1,19 +1,19 @@
 package ro.endava.akka.workshop.actors;
 
-import akka.actor.Props;
-import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ro.endava.akka.workshop.es.responses.ESAnalyzeResponse;
+
 import ro.endava.akka.workshop.es.actions.ESAnalyzeAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
-import ro.endava.akka.workshop.es.client.ESRestClientSettings;
+import ro.endava.akka.workshop.es.responses.ESAnalyzeResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
 import ro.endava.akka.workshop.messages.IndexMessage;
 import ro.endava.akka.workshop.util.Transformer;
+import akka.actor.Props;
+import akka.actor.UntypedActor;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -40,9 +40,8 @@ public class IndexTokenizerActor extends UntypedActor {
      * @throws Exception
      */
     private void tokenizeBlocking(IndexMessage indexMessage) throws Exception {
-        ESRestClientSettings settings = ESRestClientSettings.builder().server("http://localhost:9200").build();
         ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, settings);
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
         ESAnalyzeAction analyzeAction = new ESAnalyzeAction.Builder().index("analyzerindex").
                 analyzer("myanalyzer").body(indexMessage.getContent()).build();
