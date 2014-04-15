@@ -1,12 +1,8 @@
 package ro.endava.akka.workshop.actors;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
+import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ro.endava.akka.workshop.app.App;
 import ro.endava.akka.workshop.es.actions.ESBulkAction;
 import ro.endava.akka.workshop.es.actions.ESBulky;
@@ -17,7 +13,10 @@ import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
 import ro.endava.akka.workshop.messages.BulkPasswordMessage;
 import ro.endava.akka.workshop.messages.PasswordMessage;
-import akka.actor.UntypedActor;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -56,7 +55,8 @@ public class IndexPasswordActor extends UntypedActor {
         }
 
         ESBulkAction bulkAction = new ESBulkAction.Builder().bulkies(bulkies).build();
-        client.executeAsyncNonBlocking(bulkAction);
+        //ne blocam si asteptam rezultatul
+        client.executeAsyncBlocking(bulkAction);
         App.indexedChunks.incrementAndGet();
 //        LOGGER.debug("[ES client non-blocking] We just sent a bulk index request to elastic server [fire and forget]");
     }
@@ -66,7 +66,7 @@ public class IndexPasswordActor extends UntypedActor {
 	public void preStart() throws Exception {
 		super.preStart();
         ESRestClientFactory factory = new ESRestClientFactory();
-        client = factory.getClient(ESRestClientFactory.Type.ASYNC, true);
+        client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 	}
     
     

@@ -1,15 +1,14 @@
 package ro.endava.akka.workshop.app;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ro.endava.akka.workshop.actors.IndexDispatcherActor;
-import ro.endava.akka.workshop.messages.LocalPasswordMessage;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ro.endava.akka.workshop.actors.IndexDispatcherActor;
+import ro.endava.akka.workshop.messages.LocalPasswordMessage;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class App {
 
@@ -25,8 +24,10 @@ public class App {
 		final Props props = Props.create(IndexDispatcherActor.class);
 		ActorRef indexDispatcherActor = akkaSystem.actorOf(props);
 
+        //Cu chunk de 10000 par cele mai bune rezultate; nici cu 1000 nu e rau; cand se ajunge la chunk de 1000000 crapa diect ca e mesajul prea mare
+        //Cred ca trebuie configurari de cat din heap sa ii dam elasticului
 		LocalPasswordMessage message = new LocalPasswordMessage(
-				"res/common_passwords.txt", 1000);
+				"/common_passwords.txt", 10000);
 
 		indexDispatcherActor.tell(message, ActorRef.noSender());
 
