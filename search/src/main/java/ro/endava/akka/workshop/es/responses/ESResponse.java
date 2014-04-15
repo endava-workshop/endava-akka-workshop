@@ -56,4 +56,24 @@ public class ESResponse {
         sourceList.add(jsonObject);
         return sourceList;
     }
+
+    public JsonObject getJsonObject() {
+        return jsonObject;
+    }
+
+    public String getJsonString() {
+        return jsonString;
+    }
+
+    public boolean isOk() {
+        return isOk;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public Gson getGson() {
+        return gson;
+    }
 }

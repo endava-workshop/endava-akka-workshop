@@ -1,8 +1,8 @@
 package ro.endava.akka.workshop.actors;
 
+import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ro.endava.akka.workshop.es.actions.ESAnalyzeAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
@@ -10,10 +10,9 @@ import ro.endava.akka.workshop.es.responses.ESAnalyzeResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
+import ro.endava.akka.workshop.messages.BulkPasswordMessage;
 import ro.endava.akka.workshop.messages.IndexMessage;
 import ro.endava.akka.workshop.util.Transformer;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -25,9 +24,7 @@ public class IndexTokenizerActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof IndexMessage) {
-            IndexMessage indexMessage = (IndexMessage) message;
-            LOGGER.info("Index Tokenizer Actor received a tokenizer request: " + indexMessage.toString());
-            tokenizeBlocking(indexMessage);
+            tokenizeAndRespond((IndexMessage) message);
         } else {
             throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
         }
@@ -35,11 +32,12 @@ public class IndexTokenizerActor extends UntypedActor {
 
     /**
      * Sends request to ES for getting passwords as tokens from an article
+     * Responding to sender
      *
      * @param indexMessage
      * @throws Exception
      */
-    private void tokenizeBlocking(IndexMessage indexMessage) throws Exception {
+    private void tokenizeAndRespond(IndexMessage indexMessage) throws Exception {
         ESRestClientFactory factory = new ESRestClientFactory();
         ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
@@ -49,16 +47,7 @@ public class IndexTokenizerActor extends UntypedActor {
         ESResponse esResponse = client.executeAsyncBlocking(analyzeAction);
         LOGGER.info("[ES client blocking] Index Tokenizer Actor successfully tokenized passwords");
         ESAnalyzeResponse analyzeResponse = esResponse.getSourceAsObject(ESAnalyzeResponse.class);
-        forwardTokens(analyzeResponse);
-    }
-
-    /**
-     * Sends message with the tokens to be indexed as passwords to IndexPasswordActor
-     *
-     * @param analyzeResponse
-     */
-    private void forwardTokens(ESAnalyzeResponse analyzeResponse) {
-        this.getContext().actorOf(Props.create(IndexPasswordActor.class)).
-                tell(Transformer.tokensToPasswords(analyzeResponse), getSelf());
+        BulkPasswordMessage bulkPasswordMessage = Transformer.tokensToPasswords(analyzeResponse);
+        getSender().tell(bulkPasswordMessage, getSelf());
     }
 }

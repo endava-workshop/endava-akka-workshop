@@ -22,9 +22,7 @@ public class IndexArticleActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof IndexMessage) {
-            IndexMessage indexMessage = (IndexMessage) message;
-            LOGGER.info("Index Article Actor received an index request: " + indexMessage.toString());
-            indexNonBlocking(indexMessage);
+            indexArticle((IndexMessage) message);
         } else {
             throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
         }
@@ -35,14 +33,13 @@ public class IndexArticleActor extends UntypedActor {
      *
      * @param indexMessage
      */
-    private void indexNonBlocking(IndexMessage indexMessage) {
+    private void indexArticle(IndexMessage indexMessage) {
         ESRestClientFactory factory = new ESRestClientFactory();
         ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
         ESIndexAction indexAction = new ESIndexAction.Builder().index("articles").
                 type("article").body(indexMessage).build();
 
-        client.executeAsyncNonBlocking(indexAction);
-        LOGGER.info("[ES client non-blocking] We just sent an index request to elastic server [fire and forget]");
+        client.executeAsyncBlocking(indexAction);
     }
 }

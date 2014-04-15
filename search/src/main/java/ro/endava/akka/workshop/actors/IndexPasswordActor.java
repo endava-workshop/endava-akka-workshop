@@ -31,9 +31,7 @@ public class IndexPasswordActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof BulkPasswordMessage) {
-            BulkPasswordMessage bulkPasswordMessage = (BulkPasswordMessage) message;
-//            LOGGER.info("Index Password Actor received a  request: " + bulkPasswordMessage.toString());
-            bulkIndexPasswords(bulkPasswordMessage);
+            bulkIndexPasswords((BulkPasswordMessage) message);
         } else {
             throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
         }
@@ -55,10 +53,8 @@ public class IndexPasswordActor extends UntypedActor {
         }
 
         ESBulkAction bulkAction = new ESBulkAction.Builder().bulkies(bulkies).build();
-        //ne blocam si asteptam rezultatul
         client.executeAsyncBlocking(bulkAction);
         App.indexedChunks.incrementAndGet();
-//        LOGGER.debug("[ES client non-blocking] We just sent a bulk index request to elastic server [fire and forget]");
     }
 
 

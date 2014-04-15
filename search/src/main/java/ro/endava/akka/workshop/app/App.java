@@ -5,6 +5,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ro.endava.akka.workshop.actors.ESAdminActor;
 import ro.endava.akka.workshop.actors.IndexDispatcherActor;
 import ro.endava.akka.workshop.messages.LocalPasswordMessage;
 
@@ -21,6 +22,10 @@ public class App {
 	public static void main(String[] args) {
 		ActorSystem akkaSystem = ActorSystem.create("akkaSystem");
 
+        final Props properties = Props.create(ESAdminActor.class);
+        ActorRef esAdminActor = akkaSystem.actorOf(properties);
+        esAdminActor.tell(true, ActorRef.noSender());
+
 		final Props props = Props.create(IndexDispatcherActor.class);
 		ActorRef indexDispatcherActor = akkaSystem.actorOf(props);
 
@@ -29,7 +34,7 @@ public class App {
 		LocalPasswordMessage message = new LocalPasswordMessage(
 				"/common_passwords.txt", 10000);
 
-		indexDispatcherActor.tell(message, ActorRef.noSender());
+		//indexDispatcherActor.tell(message, ActorRef.noSender());
 
 		while (sentChunks.get() == 0 || sentChunks.get() > indexedChunks.get()) {
 			try {

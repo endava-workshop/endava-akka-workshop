@@ -1,17 +1,16 @@
 package ro.endava.akka.workshop.actors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.testkit.JavaTestKit;
 import junit.framework.TestCase;
-
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import ro.endava.akka.workshop.es.actions.ESCreateIndexAction;
+import ro.endava.akka.workshop.es.actions.ESIsIndexAction;
 import ro.endava.akka.workshop.es.actions.ESPutMappingAction;
 import ro.endava.akka.workshop.es.actions.structures.ESAnalyzer;
 import ro.endava.akka.workshop.es.actions.structures.ESFilter;
@@ -22,10 +21,11 @@ import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.messages.IndexMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.JavaTestKit;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -131,6 +131,15 @@ public class ActorsIT {
         client.executeAsyncBlocking(mappingAction);
     }
 
+
+    @Test
+    public void testIsIndex() {
+        ESRestClientFactory factory = new ESRestClientFactory();
+        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
+        ESIsIndexAction isIndexAction = new ESIsIndexAction.Builder().index("mama").build();
+        ESResponse esResponse = client.executeAsyncBlocking(isIndexAction);
+        Assert.assertFalse(esResponse.isOk());
+    }
 
     private IndexMessage createArticle1() {
         String domain = "domain";

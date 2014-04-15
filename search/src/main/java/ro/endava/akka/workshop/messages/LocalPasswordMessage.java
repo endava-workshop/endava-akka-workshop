@@ -1,6 +1,8 @@
 package ro.endava.akka.workshop.messages;
 
-public class LocalPasswordMessage {
+import java.io.Serializable;
+
+public class LocalPasswordMessage implements Serializable {
 
 	private int bulkSize;
 

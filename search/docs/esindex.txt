@@ -32,7 +32,7 @@ PUT /passwords/password/_mapping
     }
 }
 
-POST /analyzerindex
+POST /analysis
 {
     "settings" : {
     	"index":{
