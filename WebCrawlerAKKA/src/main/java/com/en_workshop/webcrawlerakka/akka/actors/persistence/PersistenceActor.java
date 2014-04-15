@@ -76,6 +76,6 @@ public class PersistenceActor extends BaseActor {
     }
 
     private void processPersistContentRequest(PersistContentRequest persistContentRequest) {
-        LOG.info("Received content to persist: " + persistContentRequest.getContent());
+        LOG.info("Received content to persist: " + persistContentRequest.getContent().length());
     }
 }

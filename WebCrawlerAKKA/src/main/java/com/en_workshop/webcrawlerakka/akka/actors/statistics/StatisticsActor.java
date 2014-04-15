@@ -26,7 +26,6 @@ public class StatisticsActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<>();
-    private Object domainStatisticsLock = new Object();
 
     /**
      * {@inheritDoc}
@@ -50,7 +49,7 @@ public class StatisticsActor extends BaseActor {
 
     private void addDomainStatistics(AddDomainRequest domainRequest) {
         Domain domain = domainRequest.getDomain();
-        synchronized (domainStatisticsLock) {
+        synchronized (domainStatistics) {
             if (domainStatistics.get(domain.getName()) == null) {
                 domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
             }
@@ -67,9 +66,8 @@ public class StatisticsActor extends BaseActor {
         DomainLinkStatistics domainStats = domainStatistics.get(domain);
         if (domainStats == null) {
             //log the fact that there should have been an empty entry for this domain
-            LOG.error("I must add a statistic object for a domain that should have been in the map.");
             domainStats = new DomainLinkStatistics(domain);
-            synchronized (domainStatisticsLock) {
+            synchronized (domainStatistics) {
                 domainStatistics.put(domain, domainStats);
             }
         }

@@ -42,18 +42,17 @@ public class DomainMasterActor extends BaseActor {
                 @Override
                 public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
                     if (throwable instanceof Exception) {
+                        LOG.error("Exception in DomainMasterActor : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
                         return SupervisorStrategy.restart();
                     }
-
+                    LOG.error("Exception in DomainMasterActor : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
                     return SupervisorStrategy.stop();
                 }
             }
     );
 
     private final Map<String, ActorRef> domainActors;
-    private Object domainLock = new Object();
     private final List<String> stoppedDomains;
-    private Object stoppedDomainsLock = new Object();
 
     private final ActorRef downloadUrlsRouter;
 
@@ -69,9 +68,11 @@ public class DomainMasterActor extends BaseActor {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
                         if (throwable instanceof Exception) {
+                            LOG.error("Exception in DomainMasterActor routersSupervisorStrategy : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
                             return SupervisorStrategy.restart();
                         }
 
+                        LOG.error("Exception in DomainMasterActor routersSupervisorStrategy : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
                         return SupervisorStrategy.stop();
                     }
                 }
@@ -110,28 +111,30 @@ public class DomainMasterActor extends BaseActor {
 
             int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
             /* Start an actor for each domain, if not already started */
-            for (final Domain domain : response.getDomains()) {
-                /* Is this domain stopped? */
-                if (stoppedDomains.contains(domain.getName())) {
-                    LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
-                    continue;
-                }
-
-                /* Is this domain in processing? */
-                if (!domainActors.containsKey(domain.getName())) {
-                    final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter), WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                            getActorName(domain.getName()));
-                    synchronized (domainLock){
-                        domainActors.put(domain.getName(), domainActor);
+            synchronized (response.getDomains()) {
+                for (final Domain domain : response.getDomains()) {
+                    /* Is this domain stopped? */
+                    if (stoppedDomains.contains(domain.getName())) {
+                        LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
+                        continue;
                     }
 
-                    LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
+                    /* Is this domain in processing? */
+                    if (!domainActors.containsKey(domain.getName())) {
+                        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter), WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
+                                getActorName(domain.getName()));
+                        synchronized (domainActors){
+                            domainActors.put(domain.getName(), domainActor);
+                        }
 
-                    domainActor.tell(new CrawlDomainRequest(domain), getSelf());
+                        LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
 
-                    slotsLeft--;
-                    if (slotsLeft == 0) {
-                        break;
+                        domainActor.tell(new CrawlDomainRequest(domain), getSelf());
+
+                        slotsLeft--;
+                        if (slotsLeft == 0) {
+                            break;
+                        }
                     }
                 }
             }
@@ -154,8 +157,10 @@ public class DomainMasterActor extends BaseActor {
         final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class),
                 WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + domain.getName().replace('.','_').replace(':', '_').replace('/', '_'));
 
-        /* Add to the domain map and ensure one actor per domain */
-        domainActors.put(domain.getName(), domainActor);
+        synchronized (domainActors){
+            /* Add to the domain map and ensure one actor per domain */
+            domainActors.put(domain.getName(), domainActor);
+        }
 
         LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
 

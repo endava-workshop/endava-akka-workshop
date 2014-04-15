@@ -1,6 +1,7 @@
 package com.en_workshop.webcrawlerakka.tools;
 
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -45,6 +46,7 @@ public class WebClient {
 
         final CloseableHttpClient httpClient = HttpClients.createDefault();
         final HttpHead headRequest = new HttpHead(link);
+        //TODO blocat domeniul la connection timeout    java.net.ConnectException: Connection timed out
         try (final CloseableHttpResponse response = httpClient.execute(headRequest)) {
             /* Add page headers */
             final Header[] headers = response.getAllHeaders();
@@ -74,6 +76,9 @@ public class WebClient {
      * @return {@link java.lang.Boolean} {@code true} or {@code false}
      */
     public static synchronized boolean isMediaTypeAccepted(final String contentTypeHeader) {
+        if (StringUtils.isBlank(contentTypeHeader)) {
+            return false;
+        }
         final String[] mimeParts = contentTypeHeader.trim().split(";");
         for (final String mimePart : mimeParts) {
             if (Arrays.binarySearch(WebCrawlerConstants.ACCEPTED_MIME_TYPES, mimePart.trim()) >= 0) {
@@ -82,6 +87,16 @@ public class WebClient {
         }
 
         LOG.debug("Mime type " + contentTypeHeader + " not accepted");
+
+        return false;
+    }
+
+    public static synchronized boolean isProtocolAccepted(final String link) throws MalformedURLException {
+        URL url = new URL(link);
+
+        if (Arrays.binarySearch(WebCrawlerConstants.ACCEPTED_PROTOCOLS, url.getProtocol()) >= 0) {
+            return true;
+        }
 
         return false;
     }

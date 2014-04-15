@@ -36,10 +36,8 @@ public class AnalyzeLinkActor extends BaseActor {
             String sourceUrl = analyzeLinkRequest.getSourceDomainName();
             String link = analyzeLinkRequest.getLink();
 
-            LOG.info("Received link: " + link + " and domain " + sourceUrl);
-
             //if the initial domain is not the same as the domain of the link, persist both domain and link
-            if (WebClient.isValid(link))  {
+            if (WebClient.isValid(link) && WebClient.isProtocolAccepted(link))  {
                 URL url = new URL(link);
                 String linkDomain = url.getHost();
 
