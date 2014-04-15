@@ -35,7 +35,7 @@ public class WebCrawlerConstants {
     public static final String[] ACCEPTED_PROTOCOLS = new String[]{"http", "https"};
 
     /* Other */
-    public static final int DOMAINS_CRAWL_MAX_COUNT = 100; // Maximum number of domains to crawl at one time
+    public static final int DOMAINS_CRAWL_MAX_COUNT = 3; // Maximum number of domains to crawl at one time
     public static final long DOMAINS_REFRESH_PERIOD = 1 * 60 * 1000; // 10 minutes
     public static final long DOMAIN_DEFAULT_COOLDOWN = 20 * 1000; // 60 seconds
 }

@@ -24,4 +24,8 @@ public class PersistContentRequest extends MessageRequest implements Persistence
     public String getContent() {
         return content;
     }
+
+    public Link getLink() {
+        return link;
+    }
 }
