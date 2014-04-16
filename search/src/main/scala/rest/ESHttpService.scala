@@ -17,6 +17,7 @@ import spray.util._
 import spray.http._
 import akka.actor.ActorRef
 import ro.endava.akka.workshop.messages.SearchPasswordMessage
+import akka.messages.Seed
 
 @Api(value = "/", description = "This is a ES endpoint.")
 abstract class ESHttpService(indexDispatcherActor : ActorRef) extends HttpServiceActor with Json4sSupport {
@@ -36,6 +37,9 @@ abstract class ESHttpService(indexDispatcherActor : ActorRef) extends HttpServic
         complete {
           // get akka actor
           indexDispatcherActor.tell(new SearchPasswordMessage(indexDispatcherActor, pageIndex.toLong, pageSize.toLong), indexDispatcherActor)
+//          val f = backend ? (Seed())
+//          val res = f.result(2 minutes)
+//          complete(res)
           s"get passwords for index $pageIndex | pageSize $pageSize"
         }
     } ~
