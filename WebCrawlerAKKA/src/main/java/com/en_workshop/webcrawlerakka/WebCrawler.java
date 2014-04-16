@@ -23,9 +23,18 @@ public class WebCrawler {
         LOG.info("Web crawler starting ...");
 
         LOG.debug("Add sample (test) data ...");
-        Domain wikiDomain = DomainDao.add(new Domain("ro.wikipedia.org", 20000, 0));
-        if (null != wikiDomain) {
-            LinkDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
+//        Domain wikiDomain = DomainDao.add(new Domain("ro.wikipedia.org", 20000, 0));
+        Domain archeusDomain = DomainDao.add(new Domain("www.archeus.ro", 50, 0));
+//        if (null != wikiDomain) {
+//            LinkDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
+//        }
+        if (null != archeusDomain) {
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareDex?query=bun&lang=ro");
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareDex?query=CARE");
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareDex?query=VALOARE");
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareDex?query=mare&lang=ro");
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareWebster?query=GREAT");
+            LinkDao.add(archeusDomain, "http://www.archeus.ro/lingvistica/CautareWebster?query=DISTANCE");
         }
 
 //        Domain debianDomain = WebDomainDao.add(new Domain("wiki.debian.org", 30000, 0));

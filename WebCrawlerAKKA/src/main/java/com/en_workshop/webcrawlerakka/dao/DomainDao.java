@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,11 +21,14 @@ public class DomainDao {
      * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} addded or {@code null}
      */
     public synchronized static Domain add(final Domain domain) {
+
         /* Validation */
         if (null == domain) {
             LOG.error("Cannot create a null Domain.");
             return null;
         }
+
+        System.out.println("DomainDao - added " + domain.getName());
 
         /* Test if the domain is already added to the database */
         if (Domain.DOMAINS.contains(domain)) {
@@ -62,8 +66,8 @@ public class DomainDao {
      *
      * @return The list of {@link com.en_workshop.webcrawlerakka.entities.Domain}s found
      */
-    public static List<Domain> findAll() {
-        return Domain.DOMAINS;
+    public synchronized static List<Domain> findAll() {
+        return new ArrayList<>(Domain.DOMAINS);
     }
 
     /**
@@ -77,6 +81,8 @@ public class DomainDao {
             LOG.error("Cannot update a null Domain");
             return;
         }
+
+        System.out.println("DomainDao - updated " + newDomain.getName());
 
         /* Remove the old domain */
         for (int i = 0; i < Domain.DOMAINS.size(); i++) {

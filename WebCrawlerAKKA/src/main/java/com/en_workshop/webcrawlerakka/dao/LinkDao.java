@@ -27,6 +27,8 @@ public class LinkDao {
             return null;
         }
 
+        System.out.println("LinkDao - updated " + domain.getName() + " " + url );
+
         Link link = new Link(domain.getName(), domain.getName(), url);
         
         /* Test if the url is already added to the database */
@@ -73,6 +75,8 @@ public class LinkDao {
             LOG.error("Cannot update a null Link");
             return;
         }
+
+        System.out.println("LinkDao - updated " + newLink );
 
         /* Remove the old link */
         for (int i = 0; i < Link.LINKS.size(); i++) {

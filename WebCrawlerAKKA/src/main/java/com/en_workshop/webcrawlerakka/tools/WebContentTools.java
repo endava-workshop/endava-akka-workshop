@@ -40,7 +40,7 @@ public class WebContentTools {
 
         try {
             /* URL as string pre-processing */
-            String processedLink = urlLink.toLowerCase();
+            String processedLink = urlLink; //.toLowerCase();
 
             /* Replace (eliminate) specific link fragments */
             for (int i = 0; i < URL_FRAGMENT_REPLACE_SRC.length; i++) {
