@@ -36,6 +36,9 @@ public class IdentifyLinksActor extends BaseActor {
             Elements links = document.select("a[href]");
             for (Element link : links) {
                 final String normalizedLink = WebContentTools.normalizeURLLink(link.attr("abs:href"));
+                if (null == normalizedLink || 0 == normalizedLink.length()) {
+                    continue;
+                }
 
                 //call to analyze the normalized link
                 findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {

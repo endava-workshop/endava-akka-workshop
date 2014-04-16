@@ -33,13 +33,9 @@ public class ProcessingMasterActor extends BaseActor {
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
-                        if (throwable instanceof Exception) {
-                            LOG.error("Exception in ProcessingMasterActor: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
-                            return SupervisorStrategy.restart();
-                        }
-
-                        LOG.error("Exception in ProcessingMasterActor: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
-                        return SupervisorStrategy.stop();
+                        //never stop
+                        LOG.error("Exception in ProcessingMasterActor: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
+                        return SupervisorStrategy.restart();
                     }
                 });
 
@@ -57,6 +53,7 @@ public class ProcessingMasterActor extends BaseActor {
      */
     @Override
     public void onReceive(Object message) {
+        LOG.debug("Received message " + message.getClass());
         if (message instanceof ProcessContentRequest) {
             //identify the links
             indentifyLinksRouter.tell(message, getSender());
