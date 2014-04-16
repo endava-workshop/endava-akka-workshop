@@ -32,6 +32,7 @@ public class WebCrawlerConstants {
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
 
     public static final String[] ACCEPTED_MIME_TYPES = new String[]{"text/html"}; // http://en.wikipedia.org/wiki/Internet_media_type
+    public static final String[] ACCEPTED_PROTOCOLS = new String[]{"http", "https"};
 
     /* Other */
     public static final int DOMAINS_CRAWL_MAX_COUNT = 100; // Maximum number of domains to crawl at one time
