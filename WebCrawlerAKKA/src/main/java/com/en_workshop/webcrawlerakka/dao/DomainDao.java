@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,8 +63,8 @@ public class DomainDao {
      *
      * @return The list of {@link com.en_workshop.webcrawlerakka.entities.Domain}s found
      */
-    public static List<Domain> findAll() {
-        return Domain.DOMAINS;
+    public synchronized static List<Domain> findAll() {
+        return new ArrayList<>(Domain.DOMAINS);
     }
 
     /**

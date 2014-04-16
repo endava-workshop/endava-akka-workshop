@@ -106,31 +106,24 @@ public class DomainMasterActor extends BaseActor {
         } else if (message instanceof ListDomainsResponse) {
             final ListDomainsResponse response = (ListDomainsResponse) message;
 
-            synchronized (lock) {
-                /* Check domains processing limit */
-                if (domainActors.size() >= WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT) {
-                    LOG.info("The number of maximum actors for domains processing was reached. (MAX = " + WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT + ")");
+            /* Check domains processing limit */
+            if (domainActors.size() >= WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT) {
+                LOG.info("The number of maximum actors for domains processing was reached. (MAX = " + WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT + ")");
+            }
+
+            int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
+                /* Start an actor for each domain, if not already started */
+            for (final Domain domain : response.getDomains()) {
+                    /* Is this domain stopped? */
+                if (stoppedDomains.contains(domain.getName())) {
+                    LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
+                    continue;
                 }
 
-                int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
-                /* Start an actor for each domain, if not already started */
-                for (final Domain domain : response.getDomains()) {
-                    /* Is this domain stopped? */
-                    if (stoppedDomains.contains(domain.getName())) {
-                        LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
-                        continue;
-                    }
-
-                    /* Is this domain in processing? */
-                    if (!domainActors.containsKey(domain.getName())) {
-                        startNewDomain(domain);
-
-                        slotsLeft--;
-                        if (slotsLeft == 0) {
-                            break;
-                        }
-                    }
-
+                /* Is this domain in processing? */
+                if (!domainActors.containsKey(domain.getName()) && slotsLeft > 0) {
+                    startNewDomain(domain);
+                    slotsLeft--;
                 }
             }
 
@@ -152,10 +145,8 @@ public class DomainMasterActor extends BaseActor {
         final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter),
                 WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + getActorName(domain.getName()));
 
-        synchronized (lock){
-            /* Add to the domain map and ensure one actor per domain */
-            domainActors.put(domain.getName(), domainActor);
-        }
+        /* Add to the domain map and ensure one actor per domain */
+        domainActors.put(domain.getName(), domainActor);
 
         LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
 

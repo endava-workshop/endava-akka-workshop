@@ -31,6 +31,9 @@ public class DataExtractorActor extends BaseActor {
             String content = processContentRequest.getContent();
 
             Document document = Jsoup.parse(content);
+            if (document == null || document.body() == null) {
+                return;
+            }
             final String strippedText = document.body().text();
 
             findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
