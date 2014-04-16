@@ -6,22 +6,8 @@
 			alias: "remote machine 1",
 			ip: "127.0.0.1",
 			port: 2554,
-			protocol: "tcp",
-			actorSystem: "ZipBreakerActorSystem"
-		},
-		{
-			alias: "remote machine 2",
-			ip: "127.0.0.1",
-			port: 2555,
-			protocol: "tcp",
-			actorSystem: "ZipBreakerActorSystem"
-		},
-		{
-			alias: "remote machine 3",
-			ip: "127.0.0.1",
-			port: 2556,
-			protocol: "tcp",
-			actorSystem: "ZipBreakerActorSystem"
+			protocol: "akka.tcp",
+			actorSystem: "ZipBreakerRemoteSystem"
 		}
 	]
 }

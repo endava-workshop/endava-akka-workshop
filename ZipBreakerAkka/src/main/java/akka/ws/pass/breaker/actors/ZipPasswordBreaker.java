@@ -43,7 +43,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
 	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
 
-	private final LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
+	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
 	ActorRef workDispatcher;
 	ActorRef passwordProvider;
@@ -55,9 +55,11 @@ public class ZipPasswordBreaker extends UntypedActor {
 	private Random random = new Random();
 
 	public void onReceive(Object message) throws Exception {
+		if(log.isInfoEnabled()) {
+			log.info("\n\n**************************************\nZipPasswordBreaker received" + message + "\n********************************************\n\n");
+		}
 
 		if (message instanceof BreakArchiveMessage) {
-			System.out.println("Master received start message");
 
 			BreakArchiveMessage inMessage = (BreakArchiveMessage) message;
 			final String zipFilePath = inMessage.getZipFilePath();
@@ -91,9 +93,15 @@ public class ZipPasswordBreaker extends UntypedActor {
 	
 	@Override
 	public void preStart() {
-		logger.info(getSelf().toString() + " -> entered preStart()");
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> entered preStart()");
+		}
+		
 		initialiseChildren();
-		logger.info(getSelf().toString() + " exit preStart()");
+		
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " exit preStart()");
+		}
 	}
 
 	private void initialiseChildren() {
@@ -106,24 +114,43 @@ public class ZipPasswordBreaker extends UntypedActor {
 	}
 	
 	private URL makeFileAvailable(File source) throws IOException {
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> entered makeFileAvailable() for source " + source);
+		}
+		
 		final String fileName = source.getName();
 		File destination = new File(PATH_TO_SHARED_FOLDER + "/" + fileName);
 		Files.move(source, destination);
 		URL url = new URL(SHARED_PATH_TO_SHARED_FOLDER + "/" + fileName);
+		
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> exit makeFileAvailable() returning " + url);
+		}
 		return url;
 	}
 	
 	private Long generateNewProcessId() {
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> entered generateNewProcessId()");
+		}
+		
 		Long generated = random.nextLong();
 		while(runningProcessesIds.contains(generated)) {
 			generated = random.nextLong();
 		}
 		runningProcessesIds.add(generated);
+		
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> exit generateNewProcessId() returning " + generated);
+		}
 		return generated;
 	}
 
 	@Override
 	public SupervisorStrategy supervisorStrategy() {
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> entered supervisorStrategy()");
+		}
 
 		if (strategy == null) {
 

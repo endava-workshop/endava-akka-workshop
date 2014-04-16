@@ -6,19 +6,24 @@ import akka.actor.Props;
 import akka.ws.pass.breaker.actors.ZipPasswordBreaker;
 import akka.ws.pass.breaker.messages.BreakArchiveMessage;
 
+import java.io.File;
+import java.net.URL;
+
 /**
  * Zip password breaker with Akka.
- * Note: this project is currently a stub.
+ * Example of use.
  * 
  * @author Daniel Doboga
  */
 public class LocalApplication {
+	
+	final static String zipArchivePath = "D:/workspace/EndavaAkkaWs/ZipBreakerAkka/src/main/resources/experiment2.zip"; //beware this will be consumed after the first ran
+	final static String LOCAL_ACTOR_SYSTEM_NAME = "LocalZipBreakerActorSystem"; //TODO externalize name in the properties
 
 	public static void main(String[] args) throws Exception {
-		ActorSystem actorSystem = ActorSystem.create("LocalZipBreakerActorSystem"); //TODO externalize name in the properties
-
-		final String zipFilePath = "target/classes/experiment.zip";
-		BreakArchiveMessage breakZipMessage = new BreakArchiveMessage(zipFilePath);
+		ActorSystem actorSystem = ActorSystem.create(LOCAL_ACTOR_SYSTEM_NAME);
+		
+		BreakArchiveMessage breakZipMessage = new BreakArchiveMessage(zipArchivePath);
 
 		ActorRef processorActor = actorSystem.actorOf(Props.create(ZipPasswordBreaker.class));
 		processorActor.tell(breakZipMessage, null);

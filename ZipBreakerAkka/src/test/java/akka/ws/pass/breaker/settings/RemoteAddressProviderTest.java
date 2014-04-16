@@ -67,7 +67,7 @@ public class RemoteAddressProviderTest {
 		
 		//for now allow tcp only (and case sensitive).
 		switch(protocol) {
-			case "tcp" :
+			case "akka.tcp" :
 				return true;
 			default :
 				return false;

@@ -1,5 +1,8 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+
 import akka.actor.ActorPath;
 import akka.actor.ActorRef;
 import akka.actor.Address;
@@ -40,10 +43,15 @@ public class WorkDispatcher extends UntypedActor {
 	private List<Address> allAvailableRemoteAddresses;
 	private Map<Long, ActorRef> remoteBalancingRouters = new HashMap<>();
 	private Map<Long, List<Address>> remoteBalancingRoutersAddresses = new HashMap<>();
+
+	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 	
 	/* TODO: the remoteBalancingRouters could be retrieved directly from the ZipPasswordBreakWorker, via the ReadoToProcessMessage*/
 	
 	public void onReceive(Object message) throws Exception {
+		if(log.isInfoEnabled()) {
+			log.info("\n\n*********************************\nWorkDispatcher received " + message + "\n****************************\n\n");
+		}
 
 		if (message instanceof NewProcessMessage) {
 
@@ -57,7 +65,13 @@ public class WorkDispatcher extends UntypedActor {
 		} else if(message instanceof FeedProcessMessage) {
 			
 			FeedProcessMessage inMessage = (FeedProcessMessage) message;
-			remoteBalancingRouters.get(inMessage.getProcessId()).tell(message, getSender());
+			ActorRef targetRemoteWorker = remoteBalancingRouters.get(inMessage.getProcessId());
+			if(targetRemoteWorker == null) {
+				//it means no ReadyToProcessMessage has been received yet for this process Id; we need to delay this message somehow
+				getSelf().tell(inMessage, getSender());
+			} else {
+				targetRemoteWorker.tell(message, getSender());
+			}
 		} else if(message instanceof EndProcessMessage) {
 			
 			remoteBroadcastRouter.tell(message, getSender());
@@ -74,6 +88,9 @@ public class WorkDispatcher extends UntypedActor {
 	}
 	
 	private void initChildren() {
+		if(log.isInfoEnabled()) {
+			log.info("Entered initChildren()");
+		}
 		//TODO RemoteAddressProvider should be moved in the utilities package and representation changed in the diagram, as it's not an actor anymore
 		List<RemoteAddress> availableRemoteAddresses = RemoteAddressProvider.getAvailableRemoteAddresses();
 		List<Address> remoteAddresses = new ArrayList<>(availableRemoteAddresses.size());
@@ -97,7 +114,10 @@ public class WorkDispatcher extends UntypedActor {
 										)
 								)
 						);
-		
+
+		if(log.isInfoEnabled()) {
+			log.info("exit initChildren()");
+		}
 	}
 	
 	private boolean notInitialised(Long processId) {
@@ -118,7 +138,7 @@ public class WorkDispatcher extends UntypedActor {
 		addressesBoundToProcess.add(balancingRouterAddressOnRemoteMachine);
 		ActorRef remoteBalancingRouter = getContext()
 				.actorOf(
-						Props.create(ZipPasswordBreakWorker.class)
+						Props.create(PasswordChecker.class)
 						.withRouter(
 								new RemoteRouterConfig(
 										new SmallestMailboxRouter(addressesBoundToProcess.size()), addressesBoundToProcess
@@ -138,7 +158,7 @@ public class WorkDispatcher extends UntypedActor {
 		Address childAddress = childPath.address();
 		for(Address address : allAvailableRemoteAddresses) {
 			if(address.host().equals(childAddress.host()) 
-					&& address.port().equals(childAddress.host()) 
+					&& address.port().equals(childAddress.port()) 
 					&& address.system().equals(childAddress.system())
 					) {
 				return address;

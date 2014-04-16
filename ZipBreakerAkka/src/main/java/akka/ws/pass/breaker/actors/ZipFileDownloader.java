@@ -1,5 +1,8 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+
 import akka.actor.UntypedActor;
 import akka.ws.pass.breaker.messages.DownloadFinishedMessage;
 import akka.ws.pass.breaker.messages.StartDownloadMessage;
@@ -19,9 +22,13 @@ public class ZipFileDownloader extends UntypedActor {
 	private static final String ZIP_EXTENSION = "zip";
 	private static final String TEMP_FOLDER = "d:/tmp"; //TODO externalize in properties
 	
-	private Random random;
+	private Random random = new Random();
+	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
 	public void onReceive(Object message) throws Exception {
+		if(log.isInfoEnabled()) {
+			log.info("\n\n*******************************\nZipFileDownloader received " + message + "\n*************************************\n\n");
+		}
 
 		if (message instanceof StartDownloadMessage) {
 

@@ -21,4 +21,9 @@ public abstract class BaseProcessMessage implements Serializable {
 	public long getProcessId() {
 		return processId;
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getName() + " [processId=" + processId + "]";
+	}
 }

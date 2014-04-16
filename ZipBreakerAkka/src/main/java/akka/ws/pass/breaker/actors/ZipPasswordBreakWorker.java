@@ -1,6 +1,6 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.ws.pass.breaker.util.PropertyUtil;
+import akka.ws.pass.breaker.messages.ReadyToProcessMessage;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
@@ -13,6 +13,7 @@ import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.NewProcessMessage;
 import akka.ws.pass.breaker.messages.StartDownloadMessage;
 import akka.ws.pass.breaker.messages.StartNewProcessMessage;
+import akka.ws.pass.breaker.util.PropertyUtil;
 
 /**
  * 
@@ -34,8 +35,8 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 	}
 
 	public void onReceive(Object message) throws Exception {
-		if(log.isDebugEnabled()) {
-			log.debug("ZipPasswordBreakWorker received " + message.getClass());
+		if(log.isInfoEnabled()) {
+			log.info("\n\n************************************\nZipPasswordBreakWorker received " + message + "\n***************************************\n\n");
 		}
 		
 		if(message instanceof NewProcessMessage) {
@@ -48,6 +49,8 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 			DownloadFinishedMessage inMessage = (DownloadFinishedMessage) message;
 			StartNewProcessMessage outMessage = new StartNewProcessMessage(inMessage.getProcessId(), inMessage.getZipFile());
 			passwordCheckerBroadcastRouter.tell(outMessage, getSelf());
+			ReadyToProcessMessage outMessage2 = new ReadyToProcessMessage(inMessage.getProcessId());
+			workDispatcher.tell(outMessage2, getSelf());
 			
 		} else if (message instanceof EndProcessMessage) {
 			passwordCheckerBroadcastRouter.tell(message, getSender());

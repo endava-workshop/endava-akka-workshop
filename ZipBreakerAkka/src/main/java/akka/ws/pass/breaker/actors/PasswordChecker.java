@@ -17,6 +17,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -38,8 +39,8 @@ public class PasswordChecker extends UntypedActor {
 
 	public void onReceive(Object message) throws Exception {
 		final long startTime = threadMXBean.getCurrentThreadCpuTime();
-		if(log.isDebugEnabled()) {
-			log.debug("PasswordChecker received " + message.getClass());
+		if(log.isInfoEnabled()) {
+			log.info("\n\n******** PasswordChecker received " + message + "\n***************************\n\n");
 		}
 		
 		if(message instanceof StartNewProcessMessage) {
@@ -54,6 +55,7 @@ public class PasswordChecker extends UntypedActor {
 				for(String password : inMessage.getPasswords()) {
 					processOnePassword(zipFile, password, processId);
 				}
+				logProcessedChunkInformation(inMessage);
 			}
 			
 		} else if (message instanceof EndProcessMessage) {
@@ -79,9 +81,10 @@ public class PasswordChecker extends UntypedActor {
 			getSender().tell(outMessage, getSelf());
 		}
 		else {
-			if(log.isDebugEnabled()) {
-				log.debug("Wrong password: " + password);
-			}
+//			if(log.isInfoEnabled()) {
+//				log.info("Wrong password: " + password);
+//			}
+//just avoid poluting the log. Uncomnent this only temporary, if really needed.
 		}
 	}
 
@@ -118,6 +121,29 @@ public class PasswordChecker extends UntypedActor {
 
 		}
 		theFile.delete();
+	}
+
+	private void logProcessedChunkInformation(FeedProcessMessage processedChunk) {
+		if(log.isInfoEnabled()) {
+			String first = null;
+			String last = null;
+			final Iterator<String> iterator = processedChunk.getPasswords().iterator();
+		    first = iterator.next();
+		    last = first;
+		    while(iterator.hasNext()) {
+		        last = iterator.next();
+		    }
+
+			StringBuilder message = new StringBuilder();
+			message.append("\n****************************** Checked chunk of ")
+			.append(processedChunk.getPasswords().size())
+			.append(" passwords. ***************************\n")
+			.append("first password in chunk: ").append(first)
+			.append("last password in chunk: ").append(last)
+			.append("\n***********************************************\n");
+			
+			log.info(message.toString());
+		}
 	}
 
 	/**

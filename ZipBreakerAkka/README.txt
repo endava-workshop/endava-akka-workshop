@@ -6,6 +6,9 @@ To deploy and run the module, please follow these steps:
 of the Akka microkernel installation. Copy the application.conf file to the config folder of the
 Akka microkernel installation. If the microkernel runs on the same physical machine as the local
 application, ensure you use a different port number in the remote configuration than the local.
+Note: You can deploy the ZipBreakerAkka as a single jar file (all dependencies embeded), by
+issuing the following command line from the root of the project:
+mvn clean package assembly:single
 
 2) Start the Akka microkernel on one or several computers (you can also have several microkernel 
 installations on the same physical computer if you provide a different port number for each).
@@ -30,3 +33,9 @@ Additional notes:
 currently mentioned in static final variables inside the actor classes. This situation will 
 change in the future and they will go into properties files. However, if you want to configure 
 anything at this moment, take a look in the code of the actors.
+
+Important properties to configure:
+- TEMP_FOLDER in ZipFileDownloader should point to an existing folder with write rights on each
+remote machine.
+- PATH_TO_SHARED_FOLDER and SHARED_PATH_TO_SHARED_FOLDER in ZipPasswordBreaker should point to
+the same shared folder which should be accessible by all machines (local and all of the remote).

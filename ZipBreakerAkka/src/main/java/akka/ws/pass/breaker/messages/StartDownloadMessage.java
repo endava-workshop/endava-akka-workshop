@@ -24,4 +24,9 @@ public class StartDownloadMessage extends BaseProcessMessage {
 		return url;
 	}
 
+	@Override
+	public String toString() {
+		return "StartDownloadMessage [processId=" + super.getProcessId() + ", url=" + url + "]";
+	}
+
 }

@@ -44,12 +44,14 @@ public class PasswordProvider extends UntypedActor {
 
 	public void onReceive(Object message) throws Exception {
 		final long startTime = threadMXBean.getCurrentThreadCpuTime();
+		if(log.isInfoEnabled()) {
+			log.info("\n\n************* PasswordProvider received " + message + "\n*************************\n\n");
+		}
 
 		if (message instanceof RequestPasswordFlowMessage) {
 
 			RequestPasswordFlowMessage inMessage = (RequestPasswordFlowMessage) message;
 			final long processId = inMessage.getProcessId();
-			log.debug("******* PasswordProvider received RequestPasswordFlowMessage for processId: " + processId);
 			initCursor(processId);
 			
 			ContinuePasswordFlowMessage outMessage = new ContinuePasswordFlowMessage(processId);
@@ -59,7 +61,6 @@ public class PasswordProvider extends UntypedActor {
 			
 			ContinuePasswordFlowMessage inMessage = (ContinuePasswordFlowMessage) message;
 			final long processId = inMessage.getProcessId();
-			log.debug("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
 			if(processNotEnded(processId) && morePasswordsAvailable(processId)) {
 				Collection<String> passwordChunk = nextPasswordChunk(processId);
 				PasswordChunkMessage outMessage = new PasswordChunkMessage(processId, passwordChunk);
@@ -71,7 +72,6 @@ public class PasswordProvider extends UntypedActor {
 			
 			EndProcessMessage inMessage = (EndProcessMessage) message;
 			final long processId = inMessage.getProcessId();
-			log.debug("******* PasswordProvider received ContinuePasswordFlowMessage for processId: " + processId);
 			cursors.remove(processId);
 		} else if (message instanceof RequestTotalSpentTimeMessage) {
 			TotalSpentTimeMessage outMessage = new TotalSpentTimeMessage(totalSpentCPUTime);

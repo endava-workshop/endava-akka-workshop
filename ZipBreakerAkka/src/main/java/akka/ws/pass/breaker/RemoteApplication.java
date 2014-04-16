@@ -5,6 +5,12 @@ import akka.actor.Props;
 import akka.kernel.Bootable;
 import akka.ws.pass.breaker.actors.ZipPasswordBreakWorker;
 
+/**
+ * The RemoteApplication class represents the entry point for the remote nodes 
+ * that will be deployed in Akka microkernels.
+ * 
+ * @author ddoboga
+ */
 public class RemoteApplication implements Bootable {
 	
 	public static final String ACTORY_SYSTEM_NAME = "ZipBreakerRemoteSystem";

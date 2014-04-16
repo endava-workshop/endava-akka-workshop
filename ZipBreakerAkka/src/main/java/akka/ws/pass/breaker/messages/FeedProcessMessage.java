@@ -25,4 +25,9 @@ public class FeedProcessMessage extends BaseProcessMessage {
 		return passwords;
 	}
 
+	@Override
+	public String toString() {
+		return "FeedProcessMessage [processId=" + super.getProcessId() + ", first pass in chunk=" + passwords.iterator().next() + "]";
+	}
+
 }
