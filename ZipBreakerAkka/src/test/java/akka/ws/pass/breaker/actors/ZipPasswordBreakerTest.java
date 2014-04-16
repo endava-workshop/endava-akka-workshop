@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -34,6 +35,7 @@ import static junit.framework.Assert.fail;
  * @author ddoboga
  *
  */
+@Ignore //run by hand, method by method
 public class ZipPasswordBreakerTest {
 
 	private ActorSystem actorSystem;

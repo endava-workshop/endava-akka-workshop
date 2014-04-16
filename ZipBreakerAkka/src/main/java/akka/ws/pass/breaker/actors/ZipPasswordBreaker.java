@@ -1,5 +1,8 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+
 import akka.actor.ActorRef;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
@@ -39,6 +42,8 @@ public class ZipPasswordBreaker extends UntypedActor {
 	final static String THIS_HOST = "192.168.166.100"; //TODO externalize in properties
 	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
 	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
+
+	private final LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
 
 	ActorRef workDispatcher;
 	ActorRef passwordProvider;
@@ -86,7 +91,9 @@ public class ZipPasswordBreaker extends UntypedActor {
 	
 	@Override
 	public void preStart() {
+		logger.info(getSelf().toString() + " -> entered preStart()");
 		initialiseChildren();
+		logger.info(getSelf().toString() + " exit preStart()");
 	}
 
 	private void initialiseChildren() {

@@ -14,6 +14,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +35,13 @@ public class PasswordCheckerTest {
 	@Before
 	public void setUp() throws Exception {
 		actorSystem = ActorSystem.create("LocalZipBreakerActorSystem");
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+		actorSystem.shutdown();
+		//allow enough time to shutdown
+		Thread.sleep(100);
 	}
 
 	@Test

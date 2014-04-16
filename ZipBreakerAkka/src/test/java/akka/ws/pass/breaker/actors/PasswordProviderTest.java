@@ -10,6 +10,7 @@ import akka.ws.pass.breaker.messages.PasswordChunkMessage;
 import akka.ws.pass.breaker.messages.RequestPasswordFlowMessage;
 import scala.concurrent.duration.FiniteDuration;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +32,13 @@ public class PasswordProviderTest {
 	@Before
 	public void setUp() throws Exception {
 		actorSystem = ActorSystem.create("LocalZipBreakerActorSystem");
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+		actorSystem.shutdown();
+		//allow enough time to shutdown
+		Thread.sleep(1000);
 	}
 
 	@Test

@@ -62,7 +62,7 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 		
 		final int passCheckersNumber = Integer.parseInt(PropertyUtil.getRemoteProperty(WORKER_NUM_KEY));
 		
-		zipFileDownloader = this.getContext().actorOf(Props.create(ZipFileDownloader.class).withRouter(new RoundRobinRouter(passCheckersNumber)), "zipFileDownloader");
+		passwordCheckerBroadcastRouter = this.getContext().actorOf(Props.create(PasswordChecker.class).withRouter(new RoundRobinRouter(passCheckersNumber)), "passwordCheckerBroadcastRouter");
 		
 	}
 

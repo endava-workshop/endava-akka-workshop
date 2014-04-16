@@ -13,6 +13,7 @@ import akka.ws.pass.breaker.messages.TotalSpentTimeMessage;
 import scala.concurrent.duration.FiniteDuration;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -21,6 +22,7 @@ import org.junit.Test;
  * @author ddoboga
  *
  */
+@Ignore //performance tests should be ran by hand
 public class PasswordProviderPerformanceTest {
 
 	private ActorSystem actorSystem;

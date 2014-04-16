@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -29,6 +30,7 @@ import static junit.framework.Assert.assertEquals;
  * @author ddoboga
  *
  */
+@Ignore //performance tests should be ran by hand
 public class PasswordCheckerPerformanceTest {
 
 	private ActorSystem actorSystem;
