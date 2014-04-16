@@ -54,6 +54,8 @@ public class DomainMasterActor extends BaseActor {
     private final Map<String, ActorRef> domainActors;
     private final List<String> stoppedDomains;
 
+    private final Object lock = new Object();
+
     private final ActorRef downloadUrlsRouter;
 
     /**
@@ -111,7 +113,7 @@ public class DomainMasterActor extends BaseActor {
 
             int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
             /* Start an actor for each domain, if not already started */
-            synchronized (response.getDomains()) {
+            synchronized (lock) {
                 for (final Domain domain : response.getDomains()) {
                     /* Is this domain stopped? */
                     if (stoppedDomains.contains(domain.getName())) {
@@ -121,21 +123,14 @@ public class DomainMasterActor extends BaseActor {
 
                     /* Is this domain in processing? */
                     if (!domainActors.containsKey(domain.getName())) {
-                        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter), WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME +
-                                getActorName(domain.getName()));
-                        synchronized (domainActors){
-                            domainActors.put(domain.getName(), domainActor);
-                        }
-
-                        LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
-
-                        domainActor.tell(new CrawlDomainRequest(domain), getSelf());
+                        startNewDomain(domain);
 
                         slotsLeft--;
                         if (slotsLeft == 0) {
                             break;
                         }
                     }
+
                 }
             }
 
@@ -154,10 +149,10 @@ public class DomainMasterActor extends BaseActor {
      * @param domain the new domain.
      */
     private void startNewDomain(final Domain domain) {
-        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class),
-                WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + domain.getName().replace('.','_').replace(':', '_').replace('/', '_'));
+        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter),
+                WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + getActorName(domain.getName()));
 
-        synchronized (domainActors){
+        synchronized (lock){
             /* Add to the domain map and ensure one actor per domain */
             domainActors.put(domain.getName(), domainActor);
         }

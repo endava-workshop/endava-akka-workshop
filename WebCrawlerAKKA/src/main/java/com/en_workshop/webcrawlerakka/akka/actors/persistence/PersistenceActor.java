@@ -8,7 +8,6 @@ import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
-import com.en_workshop.webcrawlerakka.entities.LinkContent;
 
 import java.util.List;
 
@@ -77,10 +76,7 @@ public class PersistenceActor extends BaseActor {
     }
 
     private void processPersistContentRequest(PersistContentRequest persistContentRequest) {
-        LinkContent linkContent = new LinkContent();
-        linkContent.setContent(persistContentRequest.getContent());
-        linkContent.setLink(persistContentRequest.getLink());
-
-        LOG.info("Received content to persist: " + persistContentRequest.getContent().length());
+        LOG.info("Received content to persist: " + persistContentRequest.getPage().getContent().length());
+        //TODO call the persist content
     }
 }

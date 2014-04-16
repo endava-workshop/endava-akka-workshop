@@ -2,6 +2,7 @@ package com.en_workshop.webcrawlerakka.akka.requests.persistence;
 
 import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
 import com.en_workshop.webcrawlerakka.entities.Link;
+import com.en_workshop.webcrawlerakka.entities.Page;
 
 /**
  * Request to persist the content of a link.
@@ -11,21 +12,14 @@ import com.en_workshop.webcrawlerakka.entities.Link;
  */
 public class PersistContentRequest extends MessageRequest implements PersistenceRequest{
 
-    private Link link;
-    private final String content;
-
+   private final Page page;
 
     public PersistContentRequest(Link link, String content) {
         super(System.currentTimeMillis());
-        this.link = link;
-        this.content = content;
+        page = new Page(link.getUrl(), content);
     }
 
-    public String getContent() {
-        return content;
-    }
-
-    public Link getLink() {
-        return link;
+    public Page getPage() {
+        return page;
     }
 }

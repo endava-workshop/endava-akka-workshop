@@ -27,7 +27,7 @@ public class LinkDao {
             return null;
         }
 
-        Link link = new Link(domain.getName(), url);
+        Link link = new Link(domain.getName(), domain.getName(), url);
         
         /* Test if the url is already added to the database */
         if (Link.LINKS.contains(link)) {

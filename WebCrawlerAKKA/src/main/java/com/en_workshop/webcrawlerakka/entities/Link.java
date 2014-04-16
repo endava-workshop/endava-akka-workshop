@@ -14,15 +14,19 @@ public class Link {
     public static final List<Link> LINKS = Collections.synchronizedList(new ArrayList<Link>());
 
     private final String domain;
+
+    private final String sourceDomain; //null daca domeniul pe care a fost gasit este acelasi cu domain
+
     private final String url;
     private final LinkStatus status;
 
-    public Link(final String domain, final String url) {
-        this(domain, url, LinkStatus.NOT_VISITED);
+    public Link(final String domain, String sourceDomain, final String url) {
+        this(domain, sourceDomain, url, LinkStatus.NOT_VISITED);
     }
 
-    public Link(final String domain, final String url, final LinkStatus status) {
+    public Link(final String domain, String sourceDomain, final String url, final LinkStatus status) {
         this.domain = domain;
+        this.sourceDomain = domain.equals(sourceDomain) ? null : sourceDomain;
         this.url = url;
         this.status = status;
     }
@@ -39,10 +43,15 @@ public class Link {
         return status;
     }
 
+    public String getSourceDomain() {
+        return sourceDomain;
+    }
+
     @Override
     public String toString() {
         return "Link{" +
                 "domain=" + domain +
+                ", sourceDomain=" + sourceDomain +
                 ", url='" + url + '\'' +
                 ", status=" + status +
                 '}';

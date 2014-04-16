@@ -15,9 +15,11 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import scala.concurrent.duration.Duration;
 
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -97,6 +99,22 @@ public class DomainActor extends BaseActor {
         } else if (message instanceof DownloadUrlResponse) {
             final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
+
+            /* Update the time the domain was crawled at */
+            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+                        @Override
+                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
+                            persistenceMasterActor.tell(
+                                    new PersistDomainRequest(new Domain(domain.getName(), domain.getCoolDownPeriod(), Calendar.getInstance().getTimeInMillis())),
+                                    getSelf());
+                        }
+                    }, new OnFailure() {
+                        @Override
+                        public void onFailure(Throwable throwable) throws Throwable {
+                            LOG.error("Cannot find Persistence Master");
+                        }
+                    }
+            );
 
             /* Schedule a new crawl for the downloaded domain after the cool down period */
             getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS), getSelf(),

@@ -47,7 +47,8 @@ public class WebClient {
         final CloseableHttpClient httpClient = HttpClients.createDefault();
         final HttpHead headRequest = new HttpHead(link);
         //TODO blocat domeniul la connection timeout    java.net.ConnectException: Connection timed out
-        try (final CloseableHttpResponse response = httpClient.execute(headRequest)) {
+        try {
+            final CloseableHttpResponse response = httpClient.execute(headRequest);
             /* Add page headers */
             final Header[] headers = response.getAllHeaders();
             for (Header header : headers) {

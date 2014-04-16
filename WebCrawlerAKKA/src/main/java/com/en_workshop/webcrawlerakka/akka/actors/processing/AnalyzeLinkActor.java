@@ -13,6 +13,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkReques
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
 
@@ -33,25 +34,25 @@ public class AnalyzeLinkActor extends BaseActor {
         if (message instanceof AnalyzeLinkRequest) {
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
-            String sourceUrl = analyzeLinkRequest.getSourceDomainName();
+            String linkSourceDomain = analyzeLinkRequest.getSourceDomainName();
             String link = analyzeLinkRequest.getLink();
 
             //if the initial domain is not the same as the domain of the link, persist both domain and link
-            if (WebClient.isValid(link) && WebClient.isProtocolAccepted(link))  {
+            if (StringUtils.isNotBlank(link) && WebClient.isValid(link) && WebClient.isProtocolAccepted(link))  {
                 URL url = new URL(link);
                 String linkDomain = url.getHost();
 
                 LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
                 Domain newDomain = null;
-                if (!linkDomain.equals(sourceUrl)) {
+                if (!linkDomain.equals(linkSourceDomain)) {
                     newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
                     persistDomain(newDomain);
                 }
 
-                persistLink(newDomain == null ? analyzeLinkRequest.getSourceDomainName() : newDomain.getName(), link);
+                persistLink(linkDomain, linkSourceDomain, link);
             } else {
-                LOG.error("Invalid URL received [" + link + "]");
+                LOG.debug("Invalid URL received [" + link + "]");
             }
 
         } else {
@@ -64,15 +65,16 @@ public class AnalyzeLinkActor extends BaseActor {
     /**
      * Finds the PersistenceMasterActor and sends the request to persist the link.
      *
-     * @param domainName the name of the web domain of the link.
+     * @param linkDomain the name of the web domain of the link.
+     * @param linkSourceDomain the domain where the link was found.
      * @param link the link.
      */
-    private void persistLink(final String domainName, final String link) {
+    private void persistLink(final String linkDomain, final String linkSourceDomain,  final String link) {
         //call to persist the normalized link
         findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(domainName, link)), getSelf());
+                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(linkDomain, linkSourceDomain, link)), getSelf());
                     }
                 }, new OnFailure() {
                     @Override
