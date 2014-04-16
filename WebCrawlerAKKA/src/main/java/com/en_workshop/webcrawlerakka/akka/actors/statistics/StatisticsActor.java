@@ -26,6 +26,7 @@ public class StatisticsActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<>();
+    private final Object lock = new Object();
 
     /**
      * {@inheritDoc}
@@ -49,7 +50,7 @@ public class StatisticsActor extends BaseActor {
 
     private void addDomainStatistics(AddDomainRequest domainRequest) {
         Domain domain = domainRequest.getDomain();
-        synchronized (domainStatistics) {
+        synchronized (lock) {
             if (domainStatistics.get(domain.getName()) == null) {
                 domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
             }
@@ -67,7 +68,7 @@ public class StatisticsActor extends BaseActor {
         if (domainStats == null) {
             //log the fact that there should have been an empty entry for this domain
             domainStats = new DomainLinkStatistics(domain);
-            synchronized (domainStatistics) {
+            synchronized (lock) {
                 domainStatistics.put(domain, domainStats);
             }
         }

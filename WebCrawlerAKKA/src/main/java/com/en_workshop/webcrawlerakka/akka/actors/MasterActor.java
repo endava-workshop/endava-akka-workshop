@@ -1,9 +1,6 @@
 package com.en_workshop.webcrawlerakka.akka.actors;
 
-import akka.actor.ActorRef;
-import akka.actor.AllForOneStrategy;
-import akka.actor.Props;
-import akka.actor.SupervisorStrategy;
+import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Function;
@@ -26,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class MasterActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
-    private final SupervisorStrategy supervisorStrategy = new AllForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(100, Duration.create(1, TimeUnit.MINUTES),
             new Function<Throwable, SupervisorStrategy.Directive>() {
                 @Override
                 public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {

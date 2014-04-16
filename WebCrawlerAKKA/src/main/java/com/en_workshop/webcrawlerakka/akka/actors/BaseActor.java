@@ -94,7 +94,10 @@ public abstract class BaseActor extends UntypedActor {
 
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        LOG.error("Actor " + getSelf().getClass() + " will be restarted. The reason " + reason.getMessage());
+        LOG.error("Actor " + getSelf().getClass() + " will be restarted." +
+                " The reason class[" + reason.getClass() + " message [" + reason.getMessage() + "].");
+        reason.printStackTrace();
+
         super.preRestart(reason, message);
     }
 

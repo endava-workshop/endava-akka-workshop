@@ -65,7 +65,7 @@ public class DomainMasterActor extends BaseActor {
         this.domainActors = new HashMap<>();
         this.stoppedDomains = new ArrayList<>();
 
-        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(100, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
@@ -106,14 +106,14 @@ public class DomainMasterActor extends BaseActor {
         } else if (message instanceof ListDomainsResponse) {
             final ListDomainsResponse response = (ListDomainsResponse) message;
 
-            /* Check domains processing limit */
-            if (domainActors.size() >= WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT) {
-                LOG.info("The number of maximum actors for domains processing was reached. (MAX = " + WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT + ")");
-            }
-
-            int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
-            /* Start an actor for each domain, if not already started */
             synchronized (lock) {
+                /* Check domains processing limit */
+                if (domainActors.size() >= WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT) {
+                    LOG.info("The number of maximum actors for domains processing was reached. (MAX = " + WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT + ")");
+                }
+
+                int slotsLeft = WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT - domainActors.size();
+                /* Start an actor for each domain, if not already started */
                 for (final Domain domain : response.getDomains()) {
                     /* Is this domain stopped? */
                     if (stoppedDomains.contains(domain.getName())) {

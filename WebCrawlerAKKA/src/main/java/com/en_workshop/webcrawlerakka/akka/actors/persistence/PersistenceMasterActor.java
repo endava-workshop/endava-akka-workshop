@@ -33,10 +33,10 @@ public class PersistenceMasterActor extends BaseActor {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
                         if (throwable instanceof Exception) {
-                            LOG.error("Exception in PersistenceMasterActor: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
-                            return SupervisorStrategy.restart();
+                            LOG.error("Exception in PersistenceMasterActor routers: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
+                                return SupervisorStrategy.restart();
                         }
-                        LOG.error("Exception in PersistenceMasterActor: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
+                        LOG.error("Exception in PersistenceMasterActor routers: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
                         return SupervisorStrategy.stop();
                     }
                 });
