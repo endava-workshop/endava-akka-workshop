@@ -1,0 +1,27 @@
+<assembly>
+    <id>runnable</id>
+    <formats>
+        <format>dir</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>README*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory></outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>target/libs</directory>
+            <outputDirectory>libs</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
