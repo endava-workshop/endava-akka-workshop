@@ -1,47 +1,61 @@
 package rest
-import scala.collection.JavaConversions._
-import spray.routing._
-import scala.concurrent.duration.Duration
+
 import java.util
-import com.gettyimages.spray.swagger.SwaggerApiBuilder
-import scala.reflect.runtime.universe._
-import com.wordnik.swagger.annotations.{ ApiOperation, ApiModel, Api }
-import spray.httpx.Json4sSupport
-import org.json4s.{ DefaultFormats, Formats }
+import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
-import spray.httpx.marshalling._
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import akka.util.Timeout
-import spray.util._
-import spray.http._
+import scala.reflect.runtime.universe._
+import org.json4s.DefaultFormats
+import org.json4s.Formats
+import com.gettyimages.spray.swagger.SwaggerApiBuilder
+import com.wordnik.swagger.annotations.Api
+import com.wordnik.swagger.annotations.ApiModel
+import com.wordnik.swagger.annotations.ApiOperation
 import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
 import ro.endava.akka.workshop.messages.SearchPasswordMessage
-import akka.messages.Seed
+import ro.endava.akka.workshop.messages.SearchPasswordResultMessage
+import spray.httpx.Json4sSupport
+import spray.routing._
+import spray.util._
+import ro.endava.akka.workshop.messages.PasswordType
+import scala.concurrent.Await
+import org.slf4j.LoggerFactory
+import ro.endava.akka.workshop.actors.SearchRouterActor
+
 
 @Api(value = "/", description = "This is a ES endpoint.")
-abstract class ESHttpService(indexDispatcherActor : ActorRef) extends HttpServiceActor with Json4sSupport {
+abstract class ESHttpService(searchRouterActor : ActorRef) extends HttpServiceActor with Json4sSupport {
 
   implicit def json4sFormats: Formats = DefaultFormats
 
-  implicit val timeout = Timeout(30 seconds)
+  implicit val timeout = Timeout(5 seconds)
   //  val urlService = () => springContext.getBean(classOf[UrlService])
   val swaggerApi = new SwaggerApiBuilder("1.2", "1.0", "swagger-specs", _: Seq[Type], _: Seq[Type])
 
-  
-  
   @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET") // TODO this needs to be moved at method level
   def receive = runRoute {
     path("getPasswords" / Segment / Segment) {
       (pageIndex, pageSize) =>
-        complete {
+        get {
           // get akka actor
-          indexDispatcherActor.tell(new SearchPasswordMessage(indexDispatcherActor, pageIndex.toLong, pageSize.toLong), indexDispatcherActor)
-
-//          val f = backend ? (Seed())
-//          val res = f.result(2 minutes)
-//          complete(res)
-          s"get passwords for index $pageIndex | pageSize $pageSize"
+          val future: Future[SearchPasswordResultMessage] = ask(searchRouterActor, new SearchPasswordMessage(PasswordType.COMMON, pageIndex.toLong, pageSize.toLong)).mapTo[SearchPasswordResultMessage]
+          val response = Await.result(future, 5 seconds)
+          println("response " + response.getPasswords().size())
+          complete(response.getPasswords())
+        }
+    } ~
+    path("indexPage" / Segment) {
+      (pageContent) =>
+        post {
+          // get akka actor
+          val future: Future[SearchPasswordResultMessage] = ask(searchRouterActor, new SearchPasswordMessage(PasswordType.COMMON, pageIndex.toLong, pageSize.toLong)).mapTo[SearchPasswordResultMessage]
+          val response = Await.result(future, 5 seconds)
+          println("response " + response.getPasswords().size())
+          complete(response.getPasswords())
         }
     } ~
       //    @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET")
