@@ -96,6 +96,7 @@ public class DomainActor extends BaseActor {
             /* Send a "download URL" request */
             downloadUrlsRouter.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
 
+            // Here you can move the request for a new crawl on this domain. This will generate download link requests at a rate imposed only by the cool down period.
         } else if (message instanceof DownloadUrlResponse) {
             final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
