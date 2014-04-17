@@ -10,6 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spray.version>1.2.0</spray.version>
 	</properties>
 
 	<dependencies>
@@ -60,28 +61,33 @@
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-io</artifactId>
-            <version>1.2.0</version>
+            <version>${spray.version}</version>
         </dependency>
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-can</artifactId>
-            <version>1.2.0</version>
+            <version>${spray.version}</version>
         </dependency>
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-http</artifactId>
-            <version>1.2.0</version>
+            <version>${spray.version}</version>
         </dependency>
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-httpx</artifactId>
-            <version>1.2.0</version>
+            <version>${spray.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-routing</artifactId>
-            <version>1.2.0</version>
+            <version>${spray.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-client</artifactId>
+            <version>${spray.version}</version>
         </dependency>
 
         <dependency>
@@ -136,6 +142,24 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>Main</mainClass>
+                    <!--<arguments>-->
+                        <!--<argument>port=8080</argument>-->
+                    <!--</arguments>-->
+                </configuration>
             </plugin>
 		</plugins>
 	</build>
