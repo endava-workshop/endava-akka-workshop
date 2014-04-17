@@ -1,7 +1,5 @@
 package ro.endava.akka.workshop.actors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ro.endava.akka.workshop.es.actions.ESIndexAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
@@ -17,7 +15,6 @@ import akka.actor.UntypedActor;
  * Actor that will index articles in ES server
  */
 public class IndexArticleActor extends UntypedActor {
-    private final static Logger LOGGER = LoggerFactory.getLogger(IndexArticleActor.class);
 
     @Override
     public void onReceive(Object message) throws Exception {

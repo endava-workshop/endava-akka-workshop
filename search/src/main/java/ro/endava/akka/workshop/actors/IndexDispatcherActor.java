@@ -1,17 +1,24 @@
 package ro.endava.akka.workshop.actors;
 
+import akka.dispatch.Mapper;
+import akka.pattern.Patterns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
-import ro.endava.akka.workshop.messages.BulkPasswordMessage;
-import ro.endava.akka.workshop.messages.IndexMessage;
-import ro.endava.akka.workshop.messages.LocalPasswordMessage;
+import ro.endava.akka.workshop.messages.*;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.routing.RoundRobinRouter;
+import scala.Option;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
+import scala.util.Try;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -45,6 +52,29 @@ public class IndexDispatcherActor extends UntypedActor {
     @Override
     public void preStart() throws Exception {
         super.preStart();
+
+        /**
+         * Creating indices using ask
+         */
+        ActorRef esAdminActor = this.getContext().actorOf(Props.create(ESAdminActor.class));
+        Future<Object> ask = (Future<Object>) Patterns.ask(esAdminActor, new AdminMessage(), 30000);
+        Await.ready(ask, Duration.create(30, TimeUnit.SECONDS));
+        Option<Try<Object>> value = ask.value();
+        Try<AdminResponseMessage> adminResponseMessageTry = value.get().map(new Mapper<Object, AdminResponseMessage>() {
+            @Override
+            public AdminResponseMessage apply(Object parameter) {
+                AdminResponseMessage responseMessage = (AdminResponseMessage) parameter;
+                return responseMessage;
+            }
+        });
+        AdminResponseMessage resp = adminResponseMessageTry.get();
+        if(resp.getIsOk()){
+            LOGGER.info("The indices have been created");
+        }
+        else{
+            LOGGER.info("Error in ESAdminActor...can not continue");
+        }
+        
         /**
          * Creating actors
          */

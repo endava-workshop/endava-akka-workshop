@@ -1,5 +1,7 @@
 package ro.endava.akka.workshop.messages;
 
+import akka.actor.ActorRef;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -7,11 +9,13 @@ import java.util.List;
 /**
  * Created by cosmin on 4/9/14.
  */
-public class SearchPasswordResultMessage implements Serializable {
+public class SearchPasswordHitsMessage implements Serializable {
 
     private List<String> passwords;
+    private ActorRef requestor;
 
-    public SearchPasswordResultMessage(List<String> passwords) {
+    public SearchPasswordHitsMessage(ActorRef requestor, List<String> passwords) {
+        this.requestor = requestor;
         this.passwords = Collections.unmodifiableList(passwords);
     }
 
@@ -19,4 +23,7 @@ public class SearchPasswordResultMessage implements Serializable {
         return passwords;
     }
 
+    public ActorRef getRequestor() {
+        return requestor;
+    }
 }

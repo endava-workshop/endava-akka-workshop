@@ -37,6 +37,7 @@ abstract class ESHttpService(indexDispatcherActor : ActorRef) extends HttpServic
         complete {
           // get akka actor
           indexDispatcherActor.tell(new SearchPasswordMessage(indexDispatcherActor, pageIndex.toLong, pageSize.toLong), indexDispatcherActor)
+
 //          val f = backend ? (Seed())
 //          val res = f.result(2 minutes)
 //          complete(res)

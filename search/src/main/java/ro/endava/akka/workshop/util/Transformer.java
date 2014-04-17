@@ -4,6 +4,7 @@ import ro.endava.akka.workshop.es.responses.ESAnalyzeResponse;
 import ro.endava.akka.workshop.es.responses.ESToken;
 import ro.endava.akka.workshop.messages.BulkPasswordMessage;
 import ro.endava.akka.workshop.messages.PasswordMessage;
+import ro.endava.akka.workshop.messages.PasswordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,6 @@ public class Transformer {
             PasswordMessage passwordMessage = new PasswordMessage(token.getToken());
             passwordMessages.add(passwordMessage);
         }
-        return new BulkPasswordMessage(passwordMessages);
+        return new BulkPasswordMessage(passwordMessages, PasswordType.DEFAULT);
     }
 }

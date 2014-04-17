@@ -1,9 +1,6 @@
 package ro.endava.akka.workshop.actors;
 
 import akka.actor.UntypedActor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ro.endava.akka.workshop.app.App;
 import ro.endava.akka.workshop.es.actions.ESBulkAction;
 import ro.endava.akka.workshop.es.actions.ESBulky;
 import ro.endava.akka.workshop.es.actions.ESIndexAction;
@@ -23,8 +20,6 @@ import java.util.Collection;
  * Actor that will index passwords in ES
  */
 public class IndexPasswordActor extends UntypedActor {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(IndexPasswordActor.class);
 
     private ESRestClient client;
     
@@ -47,14 +42,13 @@ public class IndexPasswordActor extends UntypedActor {
     private void bulkIndexPasswords(BulkPasswordMessage message) throws IOException {
         Collection<ESBulky> bulkies = new ArrayList<>();
         for (PasswordMessage passwordMessage : message.getPasswords()) {
-            ESIndexAction indexAction = new ESIndexAction.Builder().index("passwords").type("password").
+            ESIndexAction indexAction = new ESIndexAction.Builder().index("passwords").type(message.getPasswordType().toString()).
                     id(passwordMessage.getPassword()).body(passwordMessage).build();
             bulkies.add(indexAction);
         }
 
         ESBulkAction bulkAction = new ESBulkAction.Builder().bulkies(bulkies).build();
         client.executeAsyncBlocking(bulkAction);
-        App.indexedChunks.incrementAndGet();
     }
 
 

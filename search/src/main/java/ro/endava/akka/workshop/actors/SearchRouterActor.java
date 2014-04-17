@@ -1,13 +1,14 @@
 package ro.endava.akka.workshop.actors;
 
+import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import akka.routing.RoundRobinRouter;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
-import ro.endava.akka.workshop.messages.IndexMessage;
+import ro.endava.akka.workshop.messages.SearchPasswordHitsMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordMessage;
+import ro.endava.akka.workshop.messages.SearchPasswordReqMessage;
 import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
 
 /**
@@ -17,22 +18,33 @@ import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
  */
 public class SearchRouterActor extends UntypedActor {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SearchRouterActor.class);
+
+    private ActorRef searchPassActorRouter;
 
     @Override
     public void onReceive(final Object message) throws Exception {
         if (message instanceof SearchPasswordMessage) {
-            SearchPasswordMessage searchPasswordMessage = (SearchPasswordMessage) message;
-            LOGGER.info("Search Router Actor received a message: " + searchPasswordMessage);
-            this.getContext().actorOf(Props.create(SearchPasswordActor.class)).tell(searchPasswordMessage, getSelf());
+            SearchPasswordMessage mess = (SearchPasswordMessage) message;
+            searchPassActorRouter.tell(new SearchPasswordReqMessage(mess.getPasswordType(), mess.getFrom(), mess.getSize(), getSender()), getSelf());
+        } else if (message instanceof SearchPasswordHitsMessage) {
+            SearchPasswordHitsMessage hitsMessage = (SearchPasswordHitsMessage) message;
+            hitsMessage.getRequestor().tell(new SearchPasswordResultMessage(hitsMessage.getPasswords()), getSelf());
         } else {
-            if (message instanceof SearchPasswordResultMessage) {
-                SearchPasswordResultMessage passwordResultMessage = (SearchPasswordResultMessage) message;
-                LOGGER.info("Search Router Actor received a result for password searching: " + passwordResultMessage);
-                passwordResultMessage.getRequestor().tell(passwordResultMessage, getSelf());
-            } else {
-                throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
-            }
+            throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
+        }
+    }
+
+    @Override
+    public void preStart() throws Exception {
+        super.preStart();
+
+        /**
+         * Creating actors
+         */
+        if (searchPassActorRouter == null) {
+            searchPassActorRouter = getContext().actorOf(
+                    Props.create(SearchPasswordActor.class).withRouter(
+                            new RoundRobinRouter(50)));
         }
     }
 }

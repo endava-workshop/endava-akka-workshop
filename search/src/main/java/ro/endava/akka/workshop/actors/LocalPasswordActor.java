@@ -3,10 +3,10 @@ package ro.endava.akka.workshop.actors;
 import akka.actor.UntypedActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ro.endava.akka.workshop.app.App;
 import ro.endava.akka.workshop.messages.BulkPasswordMessage;
 import ro.endava.akka.workshop.messages.LocalPasswordMessage;
 import ro.endava.akka.workshop.messages.PasswordMessage;
+import ro.endava.akka.workshop.messages.PasswordType;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -37,19 +37,17 @@ public class LocalPasswordActor extends UntypedActor {
                     if (passwordsList.size() == inMessage.getBulkSize()) {
                         // send a bulk of passwords for being indexed
                         BulkPasswordMessage outMessage = new BulkPasswordMessage(
-                                passwordsList);
+                                passwordsList, PasswordType.COMMON);
                         getSender().tell(outMessage, getSelf());
                         // LOGGER.debug("added a new bulk of local passwords");
-                        App.sentChunks.incrementAndGet();
                         passwordsList = new ArrayList<>(inMessage.getBulkSize());
                     }
                     passwordsList.add(new PasswordMessage(password));
                 }
                 if (passwordsList.size() > 0) {
                     BulkPasswordMessage outMessage = new BulkPasswordMessage(
-                            passwordsList);
+                            passwordsList, PasswordType.COMMON);
                     getSender().tell(outMessage, getSelf());
-                    App.sentChunks.incrementAndGet();
                 }
                 // LOGGER.debug("added a new bulk of local passwords");
                 in.close();

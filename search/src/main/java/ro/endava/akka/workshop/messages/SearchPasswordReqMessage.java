@@ -1,5 +1,7 @@
 package ro.endava.akka.workshop.messages;
 
+import akka.actor.ActorRef;
+
 import java.io.Serializable;
 
 /**
@@ -8,17 +10,18 @@ import java.io.Serializable;
  * Should not have query because we just want to retrieve all passwords
  * Pagination features
  */
-public class SearchPasswordMessage implements Serializable {
+public class SearchPasswordReqMessage implements Serializable {
     private Long from;
     private Long size;
     private PasswordType passwordType;
-
+    private ActorRef sender;
     //TODO add sort
 
-    public SearchPasswordMessage(PasswordType passwordType, Long from, Long size) {
+    public SearchPasswordReqMessage(PasswordType passwordType, Long from, Long size, ActorRef sender) {
         this.from = from;
         this.size = size;
         this.passwordType = passwordType;
+        this.sender = sender;
     }
 
     public Long getFrom() {
@@ -29,8 +32,20 @@ public class SearchPasswordMessage implements Serializable {
         return size;
     }
 
+    public ActorRef getSender() {
+        return sender;
+    }
 
     public PasswordType getPasswordType() {
         return passwordType;
+    }
+
+    @Override
+    public String toString() {
+        return "SearchPasswordMessage{" +
+                "from=" + from +
+                ", size=" + size +
+                ", sender=" + sender +
+                '}';
     }
 }

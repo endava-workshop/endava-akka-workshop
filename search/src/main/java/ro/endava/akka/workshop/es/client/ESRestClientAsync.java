@@ -45,7 +45,6 @@ public class ESRestClientAsync implements ESRestClient {
         HttpResponse httpResponse = null;
         try {
             httpResponse = future.get();
-            LOGGER.info("Successful async blocking request");
             //closeClient();
         } catch (InterruptedException e) {
             LOGGER.error("Error in request async blocking: {}", e);

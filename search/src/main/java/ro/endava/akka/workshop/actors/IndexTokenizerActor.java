@@ -41,11 +41,10 @@ public class IndexTokenizerActor extends UntypedActor {
         ESRestClientFactory factory = new ESRestClientFactory();
         ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
 
-        ESAnalyzeAction analyzeAction = new ESAnalyzeAction.Builder().index("analyzerindex").
+        ESAnalyzeAction analyzeAction = new ESAnalyzeAction.Builder().index("analysis").
                 analyzer("myanalyzer").body(indexMessage.getContent()).build();
 
         ESResponse esResponse = client.executeAsyncBlocking(analyzeAction);
-        LOGGER.info("[ES client blocking] Index Tokenizer Actor successfully tokenized passwords");
         ESAnalyzeResponse analyzeResponse = esResponse.getSourceAsObject(ESAnalyzeResponse.class);
         BulkPasswordMessage bulkPasswordMessage = Transformer.tokensToPasswords(analyzeResponse);
         getSender().tell(bulkPasswordMessage, getSelf());

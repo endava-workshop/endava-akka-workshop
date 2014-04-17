@@ -14,12 +14,19 @@ public class BulkPasswordMessage implements Serializable {
 
     private List<PasswordMessage> passwords;
 
-    public BulkPasswordMessage(List<PasswordMessage> passwords) {
+    private PasswordType passwordType;
+
+    public BulkPasswordMessage(List<PasswordMessage> passwords, PasswordType passwordType) {
         this.passwords = Collections.unmodifiableList(passwords);
+        this.passwordType = passwordType;
     }
 
     public List<PasswordMessage> getPasswords() {
         return passwords;
+    }
+
+    public PasswordType getPasswordType() {
+        return passwordType;
     }
 
     @Override

@@ -18,9 +18,7 @@ import ro.endava.akka.workshop.es.client.ESRestClient;
 import ro.endava.akka.workshop.es.client.ESRestClientFactory;
 import ro.endava.akka.workshop.es.responses.ESIndexResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
-import ro.endava.akka.workshop.messages.IndexMessage;
-import ro.endava.akka.workshop.messages.SearchPasswordMessage;
-import ro.endava.akka.workshop.messages.SearchPasswordResultMessage;
+import ro.endava.akka.workshop.messages.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +69,7 @@ public class ActorsIT {
             // the run() method needs to finish within 10 seconds
             new Within(duration("10 seconds")) {
                 protected void run() {
-                    subject.tell(createSearchPasswordMessage(getRef()), getRef());
+                    subject.tell(createSearchPasswordMessage(), getRef());
                     // Will wait for the rest of the 10 seconds
                     expectMsgClass(SearchPasswordResultMessage.class);
                 }
@@ -148,7 +146,7 @@ public class ActorsIT {
         return indexMessage;
     }
 
-    private SearchPasswordMessage createSearchPasswordMessage(ActorRef actorRef) {
-        return new SearchPasswordMessage(actorRef);
+    private SearchPasswordMessage createSearchPasswordMessage() {
+        return new SearchPasswordMessage(PasswordType.COMMON, 0L, 1L);
     }
 }
