@@ -48,16 +48,16 @@ abstract class ESHttpService(searchRouterActor : ActorRef) extends HttpServiceAc
           complete(response.getPasswords())
         }
     } ~
-    path("indexPage" / Segment) {
-      (pageContent) =>
-        post {
-          // get akka actor
-          val future: Future[SearchPasswordResultMessage] = ask(searchRouterActor, new SearchPasswordMessage(PasswordType.COMMON, pageIndex.toLong, pageSize.toLong)).mapTo[SearchPasswordResultMessage]
-          val response = Await.result(future, 5 seconds)
-          println("response " + response.getPasswords().size())
-          complete(response.getPasswords())
-        }
-    } ~
+//    path("indexPage" / Segment) {
+//      (pageContent) =>
+//        post {
+//          // get akka actor
+//          val future: Future[SearchPasswordResultMessage] = ask(searchRouterActor, new SearchPasswordMessage(PasswordType.COMMON, pageIndex.toLong, pageSize.toLong)).mapTo[SearchPasswordResultMessage]
+//          val response = Await.result(future, 5 seconds)
+//          println("response " + response.getPasswords().size())
+//          complete(response.getPasswords())
+//        }
+//    } ~
       //    @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET")
     path("api") {
         get {
