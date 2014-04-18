@@ -6,9 +6,6 @@ import akka.actor.Props;
 import akka.ws.pass.breaker.actors.ZipPasswordBreaker;
 import akka.ws.pass.breaker.messages.BreakArchiveMessage;
 
-import java.io.File;
-import java.net.URL;
-
 /**
  * Zip password breaker with Akka.
  * Example of use.

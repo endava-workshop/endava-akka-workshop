@@ -1,22 +1,29 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>akka.ws</groupId>
-  <artifactId>ZipBreakerAkka</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>ZipBreakerAkka</name>
-  <description>Proof of concept for the Akka Workshop showing a basic actor setup for distributing a password breaking</description>
-  <dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>akka.ws</groupId>
+	<artifactId>ZipBreakerAkka</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>ZipBreakerAkka</name>
+	<description>Proof of concept for the Akka Workshop showing a basic actor setup for distributing a password breaking</description>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spray.version>1.2.0</spray.version>
+	</properties>
+	
+	<dependencies>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-testkit_2.10</artifactId>
 			<version>2.2.3</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_2.10</artifactId>
-            <version>2.2.3</version>
-		</dependency>
+			<version>2.2.3</version>
+		</dependency> -->
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-remote_2.10</artifactId>
@@ -29,8 +36,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-testkit_2.11.0-M3</artifactId>
-			<version>2.2.0</version>
+			<artifactId>akka-testkit_2.10</artifactId>
+			<version>2.2.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -44,57 +51,127 @@
 			<version>16.0.1</version>
 		</dependency>
 
-      <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.11</version>
-          <scope>test</scope>
-      </dependency>
-  </dependencies>
-    <build>
+		<!-- <dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.10</artifactId>
+			<version>2.3-M2</version> - it's not working with crt spray-can
+			<version>2.2.3</version>
+		</dependency> -->
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-io</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-can</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-http</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-httpx</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-routing</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-client</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-json_2.10</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
 		<finalName>zip-breaker-akka</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
 					<archive>
 						<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
-                </configuration>
-            </plugin>
-        </plugins>
-        
-	   	<pluginManagement>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+				<executions>
+
+					<execution>
+						<id>compile</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<phase>compile</phase>
+					</execution>
+					<execution>
+						<id>test-compile</id>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<phase>test-compile</phase>
+					</execution>
+					<execution>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
 			<plugins>
 				<plugin>
-				  <artifactId>maven-assembly-plugin</artifactId>
-				  <configuration>
-					<archive>
-					  <manifest>
-						<mainClass>akka.ws.pass.breaker.LocalApplication</mainClass>
-					  </manifest>
-					</archive>
-					<descriptorRefs>
-					  <descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				  </configuration>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>akka.ws.pass.breaker.LocalApplication</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+					</configuration>
 					<executions>
-				  <execution>
-					  <id>make-assembly</id> <!-- this is used for inheritance merges -->
-					  <phase>package</phase> <!-- bind to the packaging phase -->
-					  <goals>
-						<goal>single</goal>
-					  </goals>
-					</execution>
-				  </executions>
+						<execution>
+							<id>make-assembly</id> <!-- this is used for inheritance merges -->
+							<phase>package</phase> <!-- bind to the packaging phase -->
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
-    </build>
-    
-    
+	</build>
+
+
 </project>
