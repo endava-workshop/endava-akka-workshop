@@ -1,19 +1,17 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.ws.pass.breaker.messages.ReadyToProcessMessage;
-
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.routing.RoundRobinRouter;
 import akka.ws.pass.breaker.messages.DownloadFinishedMessage;
 import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.NewProcessMessage;
+import akka.ws.pass.breaker.messages.ReadyToProcessMessage;
+import akka.ws.pass.breaker.messages.RegisterPasswordCheckersMessage;
 import akka.ws.pass.breaker.messages.StartDownloadMessage;
 import akka.ws.pass.breaker.messages.StartNewProcessMessage;
-import akka.ws.pass.breaker.util.PropertyUtil;
 
 /**
  * 
@@ -24,7 +22,7 @@ import akka.ws.pass.breaker.util.PropertyUtil;
  */
 public class ZipPasswordBreakWorker extends UntypedActor {
 	private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-	private static final String WORKER_NUM_KEY = "pass.checker.actor.number";
+//	private static final String WORKER_NUM_KEY = "pass.checker.actor.number";
 	
 	ActorRef workDispatcher;
 	ActorRef zipFileDownloader;
@@ -55,6 +53,10 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 		} else if (message instanceof EndProcessMessage) {
 			passwordCheckerBroadcastRouter.tell(message, getSender());
 
+		} else if (message instanceof RegisterPasswordCheckersMessage) {
+			RegisterPasswordCheckersMessage inMessage = (RegisterPasswordCheckersMessage) message;
+			passwordCheckerBroadcastRouter = inMessage.getPasswordCheckersBroadcastRouter();
+
 		} else {
 			throw new IllegalArgumentException("Unsupported message type: " + message.getClass());
 		}
@@ -63,9 +65,9 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 	private void initChildren() {
 		zipFileDownloader = this.getContext().actorOf(Props.create(ZipFileDownloader.class), "zipFileDownloader");
 		
-		final int passCheckersNumber = Integer.parseInt(PropertyUtil.getRemoteProperty(WORKER_NUM_KEY));
-		
-		passwordCheckerBroadcastRouter = this.getContext().actorOf(Props.create(PasswordChecker.class).withRouter(new RoundRobinRouter(passCheckersNumber)), "passwordCheckerBroadcastRouter");
+//		final int passCheckersNumber = Integer.parseInt(PropertyUtil.getRemoteProperty(WORKER_NUM_KEY));
+//		
+//		passwordCheckerBroadcastRouter = this.getContext().actorOf(Props.create(PasswordChecker.class).withRouter(new RoundRobinRouter(passCheckersNumber)), "passwordCheckerBroadcastRouter");
 		
 	}
 

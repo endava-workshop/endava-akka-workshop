@@ -48,7 +48,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 	ActorRef workDispatcher;
 	ActorRef passwordProvider;
 
-	private SupervisorStrategy strategy;
+	private SupervisorStrategy supervisionStrategy;
 	
 	private Set<Long> runningProcessesIds = new HashSet<>();
 	
@@ -88,6 +88,8 @@ public class ZipPasswordBreaker extends UntypedActor {
 			EndProcessMessage outMessage = new EndProcessMessage(inMessage.getProcessId());
 			workDispatcher.tell(outMessage, getSelf());
 			passwordProvider.tell(outMessage, getSelf());
+			//TODO: register somewhere the result;
+			//TODO: clear the temporary files;
 		}
 	}
 	
@@ -152,9 +154,9 @@ public class ZipPasswordBreaker extends UntypedActor {
 			log.info(getSelf().toString() + " -> entered supervisorStrategy()");
 		}
 
-		if (strategy == null) {
+		if (supervisionStrategy == null) {
 
-			strategy =
+			supervisionStrategy =
 			// After 5 exceptions within 10 seconds, the worker actor will be stopped.
 			new OneForOneStrategy(5, Duration.create(10, TimeUnit.SECONDS),
 					new Function<Throwable, Directive>() {
@@ -167,6 +169,6 @@ public class ZipPasswordBreaker extends UntypedActor {
 					});
 		}
 
-		return strategy;
+		return supervisionStrategy;
 	}
 }

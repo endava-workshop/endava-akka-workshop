@@ -1,19 +1,23 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
+import akka.ws.pass.breaker.messages.RegisterPasswordCheckersMessage;
 
 import akka.actor.ActorPath;
 import akka.actor.ActorRef;
 import akka.actor.Address;
+import akka.actor.Deploy;
 import akka.actor.OneForOneStrategy;
 import akka.actor.Props;
 import akka.actor.SupervisorStrategy;
 import akka.actor.SupervisorStrategy.Directive;
 import akka.actor.UntypedActor;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
+import akka.remote.RemoteScope;
 import akka.remote.routing.RemoteRouterConfig;
 import akka.routing.BroadcastRouter;
+import akka.routing.RoundRobinRouter;
 import akka.routing.SmallestMailboxRouter;
 import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.FeedProcessMessage;
@@ -25,9 +29,12 @@ import akka.ws.pass.breaker.settings.RemoteAddressProvider;
 import scala.concurrent.duration.Duration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,16 +44,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class WorkDispatcher extends UntypedActor {
 
-	private SupervisorStrategy strategy;
+	private SupervisorStrategy supervisionStrategy;
 	private ActorRef zipPasswordBreaker;
 	private ActorRef remoteBroadcastRouter;
-	private List<Address> allAvailableRemoteAddresses;
 	private Map<Long, ActorRef> remoteBalancingRouters = new HashMap<>();
-	private Map<Long, List<Address>> remoteBalancingRoutersAddresses = new HashMap<>();
+	
+	private List<RemoteMachine> availableRemoteMachines = new ArrayList<>();
 
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-	
-	/* TODO: the remoteBalancingRouters could be retrieved directly from the ZipPasswordBreakWorker, via the ReadoToProcessMessage*/
 	
 	public void onReceive(Object message) throws Exception {
 		if(log.isInfoEnabled()) {
@@ -67,8 +72,8 @@ public class WorkDispatcher extends UntypedActor {
 			FeedProcessMessage inMessage = (FeedProcessMessage) message;
 			ActorRef targetRemoteWorker = remoteBalancingRouters.get(inMessage.getProcessId());
 			if(targetRemoteWorker == null) {
-				//it means no ReadyToProcessMessage has been received yet for this process Id; we need to delay this message somehow
-				getSelf().tell(inMessage, getSender());
+				// do not propel it further! most probably the process has been interrupted
+				return;
 			} else {
 				targetRemoteWorker.tell(message, getSender());
 			}
@@ -91,29 +96,31 @@ public class WorkDispatcher extends UntypedActor {
 		if(log.isInfoEnabled()) {
 			log.info("Entered initChildren()");
 		}
-		//TODO RemoteAddressProvider should be moved in the utilities package and representation changed in the diagram, as it's not an actor anymore
 		List<RemoteAddress> availableRemoteAddresses = RemoteAddressProvider.getAvailableRemoteAddresses();
 		List<Address> remoteAddresses = new ArrayList<>(availableRemoteAddresses.size());
 		
 		for(RemoteAddress availableAddress : availableRemoteAddresses) {
-			Address address = new Address(
+			final Address address = new Address(
 					availableAddress.getProtocol(),
 					availableAddress.getActorSystemName(), 
 					availableAddress.getIp(),
 					availableAddress.getPort());
 			remoteAddresses.add(address);
+			
+			RemoteMachine remoteMachine = new RemoteMachine(address);
+			availableRemoteMachines.add(remoteMachine);
+
+			remoteMachine.zipPasswordBreakWorker = getContext().actorOf(Props.create(ZipPasswordBreakWorker.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address))));
+			remoteMachine.zipFileDownloader = getContext().actorOf(Props.create(ZipFileDownloader.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address))));
+			for(int i=0; i<10; i++) {
+				remoteMachine.passwordCheckers.add(getContext().actorOf(Props.create(PasswordChecker.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address)))));
+			}
+			remoteMachine.passwordCheckersBroadcastRouter = getContext().actorOf(Props.empty().withRouter(BroadcastRouter.create(remoteMachine.passwordCheckers)));
+			remoteMachine.passwordCheckersBalancingRouter = getContext().actorOf(Props.empty().withRouter(RoundRobinRouter.create(remoteMachine.passwordCheckers)));
+			remoteMachine.zipPasswordBreakWorker.tell(new RegisterPasswordCheckersMessage(remoteMachine.passwordCheckersBroadcastRouter), getSelf());
 		}
-		allAvailableRemoteAddresses = remoteAddresses;
 		
-		remoteBroadcastRouter = getContext()
-				.actorOf(
-						Props.create(ZipPasswordBreakWorker.class)
-						.withRouter(
-								new RemoteRouterConfig(
-										new BroadcastRouter(remoteAddresses.size()), remoteAddresses
-										)
-								)
-						);
+		remoteBroadcastRouter = getContext().actorOf(Props.empty().withRouter(BroadcastRouter.create(allRemotePasswordBreakWorkers())));
 
 		if(log.isInfoEnabled()) {
 			log.info("exit initChildren()");
@@ -129,34 +136,52 @@ public class WorkDispatcher extends UntypedActor {
 	}
 	
 	private void includeChildToBalancingRouter(Long processId, ActorRef remoteChild) {
-		Address balancingRouterAddressOnRemoteMachine = getRelatedAvailableRemoteAddress(remoteChild);
-		List<Address> addressesBoundToProcess = remoteBalancingRoutersAddresses.get(processId);
-		if(addressesBoundToProcess == null) {
-			addressesBoundToProcess = new ArrayList<>(allAvailableRemoteAddresses.size());
-			remoteBalancingRoutersAddresses.put(processId, addressesBoundToProcess);
+		Address remoteMachineAddress = getRelatedAvailableRemoteAddress(remoteChild);
+		
+		RemoteMachine remoteMachine = new RemoteMachine(remoteMachineAddress);
+		if(availableRemoteMachines.contains(remoteMachine)) {
+			int index = Collections.binarySearch(availableRemoteMachines, remoteMachine);
+			remoteMachine = availableRemoteMachines.get(index);
+		} else {
+			return;
 		}
-		addressesBoundToProcess.add(balancingRouterAddressOnRemoteMachine);
-		ActorRef remoteBalancingRouter = getContext()
-				.actorOf(
-						Props.create(PasswordChecker.class)
-						.withRouter(
-								new RemoteRouterConfig(
-										new SmallestMailboxRouter(addressesBoundToProcess.size()), addressesBoundToProcess
-										)
-								)
-						);
+		remoteMachine.processesReadyToFeed.add(processId);
+		ActorRef remoteBalancingRouter = getContext().actorOf(Props.empty().withRouter(SmallestMailboxRouter.create(allRemotePasswordCheckersBalancingRouters())));
 		remoteBalancingRouters.put(processId, remoteBalancingRouter);
 	}
 	
 	private void interruptProcess(EndProcessMessage msg) {
-		this.remoteBalancingRoutersAddresses.remove(msg.getProcessId());
 		this.remoteBalancingRouters.remove(msg.getProcessId());
+	}
+	
+	private List<ActorRef> allRemotePasswordBreakWorkers() {
+		List<ActorRef> list = new ArrayList<>(availableRemoteMachines.size());
+		for(RemoteMachine remoteMachine : availableRemoteMachines) {
+			list.add(remoteMachine.zipPasswordBreakWorker);
+		}
+		return list;
+	}
+	
+	private List<Address> allRemoteMachinesAddresses() {
+		List<Address> list = new ArrayList<>(availableRemoteMachines.size());
+		for(RemoteMachine remoteMachine : availableRemoteMachines) {
+			list.add(remoteMachine.address);
+		}
+		return list;
+	}
+	
+	private List<ActorRef> allRemotePasswordCheckersBalancingRouters() {
+		List<ActorRef> list = new ArrayList<>(availableRemoteMachines.size());
+		for(RemoteMachine remoteMachine : availableRemoteMachines) {
+			list.add(remoteMachine.passwordCheckersBalancingRouter);
+		}
+		return list;
 	}
 	
 	private Address getRelatedAvailableRemoteAddress(ActorRef ref) {
 		ActorPath childPath = ref.path();
 		Address childAddress = childPath.address();
-		for(Address address : allAvailableRemoteAddresses) {
+		for(Address address : allRemoteMachinesAddresses()) {
 			if(address.host().equals(childAddress.host()) 
 					&& address.port().equals(childAddress.port()) 
 					&& address.system().equals(childAddress.system())
@@ -166,13 +191,16 @@ public class WorkDispatcher extends UntypedActor {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public SupervisorStrategy supervisorStrategy() {
+		if(log.isInfoEnabled()) {
+			log.info(getSelf().toString() + " -> entered supervisorStrategy()");
+		}
 
-		if (strategy == null) {
+		if (supervisionStrategy == null) {
 
-			strategy =
+			supervisionStrategy =
 			// After 5 exceptions within 10 seconds, the worker actor will be stopped.
 			new OneForOneStrategy(5, Duration.create(10, TimeUnit.SECONDS),
 					new Function<Throwable, Directive>() {
@@ -185,7 +213,56 @@ public class WorkDispatcher extends UntypedActor {
 					});
 		}
 
-		return strategy;
+		return supervisionStrategy;
+	}
+	
+	private static class RemoteMachine implements Comparable<RemoteMachine> {
+		Address address;
+		ActorRef zipPasswordBreakWorker;
+		List<ActorRef> passwordCheckers = new ArrayList<>();
+		Set<Long> processesReadyToFeed = new HashSet<>();
+		ActorRef passwordCheckersBroadcastRouter;
+		ActorRef passwordCheckersBalancingRouter;
+		ActorRef zipFileDownloader;
+		public RemoteMachine(Address address) {
+			super();
+			this.address = address;
+			
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((address == null) ? 0 : address.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RemoteMachine other = (RemoteMachine) obj;
+			if (address == null) {
+				if (other.address != null)
+					return false;
+			}
+			else if (!address.equals(other.address))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(RemoteMachine other) {
+			if(address == null) {
+				return other.address == null ? 0 : -1;
+			} else if(other.address == null) {
+				return 1;
+			} else {
+				return address.toString().compareTo(other.address.toString());
+			}
+		}
 	}
 
 }

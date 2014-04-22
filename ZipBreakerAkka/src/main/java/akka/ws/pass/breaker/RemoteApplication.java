@@ -21,8 +21,8 @@ public class RemoteApplication implements Bootable {
 	}
 
 	public void startup() {
-		//start the workers and let them ready to process messages
-		actorSystem.actorOf(Props.create(ZipPasswordBreakWorker.class), "workerRouter");
+//		//start the workers and let them ready to process messages
+//		actorSystem.actorOf(Props.create(ZipPasswordBreakWorker.class), "workerRouter");
 	}
 
 }

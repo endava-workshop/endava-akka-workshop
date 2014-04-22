@@ -60,6 +60,7 @@ public class PasswordChecker extends UntypedActor {
 			
 		} else if (message instanceof EndProcessMessage) {
 			EndProcessMessage inMessage = (EndProcessMessage) message;
+			deleteLocalFileCopy(runningProcesses.get(inMessage.getProcessId()));
 			runningProcesses.remove(inMessage.getProcessId());
 			
 		} else if (message instanceof RequestTotalSpentTimeMessage) {
@@ -76,7 +77,6 @@ public class PasswordChecker extends UntypedActor {
 	private void processOnePassword(final ZipFile zipFile, final String password, final long processId) {
 		if (checkPassword(zipFile, password)) {
 			log.info("\nPASSWORD BROKEN ******************!\nFound password:" + password);
-			runningProcesses.remove(processId);
 			FoundPasswordMessage outMessage = new FoundPasswordMessage(processId, password);
 			getSender().tell(outMessage, getSelf());
 		}
@@ -121,6 +121,17 @@ public class PasswordChecker extends UntypedActor {
 
 		}
 		theFile.delete();
+	}
+
+	/*
+	 * No matter what you synchronize this on; we put the "synchronized" only to ensure atomicity of the operations
+	 * inside this method which run on same thread.
+	 */
+	private static synchronized void deleteLocalFileCopy(ZipFile zipFile) {
+		File file = zipFile.getFile();
+		if(file.exists()) {
+			file.delete();
+		}
 	}
 
 	private void logProcessedChunkInformation(FeedProcessMessage processedChunk) {

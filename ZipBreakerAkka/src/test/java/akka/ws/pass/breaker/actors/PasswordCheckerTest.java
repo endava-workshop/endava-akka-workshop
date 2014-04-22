@@ -16,6 +16,7 @@ import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -67,6 +68,7 @@ public class PasswordCheckerTest {
 		};
 	}
 
+	@Ignore
 	@Test
 	public void testWrongPasswordsOnly() {
 		
@@ -87,6 +89,7 @@ public class PasswordCheckerTest {
 		};
 	}
 
+	@Ignore
 	@Test
 	public void testEndProcess() {
 		
