@@ -40,11 +40,13 @@ public class IdentifyLinksActor extends BaseActor {
                     continue;
                 }
 
+
                 //call to analyze the normalized link
                 findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef processingMasterActor) throws Throwable {
-                                processingMasterActor.tell(new AnalyzeLinkRequest(contentToBeProcessed.getSource().getDomain(), normalizedLink), getSelf());
+                                AnalyzeLinkRequest analyzeLinkRequest = new AnalyzeLinkRequest(contentToBeProcessed.getSource().getDomain(), baseUrl, normalizedLink);
+                                processingMasterActor.tell(analyzeLinkRequest, getSelf());
                             }
                         }, new OnFailure() {
                             @Override
@@ -58,7 +60,8 @@ public class IdentifyLinksActor extends BaseActor {
                 findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
                             @Override
                             public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                                statisticsActor.tell(new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource()), getSelf());
+                                AddLinkRequest addLinkRequest = new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
+                                statisticsActor.tell(addLinkRequest, getSelf());
                             }
                         }, new OnFailure() {
                             @Override

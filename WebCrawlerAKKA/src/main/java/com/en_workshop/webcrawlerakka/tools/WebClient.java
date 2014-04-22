@@ -4,11 +4,15 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +106,28 @@ public class WebClient {
         return false;
     }
 
+    private static CloseableHttpClient httpClient;
+    static {
+//      httpClient = HttpClients.createDefault();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+// Increase max total connection to 200
+        cm.setMaxTotal(200);
+// Increase default max connection per route to 20
+        cm.setDefaultMaxPerRoute(20);
+// Increase max connections for localhost:80 to 50
+        HttpHost localhost = new HttpHost("www.archeus.ro", 80);
+        cm.setMaxPerRoute(new HttpRoute(localhost), 50);
+
+        httpClient = HttpClients.custom()
+                .setConnectionManager(cm)
+                .build();
+    }
+//    private static ThreadLocal<CloseableHttpClient> httpClients = new ThreadLocal<CloseableHttpClient>() {
+//        @Override
+//        protected CloseableHttpClient initialValue() {
+//            return HttpClients.createDefault();
+//        }
+//    };
     /**
      * Get the page content
      *
@@ -112,7 +138,8 @@ public class WebClient {
     public static synchronized String getPageContent(final String link) throws IOException {
         String content = null;
 
-        final CloseableHttpClient httpClient = HttpClients.createDefault();
+//        System.out.println(Thread.currentThread().getId());
+//        final CloseableHttpClient httpClient = httpClients.get();
         final HttpGet getRequest = new HttpGet(link);
 
         try (final CloseableHttpResponse response = httpClient.execute(getRequest)) {

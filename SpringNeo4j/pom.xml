@@ -89,6 +89,11 @@
             <artifactId>spray-client</artifactId>
             <version>${spray.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_2.10</artifactId>
+            <version>1.2.6</version>
+        </dependency>
 
         <dependency>
             <groupId>com.gettyimages</groupId>
@@ -101,6 +106,16 @@
             <version>2.10.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.10</artifactId>
+            <version>2.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.13</version>
+        </dependency>
 
 
     </dependencies>

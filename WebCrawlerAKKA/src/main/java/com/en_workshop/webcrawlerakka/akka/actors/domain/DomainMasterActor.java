@@ -151,18 +151,21 @@ public class DomainMasterActor extends BaseActor {
      * @param domain the new domain.
      */
     private void startNewDomain(final Domain domain) {
-        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter),
-                WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + getActorName(domain.getName()));
+        for (int i = 0; i < 10; i++) {
+//        for (int i = 0; i < 50; i++) {
+            final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter),
+                    WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + getActorName(domain.getName()+ "_" + i)); // TODO make sure the actor name is unique
 
 //        synchronized (lock)
-        {
+            {
             /* Add to the domain map and ensure one actor per domain */
-            domainActors.put(domain.getName(), domainActor);
+                domainActors.put(domain.getName(), domainActor);
+            }
+
+            LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
+            domainActor.tell(new CrawlDomainRequest(domain), getSelf());
         }
 
-        LOG.info("Domain " + domain.getName() + " starting actor " + domainActor);
-
-        domainActor.tell(new CrawlDomainRequest(domain), getSelf());
 
         /* Report to the statistics actor. */
         findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {

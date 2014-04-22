@@ -32,27 +32,33 @@ public class DownloadUrlActor extends BaseActor {
         if (message instanceof DownloadUrlRequest) {
             final DownloadUrlRequest request = (DownloadUrlRequest) message;
 
+            long t0 = System.currentTimeMillis();
+//            System.out.println("Downloading " + request.getLink().getUrl());
             try {
-                final Map<String, String> pageHeaders = WebClient.getPageHeaders(request.getLink().getUrl());
+//                final Map<String, String> pageHeaders = WebClient.getPageHeaders(request.getLink().getUrl());
+//
+//                /* Test the response code */
+//                if (!pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE).equals(WebCrawlerConstants.HTTP_RESPONSE_CODE_OK)) {
+//                    LOG.debug(request.getLink().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
+//
+//                    finishWork(request, LinkStatus.FAILED);
+//                    return;
+//                }
+//
+//                /* Test for accepted mime types */
+//                if (!WebClient.isMediaTypeAccepted(pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE))) {
+//                    LOG.debug(request.getLink().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
+//
+//                    finishWork(request, LinkStatus.VISITED);
+//                    return;
+//                }
+//
+//                //TODO Test for redirects
+//
+                long t1 = System.currentTimeMillis();
+                // TODO uncomment the above and check performance!
 
-                /* Test the response code */
-                if (!pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE).equals(WebCrawlerConstants.HTTP_RESPONSE_CODE_OK)) {
-                    LOG.debug(request.getLink().getUrl() + " - Response code not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE));
-
-                    finishWork(request, LinkStatus.FAILED);
-                    return;
-                }
-
-                /* Test for accepted mime types */
-                if (!WebClient.isMediaTypeAccepted(pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE))) {
-                    LOG.debug(request.getLink().getUrl() + " - Media type not accepted: " + pageHeaders.get(WebCrawlerConstants.HTTP_HEADER_CONTENT_TYPE));
-
-                    finishWork(request, LinkStatus.VISITED);
-                    return;
-                }
-
-                //TODO Test for redirects
-
+//                System.out.println("header for " + request.getLink().getUrl() + " in " + (t1-t0) + "ms");
                 /* Get page content */
                 final String pageContent = WebClient.getPageContent(request.getLink().getUrl());
                 LOG.debug(request.getLink().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
@@ -73,6 +79,8 @@ public class DownloadUrlActor extends BaseActor {
                 );
 
                 finishWork(request, LinkStatus.VISITED);
+                long t2 = System.currentTimeMillis();
+                System.out.println("Downloaded " + request.getLink().getUrl() + " in " + (t2-t1) + "ms");
             } catch (IOException exc) {
                 LOG.error(request.getLink().getUrl() + " - Cannot process link", exc);
 

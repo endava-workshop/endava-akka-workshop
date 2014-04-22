@@ -13,6 +13,12 @@
     <groupId>WebCrawlerAKKA</groupId>
     <artifactId>WebCrawlerAKKA</artifactId>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spray.version>1.2.0</spray.version>
+    </properties>
+
+
     <repositories>
         <repository>
             <id>typesafe-releases</id>
@@ -22,6 +28,24 @@
     </repositories>
 
     <dependencies>
+
+         <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-client</artifactId>
+            <version>${spray.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_2.10</artifactId>
+            <version>1.2.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gettyimages</groupId>
+            <artifactId>spray-swagger_2.10</artifactId>
+            <version>0.2.4</version>
+        </dependency>
+
         <dependency>
             <groupId>com.typesafe.atmos</groupId>
             <artifactId>trace-akka-2.2.1_2.10</artifactId>

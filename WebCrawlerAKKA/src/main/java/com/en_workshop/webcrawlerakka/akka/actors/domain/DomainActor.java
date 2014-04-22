@@ -85,7 +85,8 @@ public class DomainActor extends BaseActor {
                 LOG.info("Domain " + request.getDomain().getName() + " has no more links to crawl");
 
                 /* Schedule a new crawl for the downloaded domain after the cool down period */
-                getContext().system().scheduler().scheduleOnce(Duration.create(request.getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
+                getContext().system().scheduler().scheduleOnce(Duration.create(request.getDomain().
+                                getCoolDownPeriod(), TimeUnit.MILLISECONDS),
                         getSelf(), new CrawlDomainRequest(request.getDomain()), getContext().system().dispatcher(), getSelf());
 
                 return;
@@ -101,20 +102,21 @@ public class DomainActor extends BaseActor {
             final Domain domain = response.getDownloadUrlRequest().getDomain();
 
             /* Update the time the domain was crawled at */
-            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(
-                                    new PersistDomainRequest(new Domain(domain.getName(), domain.getCoolDownPeriod(), Calendar.getInstance().getTimeInMillis())),
-                                    getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Persistence Master");
-                        }
-                    }
-            );
+//            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
+//                        @Override
+//                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
+//                            persistenceMasterActor.tell(
+//                                    new PersistDomainRequest(new Domain(domain.getName(), domain.getCoolDownPeriod(), Calendar.getInstance().getTimeInMillis())),
+//                                    getSelf());
+//                        }
+//                    }, new OnFailure() {
+//                        @Override
+//                        public void onFailure(Throwable throwable) throws Throwable {
+//                            LOG.error("Cannot find Persistence Master");
+//                        }
+//                    }
+//            );
+            // TODO review the above code - "crawled at" should be per page, not per domain
 
             /* Schedule a new crawl for the downloaded domain after the cool down period */
             getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS), getSelf(),

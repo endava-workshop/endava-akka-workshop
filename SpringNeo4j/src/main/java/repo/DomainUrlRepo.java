@@ -1,9 +1,12 @@
 package repo;
 
+import entity.DomainURL;
+import entity.SimpleURL;
+import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
-import entity.DomainUrl;
+public interface DomainUrlRepo extends GraphRepository<DomainURL> {
 
-public interface DomainUrlRepo extends GraphRepository<DomainUrl> {
-
+    @Query("MATCH (d: DomainURL) where d.address={0} RETURN d LIMIT 1")
+    DomainURL findOneByUrl(String url);
 }

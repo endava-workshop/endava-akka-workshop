@@ -1,0 +1,2 @@
+CREATE INDEX ON :SimpleURL(url)
+CREATE INDEX ON :DomainURL(address)

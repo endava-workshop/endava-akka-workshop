@@ -4,13 +4,14 @@ import spray.routing._
 import scala.concurrent.duration.Duration
 import service.UrlService
 import org.springframework.data.domain.{PageRequest, Page}
-import entity.{SimpleUrl, DomainUrl}
+import entity.{SimpleURL, DomainURL}
 import java.util
 import com.gettyimages.spray.swagger.SwaggerApiBuilder
 import scala.reflect.runtime.universe._
-import com.wordnik.swagger.annotations.{ApiOperation, ApiModel, Api}
+import com.wordnik.swagger.annotations.{ApiModelProperty, ApiOperation, ApiModel, Api}
 import spray.httpx.Json4sSupport
 import org.json4s.{DefaultFormats, Formats}
+import scala.annotation.meta.field
 
 
 // magic import
@@ -25,6 +26,8 @@ import akka.util.Timeout
 import spray.util._
 import spray.http._
 
+// TODO incomplete - WIP
+
 @Api(value = "/", description = "This is a Neo4J endpoint.")
 abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContextSupport  with Json4sSupport {
 
@@ -34,6 +37,22 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
   //  val urlService = () => springContext.getBean(classOf[UrlService])
   lazy val urlService = springContext.getBean(classOf[UrlService])
   val swaggerApi = new SwaggerApiBuilder("1.2", "1.0", "swagger-specs", _: Seq[Type], _: Seq[Type])
+
+//  val apiSwaggerResource = new Swagger
+//  val apiScrapeUrlResource = new ScrapeUrl
+//  val swaggerUIResource = new SwaggerUI
+//
+//  /**
+//   * Define the [[receive]] of this actor as the return of [[runRoute]],
+//   * passing in a route composed over routes obtained via extending various
+//   * [[spray.routing.HttpService]]s that actually define those routes
+//   */
+//  def receive = runRoute(
+//    apiScrapeUrlResource.routes ~
+//      apiSwaggerResource.routes ~
+//      swaggerUIResource.routes
+//  )
+
 
   @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET") // TODO this needs to be moved at method level
   def receive = runRoute {
@@ -46,8 +65,17 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
       path("domainURL" / Segment / Segment) {
         (domainName: String, domainURL: String) =>
           post {
-            urlService.addDomainUrl(domainName, domainURL)
+            urlService.addDomainUrl(domainName, domainURL, 1000)
             complete(s"Added $domainName - $domainURL")
+          }
+      } ~
+      path("domainURL") {
+          post {
+            entity(as[DomainURL]) { domainUrl =>
+              someObject =>
+                val url = urlService.addDomainUrl(domainUrl.getName, domainUrl.getAddress, new java.lang.Long(domainUrl.getCoolDownPeriod))
+                complete(url)
+            }
           }
       } ~
       path("domainURL" / Segment) {
@@ -58,10 +86,10 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
           }
       } ~
       path("simpleURL" / Segment / Segment / Segment) {
-        (domainName: String, simpleURL: String, name: String) =>
+        (domainURL: String, simpleURL: String, name: String) =>
           post {
-            urlService.addSimpleUrl(name, simpleURL, domainName)
-            complete(s"Added $domainName - $simpleURL - $name")
+            urlService.addSimpleUrl(name, simpleURL, "NOT_VISITED", domainURL, null)
+            complete(s"Added $domainURL - $simpleURL - $name")
           }
       } ~
       path("simpleURL" / Segment) {
@@ -79,7 +107,7 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
       path("domain" / Segment) {
         address =>
           get {
-            complete(urlService.findURLs(address))
+            complete(urlService.findURLs(address, "NOT_VISITED", 0,1000))
           }
       } ~
       //    @ApiOperation(value = "Find entry by key.", notes = "Will look up the dictionary entry for the provided key.", response = classOf[DictEntry], httpMethod = "GET")
@@ -107,8 +135,8 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
 
 @ApiModel(description = "an entry in the dictionary")
 case class DictEntry(
-    val key: String,
-    val value: String,
-    val expire: Option[Long]
+  @(ApiModelProperty @field)(value = "the key...") key: String,
+  value: String,
+  expire: Option[Long]
 )
 

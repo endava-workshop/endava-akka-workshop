@@ -11,18 +11,23 @@
 	<context:annotation-config/>
 	<context:component-scan base-package="service"/>
 	<!-- REST Connection to Neo4j server -->
-	<!-- 
-	<bean id="graphDatabaseService"
-		class="org.springframework.data.neo4j.rest.SpringRestGraphDatabase">
-		<constructor-arg value="http://localhost:7474/db/data/" />
-	</bean>
- -->
+
+	<!--<bean id="graphDatabaseService"-->
+		<!--class="org.springframework.data.neo4j.rest.SpringRestGraphDatabase">-->
+		<!--<constructor-arg value="http://localhost:7474/db/data/" />-->
+	<!--</bean>-->
+
 	<!-- Embedded Database -->
 
     <bean name="graphDatabaseFactory" class="org.neo4j.graphdb.factory.GraphDatabaseFactory"/>
 
+
 	<bean id="graphDatabaseService" factory-bean="graphDatabaseFactory" factory-method="newEmbeddedDatabase">
-        <constructor-arg value="embedded/db"/>
+        <!--<constructor-arg value="embedded/db20"/> OK-->
+        <constructor-arg value="embedded/21Aprilie_Round_1"/>
+        <!--<constructor-arg value="embedded/db13"/>-->
+        <!--<constructor-arg value="embedded/db10"/>-->
+        <!--<constructor-arg value="/var/lib/neo4j/data/graph.db"/>-->
     </bean>
 
 
