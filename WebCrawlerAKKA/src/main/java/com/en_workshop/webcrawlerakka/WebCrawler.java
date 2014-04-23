@@ -27,6 +27,10 @@ public class WebCrawler {
         if (null != wikiDomain) {
             LinkDao.add(wikiDomain, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83");
         }
+//        Domain unresponsiveDomain = DomainDao.add(new Domain("ro.zzzwikipedia.org", 20000, 0));
+//        if (null != unresponsiveDomain) {
+//            LinkDao.add(unresponsiveDomain, "http://ro.zzzwikipedia.org/wiki/Pagina_principal%C4%83");
+//        }
 
 //        Domain debianDomain = WebDomainDao.add(new Domain("wiki.debian.org", 30000, 0));
 //        if (null != debianDomain) {

@@ -18,12 +18,12 @@ import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsReque
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddDomainRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.exceptions.UnresponsiveDomainException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.conn.HttpHostConnectException;
 import scala.concurrent.duration.Duration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,20 +41,23 @@ public class DomainMasterActor extends BaseActor {
             new Function<Throwable, SupervisorStrategy.Directive>() {
                 @Override
                 public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
-                    if (throwable instanceof Exception) {
-                        LOG.error("Exception in DomainMasterActor : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
-                        return SupervisorStrategy.restart();
+                    if (throwable instanceof UnresponsiveDomainException) {
+                        UnresponsiveDomainException unresponsiveDomainException = (UnresponsiveDomainException) throwable;
+                        String domainName = unresponsiveDomainException.getDomain().getName();
+                        if (!stoppedDomains.containsKey(domainName)) {
+                            stoppedDomains.put(domainName, Calendar.getInstance().getTimeInMillis());
+                        }
+                        return SupervisorStrategy.stop();
                     }
-                    LOG.error("Exception in DomainMasterActor : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
-                    return SupervisorStrategy.stop();
+
+                    return SupervisorStrategy.restart();
                 }
             }
     );
 
     private final Map<String, ActorRef> domainActors;
-    private final List<String> stoppedDomains;
-
-    private final Object lock = new Object();
+    //TODO restart the actors after the specified amount of time
+    private final Map<String, Long> stoppedDomains;
 
     private final ActorRef downloadUrlsRouter;
 
@@ -63,24 +66,20 @@ public class DomainMasterActor extends BaseActor {
      */
     public DomainMasterActor() {
         this.domainActors = new HashMap<>();
-        this.stoppedDomains = new ArrayList<>();
+        this.stoppedDomains = new HashMap<>();
 
-        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(100, Duration.create(1, TimeUnit.MINUTES),
+        final SupervisorStrategy downloadUrlsRouterStrategy = new OneForOneStrategy(100, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
-                        if (throwable instanceof Exception) {
-                            LOG.error("Exception in DomainMasterActor routersSupervisorStrategy : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will restart.");
-                            return SupervisorStrategy.restart();
-                        }
+                        LOG.error("Exception in DomainMasterActor routersSupervisorStrategy: type [" + throwable.getClass() + "], message [" + throwable.getMessage() + "]. Will restart.");
+                        return SupervisorStrategy.restart();
 
-                        LOG.error("Exception in DomainMasterActor routersSupervisorStrategy : type [" + throwable.getClass() + "], message [" + throwable.getMessage() + ". Will stop.");
-                        return SupervisorStrategy.stop();
                     }
                 }
         );
 
-        this.downloadUrlsRouter = getContext().actorOf(Props.create(DownloadUrlActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+        this.downloadUrlsRouter = getContext().actorOf(Props.create(DownloadUrlActor.class).withRouter(new FromConfig().withSupervisorStrategy(downloadUrlsRouterStrategy)),
                 "downloadUrlRouter");
     }
 
@@ -115,7 +114,7 @@ public class DomainMasterActor extends BaseActor {
                 /* Start an actor for each domain, if not already started */
             for (final Domain domain : response.getDomains()) {
                     /* Is this domain stopped? */
-                if (stoppedDomains.contains(domain.getName())) {
+                if (stoppedDomains.containsKey(domain.getName())) {
                     LOG.info("Stopped domain: " + domain.getName() + ". This domain will not be processed.");
                     continue;
                 }
@@ -175,7 +174,4 @@ public class DomainMasterActor extends BaseActor {
         return supervisorStrategy;
     }
 
-    public List<String> getStoppedDomains() {
-        return stoppedDomains;
-    }
 }

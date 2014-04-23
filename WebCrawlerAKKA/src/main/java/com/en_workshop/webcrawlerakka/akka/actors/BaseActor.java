@@ -88,7 +88,7 @@ public abstract class BaseActor extends UntypedActor {
 
     @Override
     public void postStop() throws Exception {
-        LOG.error("Actor " + getSelf().getClass() + " will stop");
+        LOG.error("Actor " + getSelf().getClass() + " will stop.");
         super.postStop();
     }
 

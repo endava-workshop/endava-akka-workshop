@@ -40,32 +40,21 @@ public class WebClient {
      * @param link The link to access
      * @return The list of {@link org.apache.http.Header}s
      */
-    public static synchronized Map<String, String> getPageHeaders(final String link) {
+    public static synchronized Map<String, String> getPageHeaders(final String link) throws IOException {
 
         final Map<String, String> headersMap = new HashMap<>();
 
         final CloseableHttpClient httpClient = HttpClients.createDefault();
         final HttpHead headRequest = new HttpHead(link);
-        //TODO blocat domeniul la connection timeout    java.net.ConnectException: Connection timed out
-        try {
-            final CloseableHttpResponse response = httpClient.execute(headRequest);
-            /* Add page headers */
-            final Header[] headers = response.getAllHeaders();
-            for (Header header : headers) {
-                headersMap.put(header.getName(), header.getValue());
-            }
-
-            /* Add the page response code to headers */
-            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
-        } catch (UnknownHostException exc) {
-            LOG.error("Unknown host for link: " + link);
-
-            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, WebCrawlerConstants.HTTP_RESPONSE_CODE_NONE);
-        } catch (Exception exc) {
-            LOG.error("Cannot process page: " + exc.getMessage(), exc);
-
-            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, WebCrawlerConstants.HTTP_RESPONSE_CODE_NONE);
+        final CloseableHttpResponse response = httpClient.execute(headRequest);
+        /* Add page headers */
+        final Header[] headers = response.getAllHeaders();
+        for (Header header : headers) {
+            headersMap.put(header.getName(), header.getValue());
         }
+
+        /* Add the page response code to headers */
+        headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
 
         return headersMap;
     }

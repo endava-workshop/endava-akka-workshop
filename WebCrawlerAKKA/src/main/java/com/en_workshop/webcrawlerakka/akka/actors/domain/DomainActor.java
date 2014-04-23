@@ -17,6 +17,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.exceptions.UnresponsiveDomainException;
 import scala.concurrent.duration.Duration;
 
 import java.util.Calendar;
@@ -30,6 +31,9 @@ import java.util.concurrent.TimeUnit;
 public class DomainActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
+    private int noOfConsecutiveFails;
+
+    //TODO remove supervision strategy, because this actor doesn't have any children.
     private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
             new Function<Throwable, SupervisorStrategy.Directive>() {
                 @Override
@@ -58,7 +62,7 @@ public class DomainActor extends BaseActor {
      * {@inheritDoc}
      */
     @Override
-    public void onReceive(Object message) {
+    public void onReceive(Object message) throws UnresponsiveDomainException {
         if (message instanceof CrawlDomainRequest) {
             final CrawlDomainRequest request = (CrawlDomainRequest) message;
 
@@ -101,22 +105,15 @@ public class DomainActor extends BaseActor {
             final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
 
-            /* Update the time the domain was crawled at */
-            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(
-                                    new PersistDomainRequest(new Domain(domain.getName(), domain.getCoolDownPeriod(), Calendar.getInstance().getTimeInMillis())),
-                                    getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Persistence Master");
-                        }
-                    }
-            );
-
+            if (response.isUnresponsiveDomain()) {
+                noOfConsecutiveFails++;
+                boolean limitReached = noOfConsecutiveFails == WebCrawlerConstants.CONNECTION_EXCEPTION_TRIALS;
+                if (limitReached) {
+                    throw new UnresponsiveDomainException(domain);
+                }
+            } else {
+                noOfConsecutiveFails = 0;
+            }
             /* Schedule a new crawl for the downloaded domain after the cool down period */
             getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS), getSelf(),
                     new CrawlDomainRequest(domain), getContext().system().dispatcher(), getSelf());
