@@ -13,7 +13,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
 object RestClient {
 
-  def getPasswords(system: ActorSystem, pageIndex: Int, pageSize: Int): PasswordList_ = {
+  def getPasswords(system: ActorSystem, pageIndex: Int, pageSize: Int): List[String] = {
     implicit val s = system
     import system.dispatcher
     import MyJsonProtocol._
@@ -21,11 +21,13 @@ object RestClient {
     import scala.concurrent.duration._
 	import spray.httpx.SprayJsonSupport._
 	
-    val client = sendReceive ~> unmarshal[PasswordList_]
+    val client = sendReceive ~> unmarshal[Array[String]]
     val response = client(Get("http://localhost:8080/getPasswords/" + pageIndex + "/" + pageSize))
     val result = Await.result(response, 10 seconds)
-    println(result)
-    result
+    val size = result.length;
+    println(s"received a number of $size of passwords")
+    
+    result.toList
   }
 
 }

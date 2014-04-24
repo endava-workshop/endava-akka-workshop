@@ -11,8 +11,8 @@ object RestClientTest extends App {
   import system.dispatcher // execution context for futures
 
   
-  val res = RestClient.getPasswords(system, 10, 10)
-  println(res.passwordList)
+  val res = RestClient.getPasswords(system, 10, 100)
+  println(res)
 
   system.shutdown()
 
