@@ -11,13 +11,31 @@ import com.en_workshop.webcrawlerakka.entities.Link;
 public class PersistLinkRequest extends MessageRequest implements PersistenceRequest{
 
     private final Link link;
+    private final String source;
 
-    public PersistLinkRequest(Link link) {
+    public PersistLinkRequest(Link link, String source) {
         super(System.currentTimeMillis());
         this.link = link;
+        this.source = source;
+    }
+
+    public PersistLinkRequest(Link link) {
+        this(link, null);
     }
 
     public Link getLink() {
         return link;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    @Override
+    public String toString() {
+        return "PersistLinkRequest{" +
+                "link=" + link +
+                ", source='" + source + '\'' +
+                '}';
     }
 }

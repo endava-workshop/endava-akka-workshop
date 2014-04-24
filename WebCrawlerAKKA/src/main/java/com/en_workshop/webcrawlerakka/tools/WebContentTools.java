@@ -15,7 +15,7 @@ public class WebContentTools {
 
     /* TODO: Add ALPHA (%41–%5A and %61–%7A) */
     private static final String[] URL_FRAGMENT_REPLACE_SRC = new String[]{"%30", "%31", "%32", "%33", "%34", "%35", "%36", "%37", "%38", "%39",
-            "%2d", "%2e", "%5f", "%7e", "/\\.\\./", "/\\./"};
+            "(?i)%2d", "(?i)%2e", "(?i)%5f", "(?i)%7e", "/\\.\\./", "/\\./"};
     private static final String[] URL_FRAGMENT_REPLACE_DEST = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "-", ".", "_", "~", "/", "/"};
 
@@ -40,7 +40,9 @@ public class WebContentTools {
 
         try {
             /* URL as string pre-processing */
-            String processedLink = urlLink.toLowerCase();
+//            String processedLink = urlLink.toLowerCase();
+            //                           ^^^^ toLowerCase will break the links - links are case-sensitive, only the domain name is case-sensitive
+            String processedLink = urlLink;
 
             /* Replace (eliminate) specific link fragments */
             for (int i = 0; i < URL_FRAGMENT_REPLACE_SRC.length; i++) {
@@ -72,7 +74,7 @@ public class WebContentTools {
                     host = "www." + host;
                 }
             }
-            linkBuilder.append(host);
+            linkBuilder.append(host.toLowerCase());
 
             /* Port */
             linkBuilder.append(processURLPort(url.getProtocol(), url.getPort()));

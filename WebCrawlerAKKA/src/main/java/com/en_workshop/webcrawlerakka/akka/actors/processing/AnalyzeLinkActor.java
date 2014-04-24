@@ -34,7 +34,8 @@ public class AnalyzeLinkActor extends BaseActor {
         if (message instanceof AnalyzeLinkRequest) {
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
-            String linkSourceDomain = analyzeLinkRequest.getSourceDomainName();
+            String sourceDomain = analyzeLinkRequest.getSourceDomainName();
+            String sourceLink = analyzeLinkRequest.getSourceLink();
             String link = analyzeLinkRequest.getLink();
 
             //if the initial domain is not the same as the domain of the link, persist both domain and link
@@ -45,12 +46,12 @@ public class AnalyzeLinkActor extends BaseActor {
                 LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
                 Domain newDomain = null;
-                if (!linkDomain.equals(linkSourceDomain)) {
+                if (!linkDomain.equals(sourceDomain)) {
                     newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
                     persistDomain(newDomain);
                 }
 
-                persistLink(linkDomain, linkSourceDomain, link);
+                persistLink(linkDomain, sourceDomain, link, sourceLink);
             } else {
                 LOG.debug("Invalid URL received [" + link + "]");
             }
@@ -66,15 +67,15 @@ public class AnalyzeLinkActor extends BaseActor {
      * Finds the PersistenceMasterActor and sends the request to persist the link.
      *
      * @param linkDomain the name of the web domain of the link.
-     * @param linkSourceDomain the domain where the link was found.
+     * @param sourceDomain the domain where the link was found.
      * @param link the link.
      */
-    private void persistLink(final String linkDomain, final String linkSourceDomain,  final String link) {
+    private void persistLink(final String linkDomain, final String sourceDomain, final String link, final String sourceLink) {
         //call to persist the normalized link
         findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
                     @Override
                     public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(linkDomain, linkSourceDomain, link)), getSelf());
+                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(linkDomain, sourceDomain, link), sourceLink), getSelf());
                     }
                 }, new OnFailure() {
                     @Override

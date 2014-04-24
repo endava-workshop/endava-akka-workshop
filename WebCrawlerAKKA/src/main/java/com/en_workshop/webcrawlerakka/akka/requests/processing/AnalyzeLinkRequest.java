@@ -9,14 +9,20 @@ import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
  */
 public class AnalyzeLinkRequest extends MessageRequest {
 
+    private final String sourceLink;
     private final String sourceDomainName;
     private final String link;
 
-    public AnalyzeLinkRequest(final String sourceDomainName, final String link) {
+    public AnalyzeLinkRequest(final String sourceDomainName, final String sourceLink, final String link) {
         super(System.currentTimeMillis());
 
         this.sourceDomainName = sourceDomainName;
+        this.sourceLink = sourceLink;
         this.link = link;
+    }
+
+    public String getSourceLink() {
+        return sourceLink;
     }
 
     public String getSourceDomainName() {
@@ -29,6 +35,10 @@ public class AnalyzeLinkRequest extends MessageRequest {
 
     @Override
     public String toString() {
-        return "AnalyzeLinkRequest{webDomainName=" + sourceDomainName + ", link=" + link + "}";
+        return "AnalyzeLinkRequest{" +
+                "sourceLink='" + sourceLink + '\'' +
+                ", sourceDomainName='" + sourceDomainName + '\'' +
+                ", link='" + link + '\'' +
+                '}';
     }
 }

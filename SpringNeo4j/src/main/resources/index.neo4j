@@ -1,0 +1,5 @@
+CREATE INDEX ON :SimpleURL(url)
+CREATE INDEX ON :DomainURL(address)
+
+curl "http://localhost:8080/query?q=CREATE INDEX ON :SimpleURL(url)"
+curl "http://localhost:8080/query?q=CREATE INDEX ON :DomainURL(address)"

@@ -11,11 +11,11 @@
 
     <modules>
         <module>neo4j-example</module>
-        <module>WebCrawlerAKKA</module>
-        <module>rest-example</module>
-        <module>ZipBreakerAkka</module>
-        <module>search</module>
         <module>SpringNeo4j</module>
+        <module>rest-example</module>
+        <module>search</module>
+        <module>WebCrawlerAKKA</module>
+        <module>ZipBreakerAkka</module>
     </modules>
 
     <properties>

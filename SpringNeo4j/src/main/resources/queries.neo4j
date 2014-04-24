@@ -1,0 +1,8 @@
+
+MATCH (b {status: 'NOT_VISITED'} ) RETURN count(*)
+
+MATCH (b {status: 'VISITED'} ) RETURN count(*)
+
+MATCH (b:SimpleURL) RETURN count(*)
+
+MATCH (b:DomainURL) RETURN count(*)

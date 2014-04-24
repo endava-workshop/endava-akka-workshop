@@ -11,7 +11,6 @@ import java.util.List;
  */
 public class Link {
 
-    public static final List<Link> LINKS = Collections.synchronizedList(new ArrayList<Link>());
 
     private final String domain;
 
