@@ -4,6 +4,8 @@ import scala.concurrent.Await
 
 import akka.actor.ActorSystem
 import spray.json.DefaultJsonProtocol
+import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 
 case class PasswordList_(passwordList: List[String])
 
@@ -13,7 +15,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
 object RestClient {
 
-  def getPasswords(system: ActorSystem, pageIndex: Int, pageSize: Int): List[String] = {
+  def getPasswords(system: ActorSystem, pageIndex: Int, pageSize: Int): java.util.List[String] = {
     implicit val s = system
     import system.dispatcher
     import MyJsonProtocol._
@@ -27,7 +29,10 @@ object RestClient {
     val size = result.length;
     println(s"received a number of $size of passwords")
     
-    result.toList
+    val javaList = new java.util.ArrayList [String] (result.length)
+    result.toList.foreach (javaList.add (_))   
+
+    javaList
   }
 
 }

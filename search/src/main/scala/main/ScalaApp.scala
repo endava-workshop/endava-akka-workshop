@@ -13,7 +13,7 @@ import spray.can.Http
 import ro.endava.akka.workshop.actors.IndexDispatcherActor
 import ro.endava.akka.workshop.messages.LocalPasswordMessage
 
-object ScalaConfig extends App {
+object ScalaApp extends App {
 
   val port = 8080
 
