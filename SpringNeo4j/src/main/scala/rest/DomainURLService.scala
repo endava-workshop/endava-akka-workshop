@@ -27,7 +27,7 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
   def receive = runRoute {
       path("purge") {
         complete {
-          urlService.removeAllDomains()
+          urlService.removeDomains()
           "Removed all domains"
         }
       } ~
@@ -71,16 +71,6 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
           }
       } ~
       path("domain" / Segment / "url") { domainURL: String =>
-        post {  // CREATE LINK under a domain
-          entity(as[SimpleURLDTO]) { simpleUrl =>
-            val name = simpleUrl.name.getOrElse(null)
-            val status = simpleUrl.status.getOrElse(null)
-            val sourceDomain = simpleUrl.sourceDomain.getOrElse(null)
-            val url = urlService.addSimpleUrl(name, simpleUrl.url, status, domainURL, sourceDomain)
-//            val url = new SimpleURL()
-            complete(url)
-          }
-        } ~
         get { // RETRIEVE LINKS for a domain
           parameters('status, 'pageNo ? 0, 'pageSize ? 1000) { (status: String,  pageNo: Int, pageSize: Int) =>
               val urls = urlService.findURLs(domainURL, status, pageNo, pageSize)

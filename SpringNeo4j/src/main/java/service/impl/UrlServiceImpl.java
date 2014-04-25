@@ -71,43 +71,8 @@ public class UrlServiceImpl implements UrlService {
 
 	@Transactional
     @Override
-	public SimpleURL addSimpleUrl(String name, String url, String status, String domainURL, String sourceDomainName) {
-        SimpleURL old = simpleUrlRepo.findOneByUrl(url);
-        if (old != null) {
-            return old;
-        }
-        long t0 = System.currentTimeMillis();
-        final String query;
-        if (StringUtils.hasText(sourceDomainName)) {
-            query =
-                    "MATCH (ee: DomainURL) " +
-                    "MATCH (src: DomainURL) " +
-                    "WHERE ee.address={address} and src.address = {sourceAddress} " +
-                    "create (u: _SimpleURL: SimpleURL {url: {url}, name: {name}, status: {status}, errorCount: 0, lastUpdate: {lastUpdate}}), \n" +
-                    "(ee)-[:CONTAINS]->(u), \n" +
-                    "(src)-[:LINKS_TO]->(u) \n" +
-                    "RETURN u";
-        } else {
-            query =
-                    "MATCH (ee: DomainURL) WHERE ee.address={address} " +
-                    "create (u: _SimpleURL: SimpleURL {url: {url}, name: {name}, status: {status}, errorCount: 0, lastUpdate: {lastUpdate}}), \n" +
-                    "(ee)-[:CONTAINS]->(u) \n" +
-                    "RETURN u";
-        }
-
-        final List<SimpleURL> urls = new ArrayList<>();
-        Map<String, Object> params = new HashMap<>();
-        params.put("address", domainURL);
-        params.put("sourceAddress", sourceDomainName);
-        params.put("url", url);
-        params.put("status", status);
-        params.put("name", String.valueOf(name));
-        params.put("lastUpdate", System.currentTimeMillis());
-        neo4JHelper.execute(query, params, urlCallback(urls, "u"));
-
-        long t1 = System.currentTimeMillis();
-        System.out.println("link added in " + (t1-t0) + "ms");
-        return urls.isEmpty() ? null : urls.get(0);
+	public void addSimpleUrl(String name, String url, String status, String domainURL, String sourceDomainName) {
+        addSimpleUrls(Collections.singletonList(url), status, domainURL, sourceDomainName);
 	}
 
     @Transactional
@@ -229,7 +194,7 @@ public class UrlServiceImpl implements UrlService {
 
 	@Transactional
 	@Override
-	public void removeAllDomains() {
+	public void removeDomains() {
         domainRepo.deleteAll();
 		simpleUrlRepo.deleteAll();
 //        String query = "MATCH (ee: DomainURL) \n" +

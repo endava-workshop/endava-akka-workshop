@@ -37,6 +37,7 @@ public class RestLinkDao implements LinkDao {
         synchronized (links) {
             Link result = links.poll();
             if (result == null) {
+                flush();
                 List<Link> not_visited = SimpleURLClient.getURLs(domainName, "NOT_VISITED", 0, pageSize);
                 links.addAll(not_visited);
                 result = links.poll();
@@ -60,7 +61,7 @@ public class RestLinkDao implements LinkDao {
                         }
                     }
                     if (toSave != null) {
-                        SimpleURLClient.addURLs(toSave);
+                        SimpleURLClient.addURLs(toSave, false);
                     }
                     break;
                 case VISITED:
@@ -78,8 +79,10 @@ public class RestLinkDao implements LinkDao {
 
     public void flush() { // TODO remove this
         synchronized (LOCK_BUFF) {
-            SimpleURLClient.addURLs(buff);
-            buff = new HashSet<>(BUFF_SIZE);
+            if (buff.size() > 0) {
+                SimpleURLClient.addURLs(buff, true);
+                buff = new HashSet<>(BUFF_SIZE);
+            }
         }
     }
 }

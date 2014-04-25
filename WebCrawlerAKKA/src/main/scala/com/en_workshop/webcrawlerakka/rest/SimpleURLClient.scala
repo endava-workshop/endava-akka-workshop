@@ -24,12 +24,15 @@ object SimpleURLClient extends AbstractRestClient {
   }
 
 
-  def addURLs(urls: java.util.Collection[SimpleUrl_]): Unit = {
+  def addURLs(urls: java.util.Collection[SimpleUrl_], sync: Boolean = false): Unit = {
     urls.flatMap(u => u.domain).toSet.foreach {
       domain: String => {
         val forCrtDomain = urls.filter(_.domain.getOrElse("") == domain)
-        timed(s"add ${forCrtDomain.size()} URLs") {
+        val f = timed(s"add ${forCrtDomain.size()} URLs") {
           addUrlClient(Post(s"$webRoot/domain/${domain}/urls", forCrtDomain))
+        }
+        if (sync) {
+          Await.result(f, 1 minute)
         }
       }
     }

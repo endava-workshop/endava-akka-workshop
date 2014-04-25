@@ -59,7 +59,7 @@ abstract class Neo4JHttpService extends HttpServiceActor with ApplicationContext
   def receive = runRoute {
     path("purge") {
       complete {
-        urlService.removeAllDomains()
+        urlService.removeDomains()
         "Removed all domains"
       }
     } ~

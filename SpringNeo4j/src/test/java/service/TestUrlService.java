@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import repo.DomainUrlRepo;
 import repo.SimpleUrlRepo;
@@ -35,12 +34,12 @@ public class TestUrlService {
 	
 	@Before
 	public void setUp() {
-        urlService.removeAllDomains();
+        urlService.removeDomains();
 	}
 
     @After
     public void tearDown() {
-        urlService.removeAllDomains();
+        urlService.removeDomains();
     }
 
 	@Test
@@ -79,12 +78,11 @@ public class TestUrlService {
 	@Test
 	public void testRemoveSimpleUrl(){
 		DomainURL domain = urlService.addDomainUrl("Domain_1", "www.domain_1.com", 1000);
-		SimpleURL simpleURL = urlService.addSimpleUrl("page1", "www.domain_1.com/page_1", "NEW", domain.getAddress(), null);
+		urlService.addSimpleUrl("page1", "www.domain_1.com/page_1", "NEW", domain.getAddress(), null);
 
-		Assert.assertNotNull(simpleURL);
 		Assert.assertEquals(1, simpleUrlRepo.count());
 
-        urlService.removeSimpleUrl(simpleURL.getUrl());
+        urlService.removeSimpleUrl("www.domain_1.com/page_1");
 		Assert.assertEquals(0, simpleUrlRepo.count());
 	}
 
@@ -100,14 +98,14 @@ public class TestUrlService {
 	@Test
 	public void testMultipleDomains(){
 		DomainURL domain_1 = urlService.addDomainUrl("Domain_1", "www.domain_1.com", 1000);
-		SimpleURL simpleURL_1 = urlService.addSimpleUrl("page1", "www.domain_1.com/page_1", "NEW", domain_1.getAddress(), null);
+		urlService.addSimpleUrl("page1", "www.domain_1.com/page_1", "NEW", domain_1.getAddress(), null);
 
 		DomainURL domain_2 = urlService.addDomainUrl("Domain_2", "www.domain_2.com", 1000);
 		urlService.addSimpleUrl("page2", "www.domain_2.com/page_2", "NEW", domain_2.getAddress(), null);
 
 		Assert.assertEquals(2, simpleUrlRepo.count());
 		
-		urlService.removeSimpleUrl(simpleURL_1.getUrl());
+		urlService.removeSimpleUrl("www.domain_1.com/page_1");
 		
 		urlService.removeDomainUrl(domain_1.getAddress());
 
@@ -121,9 +119,9 @@ public class TestUrlService {
         urlService.addDomainUrl("Domain_23", "www.domain_23.com", 1000);
         for (int i = 0; i < 1000; i++) {
             long t0 = System.currentTimeMillis();
-            SimpleURL url = urlService.addSimpleUrl("link_" + i, "/into23.txt" + i, "NEW", "www.domain_23.com", null);
+            urlService.addSimpleUrl("link_" + i, "/into23.txt" + i, "NEW", "www.domain_23.com", null);
             long t1 = System.currentTimeMillis();
-            System.out.println(url.getUrl() + " in " + (t1-t0));
+            System.out.println("t=" + (t1-t0));
         }
 
     }
@@ -246,7 +244,7 @@ public class TestUrlService {
     @Test
     public void testUpdateErrorCount(){
         urlService.addDomainUrl("Domain_8", "www.domain_8.com", 1000);
-        SimpleURL url = urlService.addSimpleUrl("link_1", "/into1.txt", "NOT_VISITED", "www.domain_8.com", null);
+        urlService.addSimpleUrl("link_1", "/into1.txt", "NOT_VISITED", "www.domain_8.com", null);
 
         urlService.updateSimpleUrlErrorStatus("/into1.txt", 1);
 

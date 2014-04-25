@@ -13,22 +13,17 @@ import java.util.Map;
 public interface UrlService {
 
     public DomainURL addDomainUrl(String domainName, String domainUrl, long coolDownPeriod);
-	
-	public SimpleURL addSimpleUrl(String name, String url, String status, String domainName, String sourceDomainName);
-    public void addSimpleUrls(List<String> urls, String status, String domainURL, String sourceDomainName);
+    Page<DomainURL> findDomains(Pageable pageable);
+    public void removeDomainUrl(String domainUrl) ;
+    public void removeDomains();
 
+	public void addSimpleUrl(String name, String url, String status, String domainName, String sourceDomainName);
+    public void addSimpleUrls(List<String> urls, String status, String domainURL, String sourceDomainName);
     public void updateSimpleUrlStatus(String url, String status);
     public void updateSimpleUrlErrorStatus(String url, int errorDelta);
-
-    Page<DomainURL> findDomains(Pageable pageable);
-
 	Collection<SimpleURL> findURLs(String address,String status, int pageNo, int pageSize);
 	Collection<SimpleURL> findExternalURLs(String address,String status, int pageNo, int pageSize);
-
 	public void removeSimpleUrl(String simpleUrl) ;
-	public void removeDomainUrl(String domainUrl) ;
-
-	public void removeAllDomains();
 
     //  debug purpose: extract data out of neo4j using simple queries
     public List<Entries> query(String query);
