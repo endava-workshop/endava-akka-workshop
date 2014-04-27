@@ -1,7 +1,6 @@
 package repo;
 
 import entity.DomainURL;
-import entity.SimpleURL;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
@@ -14,5 +13,5 @@ public interface DomainUrlRepo extends GraphRepository<DomainURL> {
 
 //    @Query("MATCH (d: DomainURL) RETURN d.name as name, d.address as address, d.coolDownPeriod as coolDownPeriod SKIP {1} LIMIT {0}")
     @Query("MATCH (d: DomainURL)-[:`CONTAINS`]->(url {status: 'NOT_VISITED'})  RETURN distinct d.name SKIP {1} LIMIT {0}")
-    List<String> findAllSlim(int maxResults, int skip);
+    List<String> findAll(int maxResults, int skip);
 }

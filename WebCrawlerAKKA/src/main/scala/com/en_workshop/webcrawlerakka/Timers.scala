@@ -13,7 +13,10 @@ trait Timers {
     f.onComplete {
       case Success(simpleURL) =>
         val t1 = System.currentTimeMillis()
-        println(s"${t1 - t0}ms for $message")
+        val delta = t1 - t0
+        if (delta > 2000) {
+          println(s"${t1 - t0}ms for $message")
+        }
       case Failure(t) =>
         val t1 = System.currentTimeMillis()
         println(errorPrefix +  s" -> An error has occurred during [$message] after ${t1 - t0}ms: " + t.getMessage)

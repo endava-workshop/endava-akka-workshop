@@ -23,10 +23,10 @@ import java.util.List;
  */
 public class PersistenceActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
-    private static DomainDao domainDao = new InMemoryDomainDao();
-//    private static DomainDao domainDao = new RestDomainDao();
-    private static LinkDao linkDao = new InMemoryLinkDao();
-//    private static LinkDao linkDao = new RestLinkDao();
+//    private static DomainDao domainDao = new InMemoryDomainDao();
+    private static DomainDao domainDao = new RestDomainDao();
+//    private static LinkDao linkDao = new InMemoryLinkDao();
+    private static LinkDao linkDao = new RestLinkDao();
 
     /**
      * {@inheritDoc}

@@ -10,7 +10,7 @@ import com.en_workshop.webcrawlerakka.Timers
  */
 abstract class AbstractRestClient extends Json4sSupport with Timers {
   implicit def json4sFormats: Formats = DefaultFormats
-  lazy implicit val system = ActorSystem() // TODO there should be only one ActorSystem...
+  lazy implicit val system = ActorSystem("spray") // TODO there should be only one ActorSystem...
   implicit val executionContext = system.dispatchers.lookup("rest-client-dispatcher")
   val webRoot = "http://localhost:8080"
 }

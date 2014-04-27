@@ -1,6 +1,8 @@
 package com.en_workshop.webcrawlerakka.tools;
 
+import com.codahale.metrics.Timer;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
+import com.en_workshop.webcrawlerakka.metrics.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -25,11 +27,15 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Radu Ciumag
  */
 public class WebClient {
+
+    private static Timer pageHeadersTimer = Metrics.getInstance().timer("page-headers");
+    private static Timer pageContentTimer = Metrics.getInstance().timer("page-content");
 
     private static final Logger LOG = LoggerFactory.getLogger(WebClient.class);
 
@@ -44,7 +50,9 @@ public class WebClient {
                 .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
                 .setMaxRedirects(2)
                 .setCircularRedirectsAllowed(false)
-                .setConnectionRequestTimeout(5000)
+                .setSocketTimeout(30000)
+                .setConnectTimeout(30000)
+                .setConnectionRequestTimeout(30000)
                 .build();
         httpClient = HttpClients.createDefault();
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
@@ -67,22 +75,34 @@ public class WebClient {
      * @return The list of {@link org.apache.http.Header}s
      */
     public static Map<String, String> getPageHeaders(final String link) throws IOException {
+        long t0 = System.currentTimeMillis();
+        Timer.Context time = pageHeadersTimer.time();
+        try {
+            final Map<String, String> headersMap = new HashMap<>();
 
-        final Map<String, String> headersMap = new HashMap<>();
+            final CloseableHttpClient httpClient = HttpClients.createDefault();
+            final HttpHead headRequest = new HttpHead(link);
+            final CloseableHttpResponse response = httpClient.execute(headRequest);
+            /* Add page headers */
+            final Header[] headers = response.getAllHeaders();
+            for (Header header : headers) {
+                headersMap.put(header.getName(), header.getValue());
+            }
 
-        final CloseableHttpClient httpClient = HttpClients.createDefault();
-        final HttpHead headRequest = new HttpHead(link);
-        final CloseableHttpResponse response = httpClient.execute(headRequest);
-        /* Add page headers */
-        final Header[] headers = response.getAllHeaders();
-        for (Header header : headers) {
-            headersMap.put(header.getName(), header.getValue());
+            /* Add the page response code to headers */
+            headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
+
+            return headersMap;
+        } finally {
+            long ns = time.stop();
+            long t1 = System.currentTimeMillis();
+            long l = (t1 - t0) / 1000;
+            if (l> 10) {
+                System.out.println(l + "s - headers for " + link);
+            }
+
+//            System.out.println(TimeUnit.SECONDS.convert(ns, TimeUnit.NANOSECONDS)+ " - headers for " +link);
         }
-
-        /* Add the page response code to headers */
-        headersMap.put(WebCrawlerConstants.HTTP_CUSTOM_HEADER_RESPONSE_CODE, response.getStatusLine().getStatusCode() + "");
-
-        return headersMap;
     }
 
     /**
@@ -125,27 +145,39 @@ public class WebClient {
      * @throws IOException
      */
     public static String getPageContent(final String link) throws IOException {
-        String content = null;
+        long t0 = System.currentTimeMillis();
+        Timer.Context time = pageContentTimer.time();
+        try {
+            String content = null;
 
-        final HttpGet getRequest = new HttpGet(link);
+            final HttpGet getRequest = new HttpGet(link);
 
-        try (final CloseableHttpResponse response = httpClient.execute(getRequest)) {
-            final HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                try (final InputStream responseStream = entity.getContent()) {
-                    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(responseStream));
-                    final StringBuilder contentBuilder = new StringBuilder();
-                    String line;
-                    while (null != (line = bufferedReader.readLine())) {
-                        contentBuilder.append(line).append('\n');
+            try (final CloseableHttpResponse response = httpClient.execute(getRequest)) {
+                final HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    try (final InputStream responseStream = entity.getContent()) {
+                        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(responseStream));
+                        final StringBuilder contentBuilder = new StringBuilder();
+                        String line;
+                        while (null != (line = bufferedReader.readLine())) {
+                            contentBuilder.append(line).append('\n');
+                        }
+
+                        content = contentBuilder.toString();
                     }
-
-                    content = contentBuilder.toString();
                 }
             }
-        }
 
-        return content;
+            return content;
+        } finally {
+            long ns = time.stop();
+            long t1 = System.currentTimeMillis();
+            long l = (t1 - t0) / 1000;
+            if (l> 10) {
+                System.out.println(l + "s - content for " + link);
+            }
+//            System.out.println(TimeUnit.SECONDS.convert(ns, TimeUnit.NANOSECONDS) + " - content for " + link);
+        }
     }
 
     /**

@@ -16,6 +16,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spray.version>1.2.0</spray.version>
+        <metrics.version>3.0.1</metrics.version>
     </properties>
 
 
@@ -78,6 +79,13 @@
             <artifactId>jcl-over-slf4j</artifactId>
             <version>1.7.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

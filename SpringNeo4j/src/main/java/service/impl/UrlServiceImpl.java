@@ -20,7 +20,7 @@ import service.UrlService;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
-@Service
+@Service("neo4jUrlService")
 public class UrlServiceImpl implements UrlService {
 
 	@Autowired
@@ -67,12 +67,6 @@ public class UrlServiceImpl implements UrlService {
         System.out.println("domain added in " + (t1-t0) + "ms");
 
 		return domain;
-	}
-
-	@Transactional
-    @Override
-	public void addSimpleUrl(String name, String url, String status, String domainURL, String sourceDomainName) {
-        addSimpleUrls(Collections.singletonList(url), status, domainURL, sourceDomainName);
 	}
 
     @Transactional
@@ -130,6 +124,7 @@ public class UrlServiceImpl implements UrlService {
         System.out.println(urls.size() + " links added in " + (t3-t2) + "ms (" + (t3 - t0) + "ms overall, " + (t1 - t0) + "ms for search)");
     }
 
+    @Transactional
     @Override
     public void addDomainLinks(List<DomainLink> domainLinks) {
         Map<String, DomainURL> domainURLs = new HashMap<>();
@@ -158,21 +153,13 @@ public class UrlServiceImpl implements UrlService {
 
     @Transactional
     @Override
-    public List<DomainURL> findDomainsSlim(Pageable pageable) {
-        List<String> urls = domainRepo.findAllSlim(pageable.getPageSize(), pageable.getOffset());
+    public List<DomainURL> findDomains(Pageable pageable) {
+        List<String> urls = domainRepo.findAll(pageable.getPageSize(), pageable.getOffset());
         List<DomainURL> result = new ArrayList<>(urls.size());
         for (String url : urls) {
             result.add(new DomainURL(url, url, 20000));
         }
         return result;
-//        return domainRepo.findAllSlim(pageable.getPageSize(), pageable.getOffset());
-    }
-
-    @Transactional
-    @Override
-    public Page<DomainURL> findDomains(Pageable pageable) {
-        Page<DomainURL> domains = domainRepo.findAll(pageable);
-        return domains;
     }
 
     @Transactional
@@ -206,11 +193,10 @@ public class UrlServiceImpl implements UrlService {
 	}
 
     @Override
-    public void updateSimpleUrlStatus(String url, String status) {
-//        long t0 = System.currentTimeMillis();
-        simpleUrlRepo.setUrlStatus(url, status);
-//        long t1 = System.currentTimeMillis();
-//        System.out.println("status in " + (t1-t0) + "ms");
+    public void updateSimpleUrlsStatus(List<String> urls, String status) {
+        for (String url : urls) {
+            simpleUrlRepo.setUrlStatus(url, status);
+        }
     }
 
     @Override
@@ -233,7 +219,7 @@ public class UrlServiceImpl implements UrlService {
 	@Transactional
 	@Override
 	public void removeDomains() {
-        domainRepo.deleteAll();
+        domainRepo.deleteAll(); // TODO this will cause a findAll - load into memory
 		simpleUrlRepo.deleteAll();
 //        String query = "MATCH (ee: DomainURL) \n" +
 //                "MATCH (u: SimpleURL)" +

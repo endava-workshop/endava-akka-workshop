@@ -9,6 +9,7 @@
 				http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
 	<context:annotation-config/>
+	<context:component-scan base-package="metrics"/>
 	<context:component-scan base-package="service"/>
 	<!-- REST Connection to Neo4j server -->
 
@@ -27,7 +28,8 @@
         <!--<constructor-arg value="embedded/21Aprilie_Round_1"/>-->
         <!--<constructor-arg value="embedded/21Aprilie_Round_2"/>-->
         <!--<constructor-arg value="embedded/test_01"/>-->
-        <constructor-arg value="embedded/test_03"/>
+        <!--<constructor-arg value="embedded/test_03"/>-->
+        <constructor-arg value="embedded/test_05"/>
         <!--<constructor-arg value="/var/lib/neo4j/data/graph.db"/>-->
     </bean>
 
@@ -40,10 +42,14 @@
 
 	<tx:annotation-driven mode="proxy"  transaction-manager="transactionManager" />
 
+    <bean id="mongoDb" class="java.lang.String">
+        <constructor-arg value="crawler"/>
+    </bean>
     <bean id="mongoHost" class="java.lang.String">
-        <constructor-arg value="127.0.0.1"/>
+        <constructor-arg value="192.168.0.100"/>
+        <!--<constructor-arg value="127.0.0.1"/>-->
     </bean>
     <bean id="mongoPort" class="java.lang.Integer">
-        <constructor-arg value="20127"/>
+        <constructor-arg value="27017"/>
     </bean>
 </beans>

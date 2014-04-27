@@ -18,12 +18,8 @@ import java.util.Set;
  */
 public class RestDomainDao implements DomainDao {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RestDomainDao.class);
-
-    private Set<String> knownDomains = Collections.synchronizedSet(new HashSet<String>());
-
     public List<Domain> findAll() {
-        return DomainURLClient.listDomains(0, WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT);
+        return DomainURLClient.listDomains(5, 1000/*WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT*/);
     }
 
 }

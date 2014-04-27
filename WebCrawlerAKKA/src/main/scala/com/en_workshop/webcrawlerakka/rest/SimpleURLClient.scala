@@ -1,13 +1,11 @@
 package com.en_workshop.webcrawlerakka.rest
 
-import scala.concurrent.{Future, Await}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import spray.client.pipelining._
 import com.en_workshop.webcrawlerakka.entities.Link
 import com.en_workshop.webcrawlerakka.enums.LinkStatus
 import scala.collection.JavaConversions._
-import scala.collection.immutable.IndexedSeq
-import scala.collection.mutable
 
 /**
  * Created by ionut on 19.04.2014.
@@ -15,6 +13,7 @@ import scala.collection.mutable
 
 object SimpleURLClient extends AbstractRestClient {
 
+  implicit val timeout: Duration = 3 minute
   lazy val addUrlClient = sendReceive
   def addURL(url: String, domain: String, sourceDomain: String): Unit = {
     timed("add URL", url) {
@@ -31,7 +30,7 @@ object SimpleURLClient extends AbstractRestClient {
         addDomainLinkClient(Post(s"$webRoot/urls", domainLinks))
       }
       if (sync) {
-        Await.result(f, 1 minute)
+        Await.result(f, timeout)
       }
 
   }
@@ -44,7 +43,7 @@ object SimpleURLClient extends AbstractRestClient {
           addUrlClient(Post(s"$webRoot/domain/${domain}/urls", forCrtDomain))
         }
         if (sync) {
-          Await.result(f, 1 minute)
+          Await.result(f, timeout)
         }
       }
     }
@@ -56,24 +55,24 @@ object SimpleURLClient extends AbstractRestClient {
       getUrlClient(Get(s"$webRoot/domain/$domainAddress/url?status=$status&pageNo=$pageNo&pageSize=$pageSize"))
     }
     // translate DTO to domain model
-    val result = for (u <- Await.result(f, 2 minute))
+    val result = for (u <- Await.result(f, timeout))
       yield new Link(u.sourceDomain.getOrElse(null), null, u.url, null, LinkStatus.valueOf(u.status.getOrElse(null)))
     println(s"found ${result.size} links for $domainAddress")
     result
   }
 
-  lazy val urlStatusClient = sendReceive
-  def setURLStatus(url: String, status: String): Unit = {
-    timed("status update", url) {
-      urlStatusClient(Patch(s"$webRoot/url/status", SimpleUrlStatus(url, status)))
+  lazy val urlBulkStatusClient = sendReceive
+  def setURLsStatus(url: java.util.List[String], status: String): Unit = {
+    timed(s"bulk update status for ${url.size()} links") {
+      urlBulkStatusClient(Patch(s"$webRoot/url/status", SimpleUrlsStatus(url.toList, status)))
     }
   }
 
   lazy val urlErrorClient = sendReceive
   def markURLError(url: String): Unit = {
-    timed("incrementing error cont", url){
+    timed("incrementing error count", url){
       val payload = SimpleUrlError(url, 1)
-      urlErrorClient(Post(s"$webRoot/url/error", payload))
+      urlErrorClient(Patch(s"$webRoot/url/error", payload))
     }
   }
 
@@ -84,4 +83,5 @@ case class SimpleUrl_(url: String, sourceDomain: Option[String], domain: Option[
 }
 case class DomainLink_(domain: DomainUrl_, link: SimpleUrl_)
 case class SimpleUrlStatus(url: String, status: String)
+case class SimpleUrlsStatus(urls: List[String], status: String)
 case class SimpleUrlError(url: String, errorDelta: Int)

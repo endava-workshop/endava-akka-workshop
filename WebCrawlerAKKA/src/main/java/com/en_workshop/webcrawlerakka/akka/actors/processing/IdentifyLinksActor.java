@@ -50,9 +50,8 @@ public class IdentifyLinksActor extends BaseActor {
                 getParent().tell(analyzeLinkRequest, getSelf());
 
                 AddLinkRequest addLinkRequest = new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
-                getParent().tell(addLinkRequest, getSelf());
+                getParent().tell(addLinkRequest, getSelf()); // TODO what's the point of putting this inside a loop?
             }
-
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

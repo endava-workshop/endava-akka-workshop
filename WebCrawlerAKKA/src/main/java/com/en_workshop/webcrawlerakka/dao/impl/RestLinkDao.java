@@ -4,9 +4,9 @@ import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
+import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.rest.*;
 import scala.Option;
-import scala.Some;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -16,11 +16,16 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class RestLinkDao implements LinkDao {
 
-    private static final int BUFF_SIZE = 1000;
+    private static final int BUFF_SIZE_SAVE = 1000;
+    private static final int BUFF_SIZE_UPDATE = 100;
     private int pageSize = 2000;
 
     private Map<String, Queue<Link>> domainLinks = new HashMap<>(); // per domainName
-    private Map<String, Set<DomainLink_>> buff = new HashMap<>(); // per domainName
+    private List<DomainLink_> buffToSave = new ArrayList<>(BUFF_SIZE_SAVE);
+    private Object BUFF_TO_SAVE_LOCK = new Object();
+
+    private List<String> buffVisited = new ArrayList<>(BUFF_SIZE_UPDATE);
+    private Object BUFF_VISITED_LOCK = new Object();
 
     @Override
     public Link getNextForCrawling(Domain domain) {
@@ -37,7 +42,7 @@ public class RestLinkDao implements LinkDao {
         synchronized (links) {
             Link result = links.poll();
             if (result == null) {
-                flush(domainName);
+                flush();
                 List<Link> not_visited = SimpleURLClient.getURLs(domainName, "NOT_VISITED", 0, pageSize);
                 links.addAll(not_visited);
                 result = links.poll();
@@ -48,7 +53,29 @@ public class RestLinkDao implements LinkDao {
 
     @Override
     public void update(Link link) {
-        SimpleURLClient.setURLStatus(link.getUrl(), link.getStatus().toString());
+        switch (link.getStatus()) {
+            case NOT_VISITED:
+//                SimpleURLClient.setURLStatus(link.getUrl(), link.getStatus().toString());
+                break;
+            case VISITED:
+                synchronized (BUFF_VISITED_LOCK) {
+                    buffVisited.add(link.getUrl());
+                    List<String> toUpdate = null;
+                    if (buffVisited.size() >= BUFF_SIZE_UPDATE) {
+                        toUpdate = buffVisited;
+                        buffVisited = new ArrayList<>(BUFF_SIZE_UPDATE);
+                    }
+                    if (toUpdate != null) {
+                        SimpleURLClient.setURLsStatus(toUpdate, LinkStatus.VISITED.toString());
+                    }
+                }
+                break;
+            case FAILED:
+                SimpleURLClient.markURLError(link.getUrl());
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -64,21 +91,12 @@ public class RestLinkDao implements LinkDao {
                     SimpleUrl_ dto = new SimpleUrl_(link.getUrl(), Option.apply(link.getSourceDomain()), Option.apply(domainName), Option.apply(link.getUrl()), "NOT_VISITED");
                     DomainLink_ domainLink_ = new DomainLink_(domainUrl_, dto);
 
-                    Set<DomainLink_> urls;
-                    synchronized (buff) { // create domain entry if it does not exist
-                        urls = buff.get(domainName);
-                        if (urls == null) {
-                            urls = new HashSet<>(BUFF_SIZE);
-                            buff.put(domainName, urls);
-                        }
-                    }
-                    HashSet<DomainLink_> toSave = null;
-                    synchronized (urls) { // accumulator
-                        urls.add(domainLink_);
-                        if (urls.size() >= BUFF_SIZE) {
-                            toSave = new HashSet<>(urls); // prepare for flush
-                            urls.clear();
-                            buff.put(domainName, urls);
+                    List<DomainLink_> toSave = null;
+                    synchronized (BUFF_TO_SAVE_LOCK) { // create domain entry if it does not exist
+                        buffToSave.add(domainLink_);
+                        if (buffToSave.size() >= BUFF_SIZE_SAVE) {
+                            toSave = buffToSave;
+                            buffToSave = new ArrayList<>(BUFF_SIZE_SAVE);
                         }
                     }
                     if (toSave != null) {
@@ -86,10 +104,10 @@ public class RestLinkDao implements LinkDao {
                     }
                     break;
                 case VISITED:
-                    SimpleURLClient.setURLStatus(link.getUrl(), link.getStatus().toString());
+                   update(link);
                     break;
                 case FAILED:
-                    SimpleURLClient.setURLStatus(link.getUrl(), link.getStatus().toString());
+                    update(link);
                     break;
             }
         } else {
@@ -98,24 +116,28 @@ public class RestLinkDao implements LinkDao {
 
     }
 
-    public void flush() { // TODO remove this
-        synchronized (buff) {
-            for (Set<DomainLink_> urls : buff.values()) {
-                if (urls.size() > 0) {
-                    SimpleURLClient.addDomainLinks(urls, true);
-                }
+    public void flush() {
+        List<DomainLink_> toSave = null;
+        synchronized (BUFF_TO_SAVE_LOCK) {
+            if (buffToSave.size() > 0) {
+                toSave = buffToSave;
+                buffToSave = new ArrayList<>();
             }
-            buff.clear();
+        }
+        if (toSave != null) {
+            SimpleURLClient.addDomainLinks(toSave, true);
+
+        }
+        List<String> toUpdate = null;
+        synchronized (BUFF_VISITED_LOCK) {
+            if (buffVisited.size() > 0) {
+                toUpdate = buffVisited;
+                buffVisited = new ArrayList<>();
+            }
+        }
+        if (toUpdate != null) {
+            SimpleURLClient.setURLsStatus(toUpdate, LinkStatus.VISITED.toString());
         }
     }
-    public void flush(String domainName) { // TODO remove this
-        synchronized (buff) {
-            Set<DomainLink_> urls = buff.get(domainName);
-            if (urls != null && urls.size() > 0) {
-                SimpleURLClient.addDomainLinks(urls, true);
-            }
-            urls = new HashSet<>(BUFF_SIZE);
-            buff.put(domainName, urls);
-        }
-    }
+
 }

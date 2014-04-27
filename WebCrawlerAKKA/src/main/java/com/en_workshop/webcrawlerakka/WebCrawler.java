@@ -34,6 +34,7 @@ public class WebCrawler {
         LOG.debug("Add sample (test) data ...");
 
         Domain domain = new Domain("ro.wikipedia.org", 20000, 0);
+//        DOMAIN_NAME_FILTER = "wikipedia"; // to prevent crawling all domains!
         DOMAIN_NAME_FILTER = "*"; // to prevent crawling all domains!
 //        DOMAIN_NAME_FILTER = "www.archeus.ro"; // to prevent crawling all domains!
 //      Domain domain = new Domain("www.archeus.ro", 1, 0);

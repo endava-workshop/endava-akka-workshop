@@ -1,3 +1,5 @@
+package example
+
 import akka.actor.ActorSystem
 
 import akka.util.Timeout

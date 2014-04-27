@@ -13,17 +13,21 @@ import akka.util.Timeout
 import spray.http.HttpHeaders._
 import spray.http.ContentTypes._
 import scala.collection.JavaConversions._
+import service.impl.{UrlServiceImpl, MongoUrlServiceImpl}
+import scala.collection.JavaConversions._
 
 case class DomainLinkDTO(domain: DomainURL, link: SimpleURLDTO)
 case class SimpleURLDTO(url: String, sourceDomain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int], lastUpdate: Option[Long])
 case class SimpleUrlStatus(url: String, status: String)
+case class SimpleUrlsStatus(urls: List[String], status: String)
 case class SimpleUrlError(url: String, errorDelta: Int)
 abstract class DomainURLService extends HttpServiceActor with ApplicationContextSupport  with Json4sSupport {
 
   implicit def json4sFormats: Formats = DefaultFormats
 
   implicit val timeout = Timeout(30 seconds)
-  lazy val urlService = springContext.getBean(classOf[UrlService])
+//  lazy val urlService = springContext.getBean(classOf[MongoUrlServiceImpl])
+  lazy val urlService = springContext.getBean(classOf[UrlServiceImpl])
 
   def receive = runRoute {
       path("purge") {
@@ -43,8 +47,7 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
         } ~
         get { // RETRIEVE Domains
           parameters('pageNo ? 0, 'pageSize ? 1000) { (pageNo: Int, pageSize: Int) =>
-//            val domains = urlService.findDomains(new PageRequest(pageNo, pageSize)).getContent
-            val domains = urlService.findDomainsSlim(new PageRequest(pageNo, pageSize))
+            val domains = urlService.findDomains(new PageRequest(pageNo, pageSize))
             complete(domains)
           }
         }
@@ -90,23 +93,25 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
 //        }
 //      } ~
       path("urls") {
-
           post {
-            // CREATE LINK under a domain
+            // CREATE LINKS
             entity(as[List[DomainLinkDTO]]) {
               domainLinks: List[DomainLinkDTO] =>
                 val t0 = System.currentTimeMillis()
                 urlService.addDomainLinks(domainLinks.map(dto => new DomainLink(dto.domain, new SimpleURL(dto.link.url, dto.link.name.getOrElse(null), dto.link.status.getOrElse("NOT_VISITED")))))
                 val t1 = System.currentTimeMillis()
-                println(s"bulk add urls in ${t1-t0}ms")
+                println(s"bulk add ${domainLinks.size} urls in ${t1-t0}ms")
                 complete("OK")
             }
           }
       } ~
-      path("url" / "status" ) { // UPDATE LINK Status
+      path("url" / "status" ) { // UPDATE LINK Status - bulk operation
         patch {
-          entity(as[SimpleUrlStatus]) { patch =>
-            urlService.updateSimpleUrlStatus(patch.url, patch.status)
+          entity(as[SimpleUrlsStatus]) { patch =>
+            val t0 = System.currentTimeMillis()
+            urlService.updateSimpleUrlsStatus(patch.urls, patch.status)
+            val t1 = System.currentTimeMillis()
+            println(s"bulk status update for ${patch.urls.size} urls in ${t1-t0}ms")
             complete("OK")
           }
         }
