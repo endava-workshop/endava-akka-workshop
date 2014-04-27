@@ -2,9 +2,10 @@ package com.en_workshop.webcrawlerakka.dao.impl;
 
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
-import org.apache.commons.lang3.StringUtils;
+import com.sun.java.browser.plugin2.DOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,27 +77,57 @@ public class InMemoryLinkDao implements LinkDao {
     /**
      * Update or add a {@link com.en_workshop.webcrawlerakka.entities.Link}
      *
-     * @param newLink The new {@link com.en_workshop.webcrawlerakka.entities.Link} to persist
+     * @param newDomainLink The new {@link com.en_workshop.webcrawlerakka.entities.Link} to persist
      */
-    public synchronized void create(final Link newLink) {
+    public synchronized void create(final DomainLink newDomainLink) {
         /* Validation */
-        if (null == newLink) {
+        createDomain(newDomainLink.getDomain());
+        update(newDomainLink.getLink());
+    }
+
+    private void createDomain(Domain newDomain) {
+        /* Validation */
+        if (null == newDomain) {
+            LOG.error("Cannot update a null Domain");
+            return;
+        }
+
+//        System.out.println("DomainDao - updated " + newDomain.getName());
+
+        /* Remove the old domain */
+        for (int i = 0; i < Domain.DOMAINS.size(); i++) {
+            final Domain crtDomain = Domain.DOMAINS.get(i);
+            if (crtDomain.getName().equals(newDomain.getName())) {
+                Domain.DOMAINS.remove(i);
+                i--;
+            }
+        }
+
+        /* Add a new domain */
+        Domain.DOMAINS.add(newDomain);
+    }
+
+    @Override
+    public void update(Link link) {
+        /* Validation */
+        if (null == link) {
             LOG.error("Cannot update a null Link");
             return;
         }
 
-        System.out.println("LinkDao - updated " + newLink );
+//        System.out.println("LinkDao - updated " + link);
 
         /* Remove the old link */
         for (int i = 0; i < LINKS.size(); i++) {
             final Link crtLink = LINKS.get(i);
-            if (crtLink.getUrl().equals(newLink.getUrl())) {
+            if (crtLink.getUrl().equals(link.getUrl())) {
                 LINKS.remove(i);
                 i--;
             }
         }
 
         /* Add the new link */
-        LINKS.add(newLink);
+        LINKS.add(link);
+
     }
 }

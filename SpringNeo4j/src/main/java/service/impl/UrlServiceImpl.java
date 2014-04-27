@@ -1,8 +1,8 @@
 package service.impl;
 
+import entity.DomainLink;
 import entity.DomainURL;
 import entity.SimpleURL;
-import org.neo4j.cypher.internal.compiler.v2_0.functions.Str;
 import org.neo4j.graphdb.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -128,6 +128,44 @@ public class UrlServiceImpl implements UrlService {
 
         long t3 = System.currentTimeMillis();
         System.out.println(urls.size() + " links added in " + (t3-t2) + "ms (" + (t3 - t0) + "ms overall, " + (t1 - t0) + "ms for search)");
+    }
+
+    @Override
+    public void addDomainLinks(List<DomainLink> domainLinks) {
+        Map<String, DomainURL> domainURLs = new HashMap<>();
+        Map<String, Set<String>> simpleURLs = new HashMap<>();
+        String status = null;
+        for (DomainLink domainLink : domainLinks) {
+            String domain = domainLink.getDomainURL().getAddress();
+            domainURLs.put(domain, domainLink.getDomainURL());
+            Set<String> urls = simpleURLs.get(domain);
+            if (urls == null) {
+                urls = new HashSet<>();
+                simpleURLs.put(domain, urls);
+            }
+            SimpleURL simpleURL = domainLink.getSimpleURL();
+            status = simpleURL.getStatus();
+            urls.add(simpleURL.getUrl());
+        }
+        for (DomainURL domainURL : domainURLs.values()) {
+            addDomainUrl(domainURL.getName(), domainURL.getAddress(), domainURL.getCoolDownPeriod());
+        }
+        for (Map.Entry<String, Set<String>> entry : simpleURLs.entrySet()) {
+            DomainURL domainURL = domainURLs.get(entry.getKey());
+            addSimpleUrls(new ArrayList<String>(entry.getValue()), status, domainURL.getAddress(), domainURL.getName());
+        }
+    }
+
+    @Transactional
+    @Override
+    public List<DomainURL> findDomainsSlim(Pageable pageable) {
+        List<String> urls = domainRepo.findAllSlim(pageable.getPageSize(), pageable.getOffset());
+        List<DomainURL> result = new ArrayList<>(urls.size());
+        for (String url : urls) {
+            result.add(new DomainURL(url, url, 20000));
+        }
+        return result;
+//        return domainRepo.findAllSlim(pageable.getPageSize(), pageable.getOffset());
     }
 
     @Transactional

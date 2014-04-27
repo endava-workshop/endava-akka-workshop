@@ -18,7 +18,7 @@ object Main extends App {
       val springAwareActorCreator: () ⇒ Actor = () ⇒ new DomainURLService() {
         val springContext: ApplicationContext = _springContext
       }
-      system.actorOf(Props(springAwareActorCreator).withRouter(new RoundRobinRouter(5)), name = "handler")
+      system.actorOf(Props(springAwareActorCreator).withRouter(new RoundRobinRouter(50)), name = "handler")
   }
   println( s"Binding to [$port]..." )
   IO(Http) ! Http.Bind(handler, interface = "localhost", port = port)

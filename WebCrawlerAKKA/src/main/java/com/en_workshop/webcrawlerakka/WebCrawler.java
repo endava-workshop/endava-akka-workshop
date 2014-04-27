@@ -13,6 +13,7 @@ import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.dao.impl.RestDomainDao;
 import com.en_workshop.webcrawlerakka.dao.impl.RestLinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +39,11 @@ public class WebCrawler {
 //      Domain domain = new Domain("www.archeus.ro", 1, 0);
 
 
-        PersistenceActor.getDomainDao().add(domain);
-
         Thread.sleep(2000); // allow the domain to get to DB...
         LinkDao linkDao = PersistenceActor.getLinkDao();
-        linkDao.create(new Link(domain.getName(), null, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83"));
+        Link link = new Link(domain.getName(), null, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83", null);
+        DomainLink domainLink = new DomainLink(domain, link);
+        linkDao.create(domainLink);
         if (linkDao instanceof RestLinkDao) {
             ((RestLinkDao)linkDao).flush();
         }

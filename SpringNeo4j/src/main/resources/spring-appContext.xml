@@ -25,7 +25,9 @@
 	<bean id="graphDatabaseService" factory-bean="graphDatabaseFactory" factory-method="newEmbeddedDatabase">
         <!--<constructor-arg value="embedded/db"/>-->
         <!--<constructor-arg value="embedded/21Aprilie_Round_1"/>-->
-        <constructor-arg value="embedded/21Aprilie_Round_2"/>
+        <!--<constructor-arg value="embedded/21Aprilie_Round_2"/>-->
+        <!--<constructor-arg value="embedded/test_01"/>-->
+        <constructor-arg value="embedded/test_03"/>
         <!--<constructor-arg value="/var/lib/neo4j/data/graph.db"/>-->
     </bean>
 
@@ -38,4 +40,10 @@
 
 	<tx:annotation-driven mode="proxy"  transaction-manager="transactionManager" />
 
+    <bean id="mongoHost" class="java.lang.String">
+        <constructor-arg value="127.0.0.1"/>
+    </bean>
+    <bean id="mongoPort" class="java.lang.Integer">
+        <constructor-arg value="20127"/>
+    </bean>
 </beans>

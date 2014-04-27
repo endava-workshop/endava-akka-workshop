@@ -24,6 +24,18 @@ object SimpleURLClient extends AbstractRestClient {
   }
 
 
+  lazy val addDomainLinkClient = sendReceive// ~> unmarshal[List[DomainLink_]])
+  def addDomainLinks(domainLinks: java.util.Collection[DomainLink_], sync: Boolean = false): Unit = {
+
+      val f = timed(s"add ${domainLinks.size()} DomainLinks") {
+        addDomainLinkClient(Post(s"$webRoot/urls", domainLinks))
+      }
+      if (sync) {
+        Await.result(f, 1 minute)
+      }
+
+  }
+
   def addURLs(urls: java.util.Collection[SimpleUrl_], sync: Boolean = false): Unit = {
     urls.flatMap(u => u.domain).toSet.foreach {
       domain: String => {
@@ -44,8 +56,10 @@ object SimpleURLClient extends AbstractRestClient {
       getUrlClient(Get(s"$webRoot/domain/$domainAddress/url?status=$status&pageNo=$pageNo&pageSize=$pageSize"))
     }
     // translate DTO to domain model
-    for (u <- Await.result(f, 2 minute))
-      yield new Link(u.sourceDomain.getOrElse(null), null, u.url, LinkStatus.valueOf(u.status.getOrElse(null)))
+    val result = for (u <- Await.result(f, 2 minute))
+      yield new Link(u.sourceDomain.getOrElse(null), null, u.url, null, LinkStatus.valueOf(u.status.getOrElse(null)))
+    println(s"found ${result.size} links for $domainAddress")
+    result
   }
 
   lazy val urlStatusClient = sendReceive
@@ -68,5 +82,6 @@ object SimpleURLClient extends AbstractRestClient {
 case class SimpleUrl_(url: String, sourceDomain: Option[String], domain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int]) {
   def this(url: String, sourceDomain: Option[String], domain: Option[String], name: Option[String], status: String) = this(url, sourceDomain, domain, name, Option(status), None)
 }
+case class DomainLink_(domain: DomainUrl_, link: SimpleUrl_)
 case class SimpleUrlStatus(url: String, status: String)
 case class SimpleUrlError(url: String, errorDelta: Int)

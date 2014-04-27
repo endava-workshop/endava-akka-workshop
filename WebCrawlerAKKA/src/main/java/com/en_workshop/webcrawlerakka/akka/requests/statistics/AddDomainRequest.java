@@ -9,7 +9,7 @@ import com.en_workshop.webcrawlerakka.entities.Domain;
  * @author <a href="mailto:roxana.paduraru@endava.com">Roxana PADURARU</a>
  * @since 4/10/14
  */
-public class AddDomainRequest extends MessageRequest {
+public class AddDomainRequest extends MessageRequest implements StatisticsRequest {
 
     private final Domain domain;
 

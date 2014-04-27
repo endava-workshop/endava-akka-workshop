@@ -26,7 +26,6 @@ public class StatisticsActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<>();
-    private final Object lock = new Object();
 
     /**
      * {@inheritDoc}
@@ -41,7 +40,7 @@ public class StatisticsActor extends BaseActor {
             updateDomainLinkStatistics((AddLinkRequest) message);
         } else if (message instanceof ShowStatisticsRequest) {
             LOG.debug("Received ShowStatisticsRequest");
-            getSender().tell(new ShowStatisticsResponse((ShowStatisticsRequest) message, domainStatistics, printStatistics()), getSelf());
+            getSender().tell(new ShowStatisticsResponse((ShowStatisticsRequest) message, new HashMap<>(domainStatistics), printStatistics()), getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
@@ -50,11 +49,9 @@ public class StatisticsActor extends BaseActor {
 
     private void addDomainStatistics(AddDomainRequest domainRequest) {
         Domain domain = domainRequest.getDomain();
-        synchronized (lock) {
             if (domainStatistics.get(domain.getName()) == null) {
                 domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
             }
-        }
     }
 
     /**
@@ -68,9 +65,7 @@ public class StatisticsActor extends BaseActor {
         if (domainStats == null) {
             //log the fact that there should have been an empty entry for this domain
             domainStats = new DomainLinkStatistics(domain);
-            synchronized (lock) {
                 domainStatistics.put(domain, domainStats);
-            }
         }
         /* Update the statistics, depending on the status of the link */
         LinkStatus linkStatus = addLinkRequest.getLink().getStatus();
@@ -88,7 +83,7 @@ public class StatisticsActor extends BaseActor {
 
     }
 
-    private synchronized String printStatistics() {
+    private String printStatistics() {
         return Arrays.toString(domainStatistics.entrySet().toArray());
     }
 

@@ -9,8 +9,14 @@ import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
+import com.en_workshop.webcrawlerakka.akka.actors.persistence.PersistenceMasterActor;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -28,8 +34,13 @@ public class ProcessingMasterActor extends BaseActor {
     private final ActorRef dataExtractorRouter;
     private final ActorRef analyzeLinksRouter;
 
-    public ProcessingMasterActor() {
-        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+    private ActorRef parent;
+
+    public ProcessingMasterActor(ActorRef parent) {
+
+        this.parent = parent;
+
+        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(-1, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
@@ -43,11 +54,11 @@ public class ProcessingMasterActor extends BaseActor {
                     }
                 });
 
-        this.indentifyLinksRouter = getContext().actorOf(Props.create(IdentifyLinksActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+        this.indentifyLinksRouter = getContext().actorOf(Props.create(IdentifyLinksActor.class, getSelf()).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "indentifyLinksRouter");
-        this.dataExtractorRouter = getContext().actorOf(Props.create(DataExtractorActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+        this.dataExtractorRouter = getContext().actorOf(Props.create(DataExtractorActor.class, getSelf()).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "dataExtractorRouter");
-        this.analyzeLinksRouter = getContext().actorOf(Props.create(AnalyzeLinkActor.class).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
+        this.analyzeLinksRouter = getContext().actorOf(Props.create(AnalyzeLinkActor.class, getSelf()).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "analyzeLinksRouter");
 
     }
@@ -66,9 +77,14 @@ public class ProcessingMasterActor extends BaseActor {
         } else if (message instanceof AnalyzeLinkRequest) {
             //analyze the links
             analyzeLinksRouter.tell(message, getSender());
-        } else {
+        } else if (message instanceof StatisticsRequest) {
+            parent.tell(message, getSender());
+        } else if (message instanceof PersistenceRequest) {
+            parent.tell(message, getSender());
+        }else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
     }
+
 }

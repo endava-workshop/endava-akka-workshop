@@ -1,9 +1,6 @@
 package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
-import akka.actor.ActorRef;
-import akka.actor.OneForOneStrategy;
-import akka.actor.Props;
-import akka.actor.SupervisorStrategy;
+import akka.actor.*;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
 import akka.event.Logging;
@@ -16,7 +13,13 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.ListDomainsResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessingRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddDomainRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.exceptions.UnresponsiveDomainException;
 import org.apache.http.client.ClientProtocolException;
@@ -37,38 +40,25 @@ import java.util.concurrent.TimeUnit;
 public class DomainMasterActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
-    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
-            new Function<Throwable, SupervisorStrategy.Directive>() {
-                @Override
-                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
-                    if (throwable instanceof UnresponsiveDomainException) {
-                        UnresponsiveDomainException unresponsiveDomainException = (UnresponsiveDomainException) throwable;
-                        String domainName = unresponsiveDomainException.getDomain().getName();
-                        if (!stoppedDomains.containsKey(domainName)) {
-                            stoppedDomains.put(domainName, Calendar.getInstance().getTimeInMillis());
-                        }
-                        return SupervisorStrategy.stop();
-                    }
-
-                    return SupervisorStrategy.restart();
-                }
-            }
-    );
-
     private final Map<String, ActorRef> domainActors;
     //TODO restart the actors after the specified amount of time
     private final Map<String, Long> stoppedDomains;
 
     private final ActorRef downloadUrlsRouter;
 
+    private final ActorRef parent; //MasterActor
+
     /**
      * The default constructor.
      */
-    public DomainMasterActor() {
+    public DomainMasterActor(ActorRef parent) {
+        LOG.error("\nCreating DomainMasterActor\n");
         this.domainActors = new HashMap<>();
         this.stoppedDomains = new HashMap<>();
 
-        final SupervisorStrategy downloadUrlsRouterStrategy = new OneForOneStrategy(100, Duration.create(1, TimeUnit.MINUTES),
+        this.parent = parent;
+
+        final SupervisorStrategy downloadUrlsRouterStrategy = new OneForOneStrategy(-1, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
@@ -90,18 +80,7 @@ public class DomainMasterActor extends BaseActor {
     public void onReceive(Object message) {
         if (message instanceof RefreshDomainMasterRequest) {
             /* Send a "find domains" request to the persistence master */
-            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(final ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(new ListDomainsRequest(), getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(final Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Persistence Master.");
-                        }
-                    }
-            );
+            getParent().tell(new ListDomainsRequest(), getSelf());
         } else if (message instanceof ListDomainsResponse) {
             final ListDomainsResponse response = (ListDomainsResponse) message;
 
@@ -129,6 +108,26 @@ public class DomainMasterActor extends BaseActor {
             /* Schedule a domains list refresh */
             getContext().system().scheduler().scheduleOnce(Duration.create(WebCrawlerConstants.DOMAINS_REFRESH_PERIOD, TimeUnit.MILLISECONDS),
                     getSelf(), new RefreshDomainMasterRequest(), getContext().system().dispatcher(), getSelf());
+        } else  if (message instanceof NextLinkResponse) {
+            NextLinkResponse nextLink = (NextLinkResponse) message;
+            /* If there was no next link found for that domain, remove the domain actor */
+            String domainName = nextLink.getNextLinkRequest().getDomain().getName();
+            if (null == nextLink.getNextLink()) {
+                ActorRef domainActor = domainActors.get(domainName);
+                domainActors.remove(domainActor);
+                /* Stop the actor? */
+//                domainActor.tell(PoisonPill.getInstance(), getSelf());
+            } else {
+                if (domainActors.get(domainName) != null) {
+                    domainActors.get(domainName).tell(nextLink, getSelf());
+                }
+            }
+        } else  if (message instanceof StatisticsRequest) {
+            getParent().tell(message, getSelf());
+        } else  if (message instanceof ProcessingRequest) {
+            getParent().tell(message, getSelf());
+        } else  if (message instanceof PersistenceRequest) {
+            getParent().tell(message, getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
@@ -141,7 +140,7 @@ public class DomainMasterActor extends BaseActor {
      * @param domain the new domain.
      */
     private void startNewDomain(final Domain domain) {
-        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter),
+        final ActorRef domainActor = getContext().actorOf(Props.create(DomainActor.class, downloadUrlsRouter, getSelf()),
                 WebCrawlerConstants.DOMAIN_ACTOR_PART_NAME + getActorName(domain.getName()));
 
         /* Add to the domain map and ensure one actor per domain */
@@ -151,20 +150,28 @@ public class DomainMasterActor extends BaseActor {
 
         domainActor.tell(new CrawlDomainRequest(domain), getSelf());
 
-        /* Report to the statistics actor. */
-        findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                        statisticsActor.tell(new AddDomainRequest(domain), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error("Cannot find Statistics Actor.");
-                    }
-                }
-        );
+        getParent().tell(new AddDomainRequest(domain), getSelf());
     }
+
+
+    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(-1, Duration.create(1, TimeUnit.MINUTES),
+            new Function<Throwable, SupervisorStrategy.Directive>() {
+                @Override
+                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
+                    if (throwable instanceof UnresponsiveDomainException) {
+                        UnresponsiveDomainException unresponsiveDomainException = (UnresponsiveDomainException) throwable;
+                        String domainName = unresponsiveDomainException.getDomain().getName();
+                        if (!stoppedDomains.containsKey(domainName)) {
+                            stoppedDomains.put(domainName, Calendar.getInstance().getTimeInMillis());
+                            domainActors.remove(domainName);
+                        }
+                        return SupervisorStrategy.stop();
+                    }
+
+                    return SupervisorStrategy.restart();
+                }
+            }
+    );
 
     /**
      * {@inheritDoc}
@@ -174,4 +181,7 @@ public class DomainMasterActor extends BaseActor {
         return supervisorStrategy;
     }
 
+    public ActorRef getParent() {
+        return parent;
+    }
 }

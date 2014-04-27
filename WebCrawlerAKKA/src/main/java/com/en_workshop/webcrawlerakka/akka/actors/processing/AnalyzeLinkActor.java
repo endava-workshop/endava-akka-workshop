@@ -7,10 +7,10 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +25,12 @@ import java.net.URL;
 public class AnalyzeLinkActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
+    private ActorRef parent;//ProcessingMasterActor
+
+    public AnalyzeLinkActor(ActorRef parent) {
+        this.parent = parent;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -34,7 +40,7 @@ public class AnalyzeLinkActor extends BaseActor {
         if (message instanceof AnalyzeLinkRequest) {
             AnalyzeLinkRequest analyzeLinkRequest = (AnalyzeLinkRequest) message;
 
-            String sourceDomain = analyzeLinkRequest.getSourceDomainName();
+            Domain sourceDomain = analyzeLinkRequest.getSourceDomain();
             String sourceLink = analyzeLinkRequest.getSourceLink();
             String link = analyzeLinkRequest.getLink();
 
@@ -46,12 +52,11 @@ public class AnalyzeLinkActor extends BaseActor {
                 LOG.info("Analyzing link: " + link + " and domain " + linkDomain);
 
                 Domain newDomain = null;
-                if (!linkDomain.equals(sourceDomain)) {
+                if (!linkDomain.equals(sourceDomain.getName())) {
                     newDomain = new Domain(url.getHost(), WebCrawlerConstants.DOMAIN_DEFAULT_COOLDOWN, 0);
-                    persistDomain(newDomain);
                 }
 
-                persistLink(linkDomain, sourceDomain, link, sourceLink);
+                persistDomainLink(null == newDomain ? sourceDomain : newDomain, new Link(linkDomain, sourceDomain.getName(), link, sourceLink));
             } else {
                 LOG.debug("Invalid URL received [" + link + "]");
             }
@@ -66,44 +71,15 @@ public class AnalyzeLinkActor extends BaseActor {
     /**
      * Finds the PersistenceMasterActor and sends the request to persist the link.
      *
-     * @param linkDomain the name of the web domain of the link.
-     * @param sourceDomain the domain where the link was found.
+     * @param domain the name of the web domain of the link.
      * @param link the link.
      */
-    private void persistLink(final String linkDomain, final String sourceDomain, final String link, final String sourceLink) {
+    private void persistDomainLink(final Domain domain, final Link link) {
         //call to persist the normalized link
-        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(new Link(linkDomain, sourceDomain, link), sourceLink), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error("Cannot find Persistence Master");
-                    }
-                }
-        );
+        getParent().tell(new PersistDomainLinkRequest(new DomainLink(domain, link)), getSelf());
     }
 
-    /**
-     * Finds the PersistenceMasterActor and sends the request to persist the web domain.
-     *
-     * @param domain the web domain of the link.
-     */
-    private void persistDomain(final Domain domain) {
-        //call to persist the normalized link
-        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistDomainRequest(domain), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error("Cannot find Persistence Master");
-                    }
-                }
-        );
+    public ActorRef getParent() {
+        return parent;
     }
 }

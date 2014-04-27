@@ -11,6 +11,9 @@ import com.en_workshop.webcrawlerakka.akka.actors.processing.ProcessingMasterAct
 import com.en_workshop.webcrawlerakka.akka.actors.statistics.StatisticsActor;
 import com.en_workshop.webcrawlerakka.akka.requests.StartMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.RefreshDomainMasterRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.*;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessingRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
@@ -22,6 +25,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class MasterActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
+
+    private ActorRef statistics;
+    private ActorRef domainMasterActor;
+    private ActorRef persistenceMaster;
+    private ActorRef processingMaster;
 
     private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(-1, Duration.create(1, TimeUnit.MINUTES),
             new Function<Throwable, SupervisorStrategy.Directive>() {
@@ -43,22 +51,32 @@ public class MasterActor extends BaseActor {
     public void onReceive(Object message) {
         if (message instanceof StartMasterRequest) {
             /* Start the domain master actor */
-            final ActorRef domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
+            domainMasterActor = getContext().actorOf(Props.create(DomainMasterActor.class, getSelf()), WebCrawlerConstants.DOMAIN_MASTER_ACTOR_NAME);
             domainMasterActor.tell(new RefreshDomainMasterRequest(), getSelf());
             LOG.debug("Started Domain Master...");
 
-            /* Start the processing actor */
-            getContext().actorOf(Props.create(ProcessingMasterActor.class), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
-            LOG.debug("Started Processing Master...");
-
             /* Start the persistence actor */
-            getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
+            persistenceMaster = getContext().actorOf(Props.create(PersistenceMasterActor.class), WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME);
             LOG.debug("Started Persistence Master...");
 
-            /* Start the statistics actor */
-            getContext().actorOf(Props.create(StatisticsActor.class), WebCrawlerConstants.STATISTICS_ACTOR_NAME);
+            /* Start the processing actor */
+            processingMaster = getContext().actorOf(Props.create(ProcessingMasterActor.class, getSelf()), WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME);
+            LOG.debug("Started Processing Master...");
+
+             /* Start the statistics actor */
+            statistics = getContext().actorOf(Props.create(StatisticsActor.class), WebCrawlerConstants.STATISTICS_ACTOR_NAME);
             LOG.debug("Started Statistics actor...");
 
+        } else if (message instanceof StatisticsRequest) {
+            statistics.tell(message, getSelf());
+        } else if (message instanceof ProcessingRequest) {
+            processingMaster.tell(message, getSelf());
+        } else if (message instanceof PersistenceRequest) {
+            persistenceMaster.tell(message, getSelf());
+        } else if (message instanceof ListDomainsResponse) {
+            domainMasterActor.tell(message, getSelf());
+        } else if (message instanceof NextLinkResponse) {
+            domainMasterActor.tell(message, getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

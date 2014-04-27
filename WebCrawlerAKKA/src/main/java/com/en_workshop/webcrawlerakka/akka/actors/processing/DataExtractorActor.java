@@ -21,6 +21,12 @@ import org.jsoup.nodes.Document;
 public class DataExtractorActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
+    private ActorRef parent;
+
+    public DataExtractorActor(ActorRef parent) {
+        this.parent = parent;
+    }
+
     @Override
     public void onReceive(Object message) throws Exception {
 
@@ -36,32 +42,8 @@ public class DataExtractorActor extends BaseActor {
             }
             final String strippedText = document.body().text();
 
-            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(new PersistContentRequest(processContentRequest.getSource(), strippedText), getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Persistence Master");
-                        }
-                    }
-            );
-
-            /* Report to the statistics actor. */
-            findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                            statisticsActor.tell(new AddLinkRequest(processContentRequest.getSource().getDomain(), processContentRequest.getSource()), getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Statistics Actor.");
-                        }
-                    }
-            );
+            getParent().tell(new PersistContentRequest(processContentRequest.getSource(), strippedText), getSelf());
+            getParent().tell(new AddLinkRequest(processContentRequest.getSource().getDomain(), processContentRequest.getSource()), getSelf());
 
         } else {
             LOG.error("Unknown message: " + message);
@@ -70,5 +52,7 @@ public class DataExtractorActor extends BaseActor {
 
     }
 
-
+    public ActorRef getParent() {
+        return parent;
+    }
 }

@@ -9,14 +9,14 @@ import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.UpdateLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.conn.ConnectTimeoutException;
 import scala.Option;
 
 import java.io.IOException;
@@ -34,7 +34,6 @@ public class DownloadUrlActor extends BaseActor {
     public void onReceive(Object message) throws IOException {
         if (message instanceof DownloadUrlRequest) {
             final DownloadUrlRequest request = (DownloadUrlRequest) message;
-
 
             final Map<String, String> pageHeaders = WebClient.getPageHeaders(request.getLink().getUrl());
 
@@ -54,7 +53,6 @@ public class DownloadUrlActor extends BaseActor {
                 return;
             }
 
-            //TODO Test for redirects
             doWork(request);
             reportWork(request, LinkStatus.VISITED);
 
@@ -71,39 +69,16 @@ public class DownloadUrlActor extends BaseActor {
      * @param urlStatus The new {@link com.en_workshop.webcrawlerakka.enums.LinkStatus}
      */
     private void reportWork(final DownloadUrlRequest request, final LinkStatus urlStatus, final boolean unresponsiveDomain) {
-        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getSourceDomain(), request.getLink().getUrl(), urlStatus);
+        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getSourceDomain(), request.getLink().getUrl(), request.getLink().getSourceLink(), urlStatus);
         /* Persist the new link status */
-        findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                        persistenceMasterActor.tell(new PersistLinkRequest(newLink), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error(request.getLink().getUrl() + " - Cannot find " + getActorPath(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME) +
-                                ". Error: " + throwable.getMessage());
-                    }
-                }
-        );
+        getSender().tell(new UpdateLinkRequest(newLink), getSelf());
 
         /* Report back to the domain actor */
         DownloadUrlResponse response = new DownloadUrlResponse(request, unresponsiveDomain);
         getSender().tell(response, getSelf());
 
         /* Report to the statistics actor  */
-        findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                        statisticsActor.tell(new AddLinkRequest(request.getDomain().getName(), newLink), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error("Cannot find Statistics Actor.");
-                    }
-                }
-        );
+        getSender().tell(new AddLinkRequest(request.getDomain().getName(), newLink), getSelf());
     }
 
     private void reportWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
@@ -115,20 +90,8 @@ public class DownloadUrlActor extends BaseActor {
         final String pageContent = WebClient.getPageContent(request.getLink().getUrl());
         LOG.debug(request.getLink().getUrl() + " - Content downloaded (" + pageContent.length() + " chars)");
 
-            /* Send to processing master */
-        findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                    @Override
-                    public void onSuccess(ActorRef processingMasterActor) throws Throwable {
-                        processingMasterActor.tell(new ProcessContentRequest(request.getLink(), pageContent), getSelf());
-                    }
-                }, new OnFailure() {
-                    @Override
-                    public void onFailure(Throwable throwable) throws Throwable {
-                        LOG.error(request.getLink().getUrl() + " - Cannot find " + getActorPath(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME) +
-                                ". Error: " + throwable.getMessage());
-                    }
-                }
-        );
+        /* Send to processing master */
+        getSender().tell(new ProcessContentRequest(request.getDomain(), request.getLink(), pageContent), getSelf());
     }
 
     @Override
@@ -137,6 +100,9 @@ public class DownloadUrlActor extends BaseActor {
         if (reason instanceof ClientProtocolException) {
             //mark the link as failed
             reportWork(request, LinkStatus.FAILED);
+        } else if (reason instanceof ConnectTimeoutException) {
+            //HttpHostConnectException
+            reportWork(request, LinkStatus.NOT_VISITED, true);
         } else if (reason instanceof IOException) {
             //HttpHostConnectException is a subclass of IOException
             reportWork(request, LinkStatus.NOT_VISITED, true);

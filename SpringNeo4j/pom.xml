@@ -11,7 +11,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spray.version>1.2.0</spray.version>
-	</properties>
+        <jongo.version>0.4</jongo.version>
+        <mongo.driver.version>2.10.1</mongo.driver.version>
+        <flapdoodle.embed.mongo.version>1.40</flapdoodle.embed.mongo.version>
+    </properties>
 
 	<dependencies>
 
@@ -32,8 +35,31 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.specs2</groupId>
+            <artifactId>specs2_2.10</artifactId>
+            <version>2.3.11</version>
+        </dependency>
 
-		<dependency>
+        <dependency>
+            <groupId>org.jongo</groupId>
+            <artifactId>jongo</artifactId>
+            <version>${jongo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>${mongo.driver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <version>${flapdoodle.embed.mongo.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>

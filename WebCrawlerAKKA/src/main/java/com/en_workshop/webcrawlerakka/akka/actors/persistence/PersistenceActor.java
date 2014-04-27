@@ -6,6 +6,8 @@ import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.*;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
+import com.en_workshop.webcrawlerakka.dao.impl.InMemoryDomainDao;
+import com.en_workshop.webcrawlerakka.dao.impl.InMemoryLinkDao;
 import com.en_workshop.webcrawlerakka.dao.impl.RestDomainDao;
 import com.en_workshop.webcrawlerakka.dao.impl.RestLinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
@@ -21,10 +23,10 @@ import java.util.List;
  */
 public class PersistenceActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
-//    private static DomainDao domainDao = new InMemoryDomainDao();
-    private static DomainDao domainDao = new RestDomainDao();
-//    private static LinkDao linkDao = new InMemoryLinkDao();
-    private static LinkDao linkDao = new RestLinkDao();
+    private static DomainDao domainDao = new InMemoryDomainDao();
+//    private static DomainDao domainDao = new RestDomainDao();
+    private static LinkDao linkDao = new InMemoryLinkDao();
+//    private static LinkDao linkDao = new RestLinkDao();
 
     /**
      * {@inheritDoc}
@@ -35,10 +37,10 @@ public class PersistenceActor extends BaseActor {
             processListDomainsRequest((ListDomainsRequest) message);
         } else if (message instanceof NextLinkRequest) {
             processNextLinkRequest((NextLinkRequest) message);
-        }  else if (message instanceof PersistLinkRequest) {
-            processPersistLinkRequest((PersistLinkRequest) message);
-        } else if (message instanceof PersistDomainRequest) {
-            processPersistDomainRequest((PersistDomainRequest) message);
+        }  else if (message instanceof UpdateLinkRequest) {
+            processPersistLinkRequest((UpdateLinkRequest) message);
+        } else if (message instanceof PersistDomainLinkRequest) {
+            processPersistDomainLinkRequest((PersistDomainLinkRequest) message);
         } else if (message instanceof PersistContentRequest){
             processPersistContentRequest((PersistContentRequest) message);
         }else {
@@ -65,15 +67,15 @@ public class PersistenceActor extends BaseActor {
         getSender().tell(response, getSelf());
     }
 
-    private void processPersistLinkRequest(PersistLinkRequest persistLinkRequest) {
-        LOG.info("Received link to persist: " + persistLinkRequest.getLink().getUrl());
-        linkDao.create(persistLinkRequest.getLink());
+    private void processPersistLinkRequest(UpdateLinkRequest updateLinkRequest) {
+        LOG.info("Received link to persist: " + updateLinkRequest.getLink().getUrl());
+        linkDao.update(updateLinkRequest.getLink());
     }
 
-    private void processPersistDomainRequest(PersistDomainRequest persistDomainRequest) {
-        LOG.info("Received domain to persist: " + persistDomainRequest.getDomain().getName());
+    private void processPersistDomainLinkRequest(PersistDomainLinkRequest persistDomainRequest) {
+        LOG.info("Received domain and link to persist: " + persistDomainRequest.getDomainLink());
 
-        domainDao.add(persistDomainRequest.getDomain());
+        linkDao.create(persistDomainRequest.getDomainLink());
     }
 
     private void processPersistContentRequest(PersistContentRequest persistContentRequest) {

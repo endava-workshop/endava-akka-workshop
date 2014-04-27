@@ -28,7 +28,7 @@ public class PersistenceMasterActor extends BaseActor {
      * The default constructor
      */
     public PersistenceMasterActor() {
-        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(2, Duration.create(1, TimeUnit.MINUTES),
+        final SupervisorStrategy routersSupervisorStrategy = new OneForOneStrategy(200, Duration.create(1, TimeUnit.MINUTES),
                 new Function<Throwable, SupervisorStrategy.Directive>() {
                     @Override
                     public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {

@@ -102,4 +102,11 @@ public abstract class BaseActor extends UntypedActor {
     }
 
 
+    @Override
+    public void preStart() throws Exception {
+        LOG.info("Actor " + getSelf().getClass() + " will start.");
+        super.preStart();
+    }
+
+
 }

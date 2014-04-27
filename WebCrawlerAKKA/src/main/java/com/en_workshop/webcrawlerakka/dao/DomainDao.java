@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface DomainDao {
 
-    void add(final Domain domain);
+    //TODO update domain error count
 
     List<Domain> findAll();
 

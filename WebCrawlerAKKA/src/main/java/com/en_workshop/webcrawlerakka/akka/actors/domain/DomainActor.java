@@ -15,12 +15,16 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.persistence.UpdateLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessingRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.exceptions.UnresponsiveDomainException;
 import scala.concurrent.duration.Duration;
 
-import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,20 +37,7 @@ public class DomainActor extends BaseActor {
 
     private int noOfConsecutiveFails;
 
-    //TODO remove supervision strategy, because this actor doesn't have any children.
-    private final SupervisorStrategy supervisorStrategy = new OneForOneStrategy(5, Duration.create(1, TimeUnit.MINUTES),
-            new Function<Throwable, SupervisorStrategy.Directive>() {
-                @Override
-                public SupervisorStrategy.Directive apply(Throwable throwable) throws Exception {
-                    if (throwable instanceof Exception) {
-                        return SupervisorStrategy.restart();
-                    }
-
-                    return SupervisorStrategy.stop();
-                }
-            }
-    );
-
+    private ActorRef parent; //DomainMasterActor
     private final ActorRef downloadUrlsRouter;
 
     /**
@@ -54,8 +45,9 @@ public class DomainActor extends BaseActor {
      *
      * @param downloadUrlsRouter
      */
-    public DomainActor(final ActorRef downloadUrlsRouter) {
+    public DomainActor(final ActorRef downloadUrlsRouter, final ActorRef parent) {
         this.downloadUrlsRouter = downloadUrlsRouter;
+        this.parent = parent;
     }
 
     /**
@@ -67,18 +59,7 @@ public class DomainActor extends BaseActor {
             final CrawlDomainRequest request = (CrawlDomainRequest) message;
 
             /* Send a "find next link for domain" request to the persistence master */
-            findLocalActor(WebCrawlerConstants.PERSISTENCE_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                        @Override
-                        public void onSuccess(ActorRef persistenceMasterActor) throws Throwable {
-                            persistenceMasterActor.tell(new NextLinkRequest(request.getDomain()), getSelf());
-                        }
-                    }, new OnFailure() {
-                        @Override
-                        public void onFailure(Throwable throwable) throws Throwable {
-                            LOG.error("Cannot find Persistence Master.");
-                        }
-                    }
-            );
+            getParent().tell(new NextLinkRequest(request.getDomain()), getSelf());
 
         } else if (message instanceof NextLinkResponse) {
             final NextLinkResponse response = (NextLinkResponse) message;
@@ -101,7 +82,7 @@ public class DomainActor extends BaseActor {
             downloadUrlsRouter.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
 
             // Here you can move the request for a new crawl on this domain. This will generate download link requests at a rate imposed only by the cool down period.
-        } else if (message instanceof DownloadUrlResponse) {
+        }else if (message instanceof DownloadUrlResponse) {
             final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
 
@@ -117,17 +98,19 @@ public class DomainActor extends BaseActor {
             /* Schedule a new crawl for the downloaded domain after the cool down period */
             getContext().system().scheduler().scheduleOnce(Duration.create(domain.getCoolDownPeriod(), TimeUnit.MILLISECONDS), getSelf(),
                     new CrawlDomainRequest(domain), getContext().system().dispatcher(), getSelf());
+        } else if (message instanceof PersistenceRequest){
+            getParent().tell(message, getSelf());
+        } else if (message instanceof StatisticsRequest){
+            getParent().tell(message, getSelf());
+        } else if (message instanceof ProcessingRequest){
+            getParent().tell(message, getSelf());
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SupervisorStrategy supervisorStrategy() {
-        return supervisorStrategy;
+    public ActorRef getParent() {
+        return parent;
     }
 }

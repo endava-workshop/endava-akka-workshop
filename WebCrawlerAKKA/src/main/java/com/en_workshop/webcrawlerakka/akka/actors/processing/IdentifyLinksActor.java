@@ -24,6 +24,12 @@ import org.jsoup.select.Elements;
 public class IdentifyLinksActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
+    private ActorRef parent;//ProcessingMasterActor
+
+    public IdentifyLinksActor(ActorRef parent) {
+        this.parent = parent;
+    }
+
     @Override
     public void onReceive(Object message) throws Exception {
 
@@ -40,41 +46,20 @@ public class IdentifyLinksActor extends BaseActor {
                     continue;
                 }
 
+                AnalyzeLinkRequest analyzeLinkRequest = new AnalyzeLinkRequest(contentToBeProcessed.getSourceDomain(), baseUrl, normalizedLink);
+                getParent().tell(analyzeLinkRequest, getSelf());
 
-                //call to analyze the normalized link
-                findLocalActor(WebCrawlerConstants.PROCESSING_MASTER_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                            @Override
-                            public void onSuccess(ActorRef processingMasterActor) throws Throwable {
-                                AnalyzeLinkRequest analyzeLinkRequest = new AnalyzeLinkRequest(contentToBeProcessed.getSource().getDomain(), baseUrl, normalizedLink);
-                                processingMasterActor.tell(analyzeLinkRequest, getSelf());
-                            }
-                        }, new OnFailure() {
-                            @Override
-                            public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error("Cannot find Processing Master");
-                            }
-                        }
-                );
-
-                /* Report to the statistics actor. */
-                findLocalActor(WebCrawlerConstants.STATISTICS_ACTOR_NAME, new OnSuccess<ActorRef>() {
-                            @Override
-                            public void onSuccess(ActorRef statisticsActor) throws Throwable {
-                                AddLinkRequest addLinkRequest = new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
-                                statisticsActor.tell(addLinkRequest, getSelf());
-                            }
-                        }, new OnFailure() {
-                            @Override
-                            public void onFailure(Throwable throwable) throws Throwable {
-                                LOG.error("Cannot find Statistics Actor.");
-                            }
-                        }
-                );
+                AddLinkRequest addLinkRequest = new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
+                getParent().tell(addLinkRequest, getSelf());
             }
 
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);
         }
+    }
+
+    public ActorRef getParent() {
+        return parent;
     }
 }

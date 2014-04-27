@@ -3,7 +3,7 @@ package rest
 import spray.routing._
 import service.UrlService
 import org.springframework.data.domain.PageRequest
-import entity.{SimpleURL, DomainURL}
+import entity.{DomainLink, SimpleURL, DomainURL}
 import spray.httpx.Json4sSupport
 import org.json4s.{DefaultFormats, Formats}
 
@@ -14,6 +14,7 @@ import spray.http.HttpHeaders._
 import spray.http.ContentTypes._
 import scala.collection.JavaConversions._
 
+case class DomainLinkDTO(domain: DomainURL, link: SimpleURLDTO)
 case class SimpleURLDTO(url: String, sourceDomain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int], lastUpdate: Option[Long])
 case class SimpleUrlStatus(url: String, status: String)
 case class SimpleUrlError(url: String, errorDelta: Int)
@@ -36,12 +37,14 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
           entity(as[DomainURL]) { domainUrl =>
             val newDomainUrl = urlService.addDomainUrl(domainUrl.getName, domainUrl.getAddress, domainUrl.getCoolDownPeriod)
 //            val newDomainUrl = new DomainURL()
+            print(s"Domain created: ${domainUrl.getAddress}")
             complete(newDomainUrl)
           }
         } ~
         get { // RETRIEVE Domains
           parameters('pageNo ? 0, 'pageSize ? 1000) { (pageNo: Int, pageSize: Int) =>
-            val domains = urlService.findDomains(new PageRequest(pageNo, pageSize)).getContent
+//            val domains = urlService.findDomains(new PageRequest(pageNo, pageSize)).getContent
+            val domains = urlService.findDomainsSlim(new PageRequest(pageNo, pageSize))
             complete(domains)
           }
         }
@@ -86,6 +89,20 @@ abstract class DomainURLService extends HttpServiceActor with ApplicationContext
 //          complete(s"OK")
 //        }
 //      } ~
+      path("urls") {
+
+          post {
+            // CREATE LINK under a domain
+            entity(as[List[DomainLinkDTO]]) {
+              domainLinks: List[DomainLinkDTO] =>
+                val t0 = System.currentTimeMillis()
+                urlService.addDomainLinks(domainLinks.map(dto => new DomainLink(dto.domain, new SimpleURL(dto.link.url, dto.link.name.getOrElse(null), dto.link.status.getOrElse("NOT_VISITED")))))
+                val t1 = System.currentTimeMillis()
+                println(s"bulk add urls in ${t1-t0}ms")
+                complete("OK")
+            }
+          }
+      } ~
       path("url" / "status" ) { // UPDATE LINK Status
         patch {
           entity(as[SimpleUrlStatus]) { patch =>

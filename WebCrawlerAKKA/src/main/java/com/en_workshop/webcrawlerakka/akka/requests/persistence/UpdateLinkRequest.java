@@ -4,22 +4,22 @@ import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
 import com.en_workshop.webcrawlerakka.entities.Link;
 
 /**
- * Request to persist a link.
+ * Request to save/update a link.
  *
  * Created by roxana on 3/12/14.
  */
-public class PersistLinkRequest extends MessageRequest implements PersistenceRequest{
+public class UpdateLinkRequest extends MessageRequest implements PersistenceRequest{
 
     private final Link link;
     private final String source;
 
-    public PersistLinkRequest(Link link, String source) {
+    public UpdateLinkRequest(Link link, String source) {
         super(System.currentTimeMillis());
         this.link = link;
         this.source = source;
     }
 
-    public PersistLinkRequest(Link link) {
+    public UpdateLinkRequest(Link link) {
         this(link, null);
     }
 
@@ -33,7 +33,7 @@ public class PersistLinkRequest extends MessageRequest implements PersistenceReq
 
     @Override
     public String toString() {
-        return "PersistLinkRequest{" +
+        return "UpdateLinkRequest{" +
                 "link=" + link +
                 ", source='" + source + '\'' +
                 '}';

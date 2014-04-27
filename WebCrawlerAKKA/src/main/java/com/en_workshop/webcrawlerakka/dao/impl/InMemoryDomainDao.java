@@ -14,32 +14,6 @@ import java.util.List;
 public class InMemoryDomainDao implements DomainDao {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryDomainDao.class);
 
-    /**
-     * Add a {@link com.en_workshop.webcrawlerakka.entities.Domain} to the collection
-     *
-     * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to add
-     * @return The {@link com.en_workshop.webcrawlerakka.entities.Domain} addded or {@code null}
-     */
-    public synchronized void add(final Domain domain) {
-
-        /* Validation */
-        if (null == domain) {
-            LOG.error("Cannot create a null Domain.");
-            return;
-        }
-
-        System.out.println("DomainDao - added " + domain.getName());
-
-        /* Test if the domain is already added to the database */
-        if (Domain.DOMAINS.contains(domain)) {
-            LOG.error("Domain record already found for info: " + domain);
-            return;
-        }
-
-        Domain.DOMAINS.add(domain);
-
-//        return domain;
-    }
 
 //    /**
 //     * Find a {@link com.en_workshop.webcrawlerakka.entities.Domain} based on the domain's base url
