@@ -20,6 +20,7 @@ public class InMemoryLinkDao implements LinkDao {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryLinkDao.class);
 
     private static final List<Link> LINKS = Collections.synchronizedList(new ArrayList<Link>());
+    private static final Object linksLock = new Object();
 
 
 //    /**
@@ -58,16 +59,18 @@ public class InMemoryLinkDao implements LinkDao {
      * @param domain The {@link com.en_workshop.webcrawlerakka.entities.Domain} to scan
      * @return The first {@link com.en_workshop.webcrawlerakka.entities.Link} not visited found or {@code null}
      */
-    public synchronized Link getNextForCrawling(final Domain domain) {
+    public Link getNextForCrawling(final Domain domain) {
         /* Validation */
         if (null == domain) {
             LOG.error("Cannot scan a null Domain");
             return null;
         }
 
-        for (Link link : LINKS) {
-            if (link.getDomain().equals(domain.getName()) && link.getStatus().equals(LinkStatus.NOT_VISITED)) {
-                return link;
+        synchronized (linksLock) {
+            for (Link link : LINKS) {
+                if (link.getDomain().equals(domain.getName()) && link.getStatus().equals(LinkStatus.NOT_VISITED)) {
+                    return link;
+                }
             }
         }
 
@@ -95,16 +98,17 @@ public class InMemoryLinkDao implements LinkDao {
 //        System.out.println("DomainDao - updated " + newDomain.getName());
 
         /* Remove the old domain */
-        for (int i = 0; i < Domain.DOMAINS.size(); i++) {
-            final Domain crtDomain = Domain.DOMAINS.get(i);
-            if (crtDomain.getName().equals(newDomain.getName())) {
-                Domain.DOMAINS.remove(i);
-                i--;
+        synchronized (InMemoryDomainDao.domainsLock) {
+            for (int i = 0; i < InMemoryDomainDao.DOMAINS.size(); i++) {
+                final Domain crtDomain = InMemoryDomainDao.DOMAINS.get(i);
+                if (crtDomain.getName().equals(newDomain.getName())) {
+                    InMemoryDomainDao.DOMAINS.remove(i);
+                    i--;
+                }
             }
+            /* Add a new domain */
+            InMemoryDomainDao.DOMAINS.add(newDomain);
         }
-
-        /* Add a new domain */
-        Domain.DOMAINS.add(newDomain);
     }
 
     @Override
@@ -118,16 +122,17 @@ public class InMemoryLinkDao implements LinkDao {
 //        System.out.println("LinkDao - updated " + link);
 
         /* Remove the old link */
-        for (int i = 0; i < LINKS.size(); i++) {
-            final Link crtLink = LINKS.get(i);
-            if (crtLink.getUrl().equals(link.getUrl())) {
-                LINKS.remove(i);
-                i--;
+        synchronized (linksLock) {
+            for (int i = 0; i < LINKS.size(); i++) {
+                final Link crtLink = LINKS.get(i);
+                if (crtLink.getUrl().equals(link.getUrl())) {
+                    LINKS.remove(i);
+                    i--;
+                }
             }
+
+            /* Add the new link */
+            LINKS.add(link);
         }
-
-        /* Add the new link */
-        LINKS.add(link);
-
     }
 }

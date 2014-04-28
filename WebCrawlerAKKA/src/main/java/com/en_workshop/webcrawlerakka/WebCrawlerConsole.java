@@ -59,17 +59,15 @@ public class WebCrawlerConsole {
     private ActorSystem actorSystem;
     private ActorRef controlActor;
     private ActorRef statusActor;
-    private ActorRef statisticsActor;
 
     /**
      * Micro console supported commands:
      * {@see COMMANDS}
      */
-    public static void microConsole(final ActorSystem actorSystem, final ActorRef controlActor, final ActorRef statusActor, final ActorRef statisticsActor) {
+    public static void microConsole(final ActorSystem actorSystem, final ActorRef controlActor, final ActorRef statusActor) {
         INSTANCE.actorSystem = actorSystem;
         INSTANCE.controlActor = controlActor;
         INSTANCE.statusActor = statusActor;
-        INSTANCE.statisticsActor = statisticsActor;
 
         //TODO Validate parameters
 
@@ -213,23 +211,6 @@ public class WebCrawlerConsole {
      * @param commandString The command string
      */
     private void doAsyncStatisticsCommand(final ShowStatisticsRequest message, final String commandString) {
-        final Future<Object> result = Patterns.ask(statisticsActor, message, TIMEOUT);
-        result.onSuccess(new OnSuccess<Object>() {
-            @Override
-            public void onSuccess(final Object object) throws Throwable {
-                if (object instanceof ShowStatisticsResponse) {
-                    final ShowStatisticsResponse showStatisticsResponse = (ShowStatisticsResponse) object;
-                    LOG.info("\"" + commandString + "\" succeeded with result: " + showStatisticsResponse.getStatistics() + ".\n Message: " + showStatisticsResponse.getMessage());
-                } else {
-                    LOG.info("\"" + commandString + "\" succeeded with result: " + object);
-                }
-            }
-        }, actorSystem.dispatcher());
-        result.onFailure(new OnFailure() {
-            @Override
-            public void onFailure(final Throwable throwable) throws Throwable {
-                LOG.error("\"" + commandString + "\" failed with exception: " + throwable.getMessage(), throwable);
-            }
-        }, actorSystem.dispatcher());
+        Patterns.ask(controlActor, message, TIMEOUT);
     }
 }

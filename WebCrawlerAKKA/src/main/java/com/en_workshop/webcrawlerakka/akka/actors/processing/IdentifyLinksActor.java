@@ -1,15 +1,12 @@
 package com.en_workshop.webcrawlerakka.akka.actors.processing;
 
 import akka.actor.ActorRef;
-import akka.dispatch.OnFailure;
-import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkStatisticsRequest;
 import com.en_workshop.webcrawlerakka.tools.WebContentTools;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,8 +46,8 @@ public class IdentifyLinksActor extends BaseActor {
                 AnalyzeLinkRequest analyzeLinkRequest = new AnalyzeLinkRequest(contentToBeProcessed.getSourceDomain(), baseUrl, normalizedLink);
                 getParent().tell(analyzeLinkRequest, getSelf());
 
-                AddLinkRequest addLinkRequest = new AddLinkRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
-                getParent().tell(addLinkRequest, getSelf()); // TODO what's the point of putting this inside a loop?
+                AddLinkStatisticsRequest addLinkStatisticsRequest = new AddLinkStatisticsRequest(contentToBeProcessed.getSource().getDomain(), contentToBeProcessed.getSource());
+                getParent().tell(addLinkStatisticsRequest, getSelf()); // TODO what's the point of putting this inside a loop?
             }
         } else {
             LOG.error("Unknown message: " + message);

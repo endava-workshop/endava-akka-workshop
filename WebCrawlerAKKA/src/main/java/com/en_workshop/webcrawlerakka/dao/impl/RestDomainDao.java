@@ -3,6 +3,7 @@ package com.en_workshop.webcrawlerakka.dao.impl;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.enums.DomainStatus;
 import com.en_workshop.webcrawlerakka.rest.DomainURLClient;
 import java.util.List;
 
@@ -17,4 +18,14 @@ public class RestDomainDao implements DomainDao {
         return DomainURLClient.listDomains(0, WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT);
     }
 
+    @Override
+    public List<Domain> findAll(List<DomainStatus> domainStatuses) {
+        //TODO implement this
+        return null;
+    }
+
+    @Override
+    public void update(Domain domain) {
+        //TODO implement this
+    }
 }

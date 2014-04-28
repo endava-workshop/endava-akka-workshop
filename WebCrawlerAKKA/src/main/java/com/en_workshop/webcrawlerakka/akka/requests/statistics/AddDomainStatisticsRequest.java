@@ -4,16 +4,16 @@ import com.en_workshop.webcrawlerakka.akka.requests.MessageRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 
 /**
- * Add comment.
+ * Request to update the domain statistics.
  *
  * @author <a href="mailto:roxana.paduraru@endava.com">Roxana PADURARU</a>
  * @since 4/10/14
  */
-public class AddDomainRequest extends MessageRequest implements StatisticsRequest {
+public class AddDomainStatisticsRequest extends MessageRequest implements StatisticsRequest {
 
     private final Domain domain;
 
-    public AddDomainRequest(Domain domain) {
+    public AddDomainStatisticsRequest(Domain domain) {
         super(System.currentTimeMillis());
         this.domain = domain;
     }

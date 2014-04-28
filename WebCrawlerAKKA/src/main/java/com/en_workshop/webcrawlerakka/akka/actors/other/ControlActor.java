@@ -12,6 +12,8 @@ import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.Control
 import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStartMasterResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStopMasterRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.control.master.ControlStopMasterResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsResponse;
 import com.en_workshop.webcrawlerakka.enums.ControlActionStatus;
 
 /**
@@ -42,7 +44,7 @@ public class ControlActor extends BaseActor {
             }
 
             /* Start MasterActor */
-            final ActorRef masterActor = getContext().system().actorOf(Props.create(MasterActor.class), WebCrawlerConstants.MASTER_ACTOR_NAME);
+            final ActorRef masterActor = getContext().system().actorOf(Props.create(MasterActor.class, getSelf()), WebCrawlerConstants.MASTER_ACTOR_NAME);
             masterActor.tell(new StartMasterRequest(), ActorRef.noSender());
 
             getSender().tell(new ControlStartMasterResponse((ControlStartMasterRequest) message, ControlActionStatus.OK, "MasterActor started"), getSelf());
@@ -62,6 +64,20 @@ public class ControlActor extends BaseActor {
                 getSender().tell(new ControlStopMasterResponse((ControlStopMasterRequest) message, ControlActionStatus.FAILED, "MasterActor not found"),
                         getSelf());
             }
+        } else if (message instanceof ShowStatisticsRequest) {
+            try {
+                final ActorRef masterActor = findLocalActor(null);
+
+                if (null != masterActor) {
+                    masterActor.tell(message, getSelf());
+                }
+            } catch (Exception exc) {
+                LOG.error("Master Actor not created or just died or is just restarting.");
+            }
+        } else if (message instanceof ShowStatisticsResponse) {
+            final ShowStatisticsResponse showStatisticsResponse = (ShowStatisticsResponse) message;
+            LOG.error("ShowStatisticsResponse with result: " + showStatisticsResponse.getStatistics() + ".\n Message: " + showStatisticsResponse.getMessage());
+
         } else {
             LOG.error("Unknown message: " + message);
             unhandled(message);

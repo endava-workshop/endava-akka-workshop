@@ -40,4 +40,7 @@ public class WebCrawlerConstants {
     public static final long DOMAIN_DEFAULT_COOLDOWN = 20 * 1000; // 60 seconds
     public static final int CONNECTION_EXCEPTION_TRIALS = 3; //the no of trials for a domain that throws IOException and HttpHostConnectException
     public static final long CONNECTION_EXCEPTION_RETRY = 1 * 60 * 1000; // 10 minutes
+
+    public static final long EMPTY_NEXT_LINK_TRIALS = 10;
+
 }

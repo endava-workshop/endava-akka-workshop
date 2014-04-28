@@ -1,15 +1,12 @@
 package com.en_workshop.webcrawlerakka.akka.actors.processing;
 
 import akka.actor.ActorRef;
-import akka.dispatch.OnFailure;
-import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistContentRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkStatisticsRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -43,7 +40,7 @@ public class DataExtractorActor extends BaseActor {
             final String strippedText = document.body().text();
 
             getParent().tell(new PersistContentRequest(processContentRequest.getSource(), strippedText), getSelf());
-            getParent().tell(new AddLinkRequest(processContentRequest.getSource().getDomain(), processContentRequest.getSource()), getSelf());
+            getParent().tell(new AddLinkStatisticsRequest(processContentRequest.getSource().getDomain(), processContentRequest.getSource()), getSelf());
 
         } else {
             LOG.error("Unknown message: " + message);

@@ -12,7 +12,9 @@ import com.en_workshop.webcrawlerakka.dao.impl.RestDomainDao;
 import com.en_workshop.webcrawlerakka.dao.impl.RestLinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.Link;
+import com.en_workshop.webcrawlerakka.enums.DomainStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,10 +25,10 @@ import java.util.List;
  */
 public class PersistenceActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
-//    private static DomainDao domainDao = new InMemoryDomainDao();
-    private static DomainDao domainDao = new RestDomainDao();
-//    private static LinkDao linkDao = new InMemoryLinkDao();
-    private static LinkDao linkDao = new RestLinkDao();
+    private static DomainDao domainDao = new InMemoryDomainDao();
+//    private static DomainDao domainDao = new RestDomainDao();
+    private static LinkDao linkDao = new InMemoryLinkDao();
+//    private static LinkDao linkDao = new RestLinkDao();
 
     /**
      * {@inheritDoc}
@@ -35,10 +37,14 @@ public class PersistenceActor extends BaseActor {
     public void onReceive(Object message) {
         if (message instanceof ListDomainsRequest) {
             processListDomainsRequest((ListDomainsRequest) message);
+        } else if(message instanceof ListCrawlableDomainsRequest) {
+            processListCrawlabeDomainsRequest((ListCrawlableDomainsRequest) message);
         } else if (message instanceof NextLinkRequest) {
             processNextLinkRequest((NextLinkRequest) message);
-        }  else if (message instanceof UpdateLinkRequest) {
-            processPersistLinkRequest((UpdateLinkRequest) message);
+        } else if (message instanceof UpdateLinkRequest) {
+            processUpdateLinkRequest((UpdateLinkRequest) message);
+        } else if (message instanceof UpdateDomainRequest) {
+            processUpdateDomainRequest((UpdateDomainRequest) message);
         } else if (message instanceof PersistDomainLinkRequest) {
             processPersistDomainLinkRequest((PersistDomainLinkRequest) message);
         } else if (message instanceof PersistContentRequest){
@@ -58,6 +64,18 @@ public class PersistenceActor extends BaseActor {
         getSender().tell(response, getSelf());
     }
 
+    private void processListCrawlabeDomainsRequest(ListCrawlableDomainsRequest request) {
+        List<DomainStatus> crawlableStatuses = new ArrayList<>();
+        crawlableStatuses.add(DomainStatus.STARTED);
+        crawlableStatuses.add(DomainStatus.FOUND);
+        List<Domain> domains = domainDao.findAll(crawlableStatuses); // TODO consider async
+
+        LOG.debug("List of crawlable domains found: " + domains);
+
+        ListCrawlableDomainsResponse response = new ListCrawlableDomainsResponse(request, domains);
+        getSender().tell(response, getSelf());
+    }
+
     private void processNextLinkRequest(NextLinkRequest request){
         Link link = linkDao.getNextForCrawling(request.getDomain()); // TODO consider async
         NextLinkResponse response = new NextLinkResponse(request, link);
@@ -67,14 +85,18 @@ public class PersistenceActor extends BaseActor {
         getSender().tell(response, getSelf());
     }
 
-    private void processPersistLinkRequest(UpdateLinkRequest updateLinkRequest) {
-        LOG.info("Received link to persist: " + updateLinkRequest.getLink().getUrl());
+    private void processUpdateLinkRequest(UpdateLinkRequest updateLinkRequest) {
+        LOG.info("Received link to update: " + updateLinkRequest.getLink().getUrl());
         linkDao.update(updateLinkRequest.getLink());
+    }
+
+    private void processUpdateDomainRequest(UpdateDomainRequest updateDomainRequest) {
+        LOG.info("Received domain to update: " + updateDomainRequest.getDomain().getName());
+        domainDao.update(updateDomainRequest.getDomain());
     }
 
     private void processPersistDomainLinkRequest(PersistDomainLinkRequest persistDomainRequest) {
         LOG.info("Received domain and link to persist: " + persistDomainRequest.getDomainLink());
-
         linkDao.create(persistDomainRequest.getDomainLink());
     }
 

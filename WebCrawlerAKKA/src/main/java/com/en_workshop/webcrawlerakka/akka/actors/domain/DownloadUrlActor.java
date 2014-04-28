@@ -1,8 +1,5 @@
 package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
-import akka.actor.ActorRef;
-import akka.dispatch.OnFailure;
-import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
@@ -11,7 +8,7 @@ import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.UpdateLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkStatisticsRequest;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 import com.en_workshop.webcrawlerakka.tools.WebClient;
@@ -78,7 +75,7 @@ public class DownloadUrlActor extends BaseActor {
         getSender().tell(response, getSelf());
 
         /* Report to the statistics actor  */
-        getSender().tell(new AddLinkRequest(request.getDomain().getName(), newLink), getSelf());
+        getSender().tell(new AddLinkStatisticsRequest(request.getDomain().getName(), newLink), getSelf());
     }
 
     private void reportWork(final DownloadUrlRequest request, final LinkStatus urlStatus) {
@@ -102,10 +99,10 @@ public class DownloadUrlActor extends BaseActor {
             reportWork(request, LinkStatus.FAILED);
         } else if (reason instanceof ConnectTimeoutException) {
             //HttpHostConnectException
-            reportWork(request, LinkStatus.NOT_VISITED, true);
+            reportWork(request, LinkStatus.FAILED, true);
         } else if (reason instanceof IOException) {
             //HttpHostConnectException is a subclass of IOException
-            reportWork(request, LinkStatus.NOT_VISITED, true);
+            reportWork(request, LinkStatus.FAILED, true);
         }
 
         super.preRestart(reason, message);

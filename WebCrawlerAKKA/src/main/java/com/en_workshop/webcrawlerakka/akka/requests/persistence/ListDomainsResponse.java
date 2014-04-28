@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Respond with the list of domains to crawl
+ * Respond with the list of all domains.
  *
  * @author Radu Ciumag
  */

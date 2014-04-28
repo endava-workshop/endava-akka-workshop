@@ -1,27 +1,19 @@
 package com.en_workshop.webcrawlerakka.akka.actors.domain;
 
 import akka.actor.ActorRef;
-import akka.actor.OneForOneStrategy;
-import akka.actor.SupervisorStrategy;
-import akka.dispatch.OnFailure;
-import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.japi.Function;
 import com.en_workshop.webcrawlerakka.WebCrawlerConstants;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.requests.domain.CrawlDomainRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.domain.DownloadUrlResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.domain.*;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.NextLinkResponse;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.UpdateLinkRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessingRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.enums.DomainStatus;
+import com.en_workshop.webcrawlerakka.exceptions.ExhaustedDomainException;
 import com.en_workshop.webcrawlerakka.exceptions.UnresponsiveDomainException;
 import scala.concurrent.duration.Duration;
 
@@ -36,25 +28,26 @@ public class DomainActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private int noOfConsecutiveFails;
+    private int noOfConsecutiveEmptyNextLink;
 
-    private ActorRef parent; //DomainMasterActor
-    private final ActorRef downloadUrlsRouter;
+    private final ActorRef parent; //DomainMasterActor
+    private final Domain domain;
 
     /**
      * The constructor
      *
-     * @param downloadUrlsRouter
+     * @param parent the actor that created the domain actor.
      */
-    public DomainActor(final ActorRef downloadUrlsRouter, final ActorRef parent) {
-        this.downloadUrlsRouter = downloadUrlsRouter;
+    public DomainActor(final ActorRef parent, final Domain domain) {
         this.parent = parent;
+        this.domain = domain;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void onReceive(Object message) throws UnresponsiveDomainException {
+    public void onReceive(Object message) throws UnresponsiveDomainException, ExhaustedDomainException {
         if (message instanceof CrawlDomainRequest) {
             final CrawlDomainRequest request = (CrawlDomainRequest) message;
 
@@ -66,29 +59,29 @@ public class DomainActor extends BaseActor {
             final NextLinkRequest request = response.getNextLinkRequest();
 
             if (null == response.getNextLink()) {
-                /* There is no next link */
                 LOG.info("Domain " + request.getDomain().getName() + " has no more links to crawl");
+                noOfConsecutiveEmptyNextLink++;
+            } else {
+                LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
+                noOfConsecutiveEmptyNextLink = 0;
 
-                /* Schedule a new crawl for the downloaded domain after the cool down period */
-                getContext().system().scheduler().scheduleOnce(Duration.create(request.getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
-                        getSelf(), new CrawlDomainRequest(request.getDomain()), getContext().system().dispatcher(), getSelf());
-
-                return;
+                /* Send a "download URL" request */
+                getParent().tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
             }
-
-            LOG.info("Domain " + response.getNextLinkRequest().getDomain().getName() + " crawling link: " + response.getNextLink().getUrl());
-
-            /* Send a "download URL" request */
-            downloadUrlsRouter.tell(new DownloadUrlRequest(request.getDomain(), response.getNextLink()), getSelf());
-
-            // Here you can move the request for a new crawl on this domain. This will generate download link requests at a rate imposed only by the cool down period.
+            boolean limitReached = (noOfConsecutiveEmptyNextLink == WebCrawlerConstants.EMPTY_NEXT_LINK_TRIALS);
+            if (limitReached) {
+                throw new ExhaustedDomainException(request.getDomain());
+            }
+            /* Schedule a new crawl for the downloaded domain after the cool down period */
+            getContext().system().scheduler().scheduleOnce(Duration.create(request.getDomain().getCoolDownPeriod(), TimeUnit.MILLISECONDS),
+                    getSelf(), new CrawlDomainRequest(request.getDomain()), getContext().system().dispatcher(), getSelf());
         }else if (message instanceof DownloadUrlResponse) {
             final DownloadUrlResponse response = (DownloadUrlResponse) message;
             final Domain domain = response.getDownloadUrlRequest().getDomain();
 
             if (response.isUnresponsiveDomain()) {
                 noOfConsecutiveFails++;
-                boolean limitReached = noOfConsecutiveFails == WebCrawlerConstants.CONNECTION_EXCEPTION_TRIALS;
+                boolean limitReached = (noOfConsecutiveFails == WebCrawlerConstants.CONNECTION_EXCEPTION_TRIALS);
                 if (limitReached) {
                     throw new UnresponsiveDomainException(domain);
                 }
@@ -110,7 +103,26 @@ public class DomainActor extends BaseActor {
         }
     }
 
+    @Override
+    public void postStop() throws Exception {
+        /* Remove the actor from the map after it is stopped */
+        getParent().tell(new DomainStoppedMessage(domain), getSelf());
+        super.postStop();
+    }
+
+    @Override
+    public void preStart() throws Exception {
+        /* Add the actor to the map after it is started */
+        Domain startedDomain = new Domain(domain.getName(), domain.getCoolDownPeriod(), domain.getCrawledAt(), DomainStatus.STARTED);
+        getParent().tell(new DomainStartedMessage(startedDomain), getSelf());
+        super.preStart();
+    }
+
     public ActorRef getParent() {
         return parent;
+    }
+
+    public Domain getDomain() {
+        return domain;
     }
 }

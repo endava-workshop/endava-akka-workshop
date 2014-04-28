@@ -1,5 +1,7 @@
 package com.en_workshop.webcrawlerakka.entities;
 
+import com.en_workshop.webcrawlerakka.enums.DomainStatus;
+
 /**
  * Statistics for the links of a domain.
  *
@@ -9,6 +11,7 @@ package com.en_workshop.webcrawlerakka.entities;
 public class DomainLinkStatistics {
 
     private String domain;
+    private DomainStatus domainStatus;
 
     private int identified;
     private int downloaded;
@@ -46,10 +49,19 @@ public class DomainLinkStatistics {
         return domain;
     }
 
+    public DomainStatus getDomainStatus() {
+        return domainStatus;
+    }
+
+    public void setDomainStatus(DomainStatus domainStatus) {
+        this.domainStatus = domainStatus;
+    }
+
     @Override
     public String toString() {
         return "DomainLinkStatistics{" +
                 "domain='" + domain + '\'' +
+                ", domainStatus=" + domainStatus +
                 ", identified=" + identified +
                 ", downloaded=" + downloaded +
                 ", failed=" + failed +

@@ -66,11 +66,10 @@ public class WebCrawler {
         controlActor.tell(new ControlStartMasterRequest(), ActorRef.noSender());
 
         final ActorRef statusActor = actorSystem.actorOf(Props.create(StatusActor.class), WebCrawlerConstants.STATUS_ACTOR_NAME);
-        final ActorRef statisticsActor = actorSystem.actorOf(Props.create(StatisticsActor.class), WebCrawlerConstants.STATISTICS_ACTOR_NAME);
 
         LOG.debug("Actor system initialize: DONE");
 
         /* Display the micro console UI */
-        WebCrawlerConsole.microConsole(actorSystem, controlActor, statusActor, statisticsActor);
+        WebCrawlerConsole.microConsole(actorSystem, controlActor, statusActor);
     }
 }

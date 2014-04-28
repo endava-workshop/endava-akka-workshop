@@ -9,13 +9,9 @@ import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
-import com.en_workshop.webcrawlerakka.akka.actors.persistence.PersistenceMasterActor;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistDomainLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import scala.concurrent.duration.Duration;
 
