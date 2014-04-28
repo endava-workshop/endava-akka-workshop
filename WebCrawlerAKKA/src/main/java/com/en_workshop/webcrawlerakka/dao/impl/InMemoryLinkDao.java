@@ -1,17 +1,17 @@
 package com.en_workshop.webcrawlerakka.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
-import com.sun.java.browser.plugin2.DOM;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Radu Ciumag
