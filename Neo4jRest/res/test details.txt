@@ -1,0 +1,1 @@
+scope : inserare 1000 linkuri+domenii aferente în <1s (cu verificare de duplicate domenii și linkuri)

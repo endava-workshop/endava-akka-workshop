@@ -1,0 +1,79 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.akka.ws</groupId>
+	<artifactId>Neo4jRest</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Neo4jRest</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spray.version>1.2.0</spray.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>mvn-neo4j</id>
+			<url>http://m2.neo4j.org/content/groups/everything</url>
+		</repository>
+	</repositories>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-rest-graphdb</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.10</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-io</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-can</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-http</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-httpx</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-routing</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-client</artifactId>
+			<version>${spray.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.spray</groupId>
+			<artifactId>spray-json_2.10</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

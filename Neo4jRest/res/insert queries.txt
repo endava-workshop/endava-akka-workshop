@@ -1,0 +1,19 @@
+CREATE (d1:Domain { name : 'Wikipedia', link:'www.wikipedia.com' })
+CREATE (d2:Domain { name : 'Yahoo', link:'www.yahoo.com' })
+CREATE (l1:Link { name:'Link1', link:'www.wikipedia1.com' })
+CREATE (l2:Link { name:'Link2', link:'www.wikipedia2.com' })
+CREATE (l3:Link { name:'Link3', link:'www.yahoo3.com' })
+CREATE (l4:Link { name:'Link4', link:'www.yahoo4.com' })
+CREATE (l5:Link { name:'Link5', link:'www.yahoo5.com' })
+create 
+	(l1)-[:PART_OF]->(d1),
+	(l2)-[:PART_OF]->(d1),
+	(l3)-[:PART_OF]->(d2),
+	(l4)-[:PART_OF]->(d2),
+	(l5)-[:PART_OF]->(d2)
+create 
+	(l1)-[:LINKS_TO]->(l3),
+	(l2)-[:LINKS_TO]->(l4),
+	(l2)-[:LINKS_TO]->(l5),
+	(l4)-[:LINKS_TO]->(l1)
+	
