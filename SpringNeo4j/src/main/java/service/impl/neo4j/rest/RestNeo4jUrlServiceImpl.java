@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.cypher.internal.compiler.v2_0.functions.E;
 import org.neo4j.rest.graphdb.RestAPI;
 import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.neo4j.rest.graphdb.query.QueryEngine;
@@ -28,9 +27,11 @@ import entity.SimpleURL;
  * @author criss
  *
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface {
 
 	private RestAPI restApi;
+
 	private QueryEngine engine;
 
 	public RestNeo4jUrlServiceImpl() {
@@ -71,17 +72,16 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		Map<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.put(PARAM_SKIP, skip);
 		paramMap.put(PARAM_LIMIT, pageable.getPageSize());
-		QueryResult<Map<String, Object>> result = engine.query(GET_DOMAINS,
+		QueryResult<Map<String, Object>> result = engine.query(GET_ALL_DOMAINS,
 				paramMap);
 		List<DomainURL> domainList = new ArrayList<DomainURL>();
 
 		Iterator<Map<String, Object>> iterator = result.iterator();
 		while (iterator.hasNext()) {
 			Map<String, Object> row = iterator.next();
-			DomainURL domain = new DomainURL(
-					(String) row.get("n." + DOMAIN_NAME), (String) row.get("n."
-							+ DOMAIN_URL), (Long) row.get("n."
-							+ COOL_DOWN_PERIOD));
+			DomainURL domain = new DomainURL((String) row.get("n."
+					+ DOMAIN_NAME), (String) row.get("n." + DOMAIN_URL),
+					(Long) row.get("n." + COOL_DOWN_PERIOD));
 			domainList.add(domain);
 		}
 		return domainList;
@@ -119,7 +119,6 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	@Override
 	public void addSimpleUrls(List<String> urls, String status,
 			String domainURL, String sourceDomainName) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -130,7 +129,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void addDomainLinks(List<DomainLink> domainLinks) {
-		for(DomainLink link : domainLinks){
+		for (DomainLink link : domainLinks) {
 			Map<String, Object> paramMap = new HashMap<String, Object>();
 			paramMap.put(DOMAIN_URL, link.getDomainURL().getAddress());
 			paramMap.put(LINK_NAME, link.getSimpleURL().getName());
@@ -138,7 +137,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 			paramMap.put(LINK_STATUS, link.getSimpleURL().getStatus());
 			paramMap.put(LINK_LAST_UPDATE, link.getSimpleURL().getLastUpdate());
 			paramMap.put(LINK_ERROR_COUNT, link.getSimpleURL().getErrorCount());
-			
+
 			engine.query(ADD_DOMAIN_LINK, paramMap);
 		}
 
@@ -152,7 +151,13 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void updateSimpleUrlsStatus(List<String> urls, String status) {
-		// TODO Auto-generated method stub
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(LINK_STATUS, status);
+		for (String url : urls) {
+			paramMap.put(LINK_URL, url);
+
+			engine.query(UPDATE_LINK_STATUS, paramMap);
+		}
 
 	}
 
@@ -163,7 +168,11 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void updateSimpleUrlErrorStatus(String url, int errorDelta) {
-		// TODO Auto-generated method stub
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(LINK_ERROR_COUNT, errorDelta);
+		paramMap.put(LINK_URL, url);
+
+		engine.query(UPDATE_LINK_ERROR_COUNT, paramMap);
 
 	}
 
@@ -176,8 +185,29 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	@Override
 	public Collection<SimpleURL> findURLs(String address, String status,
 			int pageNo, int pageSize) {
-		// TODO Auto-generated method stub
-		return null;
+
+		int skip = pageNo * pageSize;
+
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(DOMAIN_URL, address);
+		paramMap.put(LINK_STATUS, status);
+		paramMap.put(PARAM_SKIP, skip);
+		paramMap.put(PARAM_LIMIT, pageSize);
+		QueryResult<Map<String, Object>> result = engine.query(
+				GET_DOMAIN_LINKS, paramMap);
+		List<SimpleURL> linksList = new ArrayList<SimpleURL>();
+
+		Iterator<Map<String, Object>> iterator = result.iterator();
+		while (iterator.hasNext()) {
+			Map<String, Object> row = iterator.next();
+			SimpleURL domain = new SimpleURL((String) row.get("l." + LINK_URL),
+					(String) row.get("l." + LINK_NAME), (String) row.get("l."
+							+ LINK_STATUS), (Integer) row.get("l."
+							+ LINK_ERROR_COUNT), (Integer) row.get("l."
+							+ LINK_LAST_UPDATE));
+			linksList.add(domain);
+		}
+		return linksList;
 	}
 
 	/*

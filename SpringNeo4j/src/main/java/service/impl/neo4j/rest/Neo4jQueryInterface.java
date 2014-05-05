@@ -23,7 +23,7 @@ public interface Neo4jQueryInterface {
 			+ DOMAIN_NAME + "}, " + DOMAIN_URL + ":{" + DOMAIN_URL + "}, "
 			+ COOL_DOWN_PERIOD + ":{" + COOL_DOWN_PERIOD + "} })";
 
-	String GET_DOMAINS = "match (n:Domain) return n." + DOMAIN_NAME + ", n."
+	String GET_ALL_DOMAINS = "match (n:Domain) return n." + DOMAIN_NAME + ", n."
 			+ DOMAIN_URL + ", n." + COOL_DOWN_PERIOD + " skip {" + PARAM_SKIP
 			+ "} limit {" + PARAM_LIMIT + "}";
 
@@ -37,4 +37,17 @@ public interface Neo4jQueryInterface {
 			+ ":{" + LINK_URL + "}, " + LINK_STATUS + ":{" + LINK_STATUS
 			+ "}, " + LINK_LAST_UPDATE + ":{" + LINK_LAST_UPDATE + "}, "
 			+ LINK_ERROR_COUNT + ":{" + LINK_ERROR_COUNT + "} })";
+
+	String GET_DOMAIN_LINKS = "MATCH (d:Domain { " + DOMAIN_URL + ": {"
+			+ DOMAIN_URL + "} })<-[:" + REL_PART_OF + "]-(l:Link{"
+			+ LINK_STATUS + ":{" + LINK_STATUS + "} }) RETURN l." + LINK_URL
+			+ ", l." + LINK_NAME + ", l." + LINK_STATUS + ", l."
+			+ LINK_LAST_UPDATE + ", l." + LINK_ERROR_COUNT + " skip {"
+			+ PARAM_SKIP + "} limit {" + PARAM_LIMIT + "}";
+
+	String UPDATE_LINK_STATUS = "match (l:Link{" + LINK_URL + ":{" + LINK_URL
+			+ "} }) set l." + LINK_STATUS + " = {" + LINK_STATUS + "}";
+	
+	String UPDATE_LINK_ERROR_COUNT = "match (l:Link{" + LINK_URL + ":{" + LINK_URL
+			+ "} }) set l." + LINK_ERROR_COUNT + " = {" + LINK_ERROR_COUNT + "}";
 }

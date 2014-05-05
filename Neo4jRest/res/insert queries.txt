@@ -1,16 +1,18 @@
-CREATE (d1:Domain { dname : 'Wikipedia', durl:'www.wikipedia.com' })
-CREATE (d2:Domain { dname : 'Yahoo', durl:'www.yahoo.com' })
-CREATE (l1:Link { lname:'Link1', lurl:'www.wikipedia1.com' })
-CREATE (l2:Link { lname:'Link2', lurl:'www.wikipedia2.com' })
-CREATE (l3:Link { lname:'Link3', lurl:'www.yahoo3.com' })
-CREATE (l4:Link { lname:'Link4', lurl:'www.yahoo4.com' })
-CREATE (l5:Link { lname:'Link5', lurl:'www.yahoo5.com' })
+CREATE (d1:Domain { dname : 'Wikipedia', durl:'www.wikipedia.com', coolDownPeriod : 10 })
+CREATE (d2:Domain { dname : 'Yahoo', durl:'www.yahoo.com', coolDownPeriod : 10 })
+CREATE (l1:Link { lname:'Link1', lurl:'www.wikipedia1.com', status : 'NOT_VISITED', lastUpdate : 1000, errorCount : 0 })
+CREATE (l2:Link { lname:'Link2', lurl:'www.wikipedia2.com', status : 'NOT_VISITED', lastUpdate : 1000, errorCount : 0 })
+CREATE (l3:Link { lname:'Link3', lurl:'www.yahoo3.com', status : 'NOT_VISITED', lastUpdate : 1000, errorCount : 0 })
+CREATE (l4:Link { lname:'Link4', lurl:'www.yahoo4.com', status : 'NOT_VISITED', lastUpdate : 1000, errorCount : 0 })
+CREATE (l5:Link { lname:'Link5', lurl:'www.yahoo5.com', status : 'NOT_VISITED', lastUpdate : 1000, errorCount : 0 })
+CREATE (l6:Link { lname:'Link6', lurl:'www.yahoo6.com', status : 'VISITED', lastUpdate : 1000, errorCount : 0 })
 create 
 	(l1)-[:PART_OF]->(d1),
 	(l2)-[:PART_OF]->(d1),
 	(l3)-[:PART_OF]->(d2),
 	(l4)-[:PART_OF]->(d2),
-	(l5)-[:PART_OF]->(d2)
+	(l5)-[:PART_OF]->(d2),
+	(l6)-[:PART_OF]->(d2)
 create 
 	(l1)-[:LINKS_TO]->(l3),
 	(l2)-[:LINKS_TO]->(l4),
