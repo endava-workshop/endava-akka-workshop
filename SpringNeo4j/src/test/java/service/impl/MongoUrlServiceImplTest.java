@@ -1,22 +1,28 @@
 package service.impl;
 
-import entity.DomainLink;
-import entity.DomainURL;
-import entity.SimpleURL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 import metrics.MetricsConfig;
+
 import org.jongo.MongoCollection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
+
 import service.impl.mongo.MongoDomainURL;
 import service.impl.mongo.MongoSimpleURL;
 import util.MongoTest;
-
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import entity.DomainLink;
+import entity.DomainURL;
+import entity.SimpleURL;
 
 public class MongoUrlServiceImplTest extends MongoTest {
 

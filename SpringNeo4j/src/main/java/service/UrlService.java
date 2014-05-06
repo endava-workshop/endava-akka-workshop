@@ -26,4 +26,11 @@ public interface UrlService {
     //  debug purpose: extract data out of neo4j using simple queries
     public List<Entries> query(String query);
 
+    public long countAllNodes();
+    
+    public long countAllDomains();
+    
+    public long countAllLinks();
+    
+    public long countDomainLinks(String domainUrl);
 }

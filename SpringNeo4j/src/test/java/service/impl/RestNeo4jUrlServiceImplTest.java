@@ -20,67 +20,162 @@ import entity.SimpleURL;
 
 public class RestNeo4jUrlServiceImplTest {
 
-	private UrlService urlsService;
-	
+	private UrlService service;
+
 	@Before
-	public void setUp(){
-		urlsService = new RestNeo4jUrlServiceImpl();
+	public void setUp() {
+		service = new RestNeo4jUrlServiceImpl();
 	}
-	
+
 	@Test
-	public void testCreateDomain(){
-		urlsService.addDomainUrl("Wikipedia", "www.wikipedia.com", 1000L);
+	public void testCreateDomain() {
+		service.addDomainUrl("Wikipedia", "www.wikipedia.com", 1000L);
 	}
-	
+
 	@Test
-	public void testFindDomains(){
-		List<DomainURL> domainList = urlsService.findDomains(new PageRequest(0, 10));
+	public void testFindDomains() {
+		List<DomainURL> domainList = service
+				.findDomains(new PageRequest(0, 10));
 		assertTrue(domainList.size() > 0);
 	}
-	
+
 	@Test
-	public void testRemoveDomain(){
-		urlsService.removeDomainUrl("www.wikipedia.com");
+	public void testRemoveDomain() {
+		service.removeDomainUrl("www.wikipedia.com");
 	}
-	
+
 	@Test
-	public void testAddDomainLink(){
+	public void testAddDomainLink() {
 		List<DomainLink> domainLinks = new ArrayList<DomainLink>();
 		DomainURL domainURL = new DomainURL("Wikipedia", "www.wikipedia.com");
-		SimpleURL simpleURL = new SimpleURL("www.wikipedia11", "wiki11", "status", 0, DateTime.now().clicks());
+		SimpleURL simpleURL = new SimpleURL("www.wikipedia11", "wiki11",
+				"status", 0, DateTime.now().clicks());
 		domainLinks.add(new DomainLink(domainURL, simpleURL));
-		urlsService.addDomainLinks(domainLinks);
+		service.addDomainLinks(domainLinks);
 	}
-	
+
 	@Test
-	public void testGetDomainLinks(){
-		Collection<SimpleURL> list = urlsService.findURLs("www.yahoo.com", "NOT_VISITED", 0, 2);
+	public void testGetDomainLinks() {
+		Collection<SimpleURL> list = service.findURLs("www.yahoo.com",
+				"NOT_VISITED", 0, 2);
 		assertEquals(2, list.size());
 	}
-	
+
 	@Test
-	public void testUpdateLinkStatus(){
-		Collection<SimpleURL> list = urlsService.findURLs("www.yahoo.com", "TEST_STATUS", 0, 2);
+	public void testUpdateLinkStatus() {
+		Collection<SimpleURL> list = service.findURLs("www.yahoo.com",
+				"TEST_STATUS", 0, 2);
 		assertEquals(0, list.size());
-		
+
 		List<String> urlList = new ArrayList<String>();
 		urlList.add("www.yahoo6.com");
-		
-		urlsService.updateSimpleUrlsStatus(urlList, "TEST_STATUS");
-		list = urlsService.findURLs("www.yahoo.com", "TEST_STATUS", 0, 2);
+
+		service.updateSimpleUrlsStatus(urlList, "TEST_STATUS");
+		list = service.findURLs("www.yahoo.com", "TEST_STATUS", 0, 2);
 		assertEquals(1, list.size());
-		
-		urlsService.updateSimpleUrlsStatus(urlList, "VISITED");
+
+		service.updateSimpleUrlsStatus(urlList, "VISITED");
 
 	}
-	
+
 	@Test
-	public void testUpdateLinkErrorCount(){
-		urlsService.updateSimpleUrlErrorStatus("www.yahoo6.com", 1);
-		Collection<SimpleURL> list = urlsService.findURLs("www.yahoo.com", "VISITED", 0, 2);
+	public void testUpdateLinkErrorCount() {
+		service.updateSimpleUrlErrorStatus("www.yahoo6.com", 1);
+		Collection<SimpleURL> list = service.findURLs("www.yahoo.com",
+				"VISITED", 0, 2);
 		assertEquals(1, list.size());
-		
+
 		assertEquals(list.iterator().next().getErrorCount(), 1);
 
+	}
+
+	@Test
+	public void testCountMethods() {
+		// count all nodes
+		long count = service.countAllNodes();
+		assertEquals(8, count);
+		// count all domains
+		count = service.countAllDomains();
+		assertEquals(2, count);
+		// count all links
+		count = service.countAllLinks();
+		assertEquals(6, count);
+		// count domain links
+		count = service.countDomainLinks("www.wikipedia.com");
+		assertEquals(2, count);
+
+	}
+
+	@Test
+	public void testAddDomainLinks_STRESS() throws Exception {
+		List<DomainLink> domainLinks = new ArrayList<>();
+		DomainURL domain1 = new DomainURL("d1", "n1");
+		for (int i = 0; i < 1000; i++) {
+			domainLinks.add(new DomainLink(domain1, new SimpleURL("url" + i,
+					"n" + 1, "new")));
+		}
+		long time = System.currentTimeMillis();
+		service.addDomainLinks(domainLinks);
+		System.out.println("addDomainLinks : " + (System.currentTimeMillis() - time));
+		time = System.currentTimeMillis();
+		
+		assertEquals(1000, service.countAllLinks());
+		System.out.println("countAllLinks : " + (System.currentTimeMillis() - time));
+		time = System.currentTimeMillis();
+		assertEquals(1, service.countAllDomains());
+		System.out.println("countAllDomains : " + (System.currentTimeMillis() - time));
+		time = System.currentTimeMillis();
+
+	}
+
+	@Test
+	public void testAddDomainLinks() throws Exception {
+		List<DomainLink> domainLinks = new ArrayList<>();
+		DomainURL domain1 = new DomainURL("d1", "n1");
+		domainLinks.add(new DomainLink(domain1, new SimpleURL("url1", "n1",
+				"new")));
+		domainLinks.add(new DomainLink(domain1, new SimpleURL("url2", "n2",
+				"new")));
+		DomainURL domain2 = new DomainURL("d2", "n2");
+		domainLinks.add(new DomainLink(domain2, new SimpleURL("url3", "n1",
+				"new")));
+		domainLinks.add(new DomainLink(domain2, new SimpleURL("url4", "n2",
+				"new")));
+
+		service.addDomainLinks(domainLinks);
+
+		assertEquals(4, service.countAllLinks());
+		assertEquals(2, service.countAllDomains());
+	}
+
+	@Test
+	public void testAddDuplicateDomainLinks() throws Exception {
+		List<DomainLink> domainLinks1 = new ArrayList<>();
+		DomainURL domain1 = new DomainURL("d1", "n1");
+		domainLinks1.add(new DomainLink(domain1, new SimpleURL("url1", "n1",
+				"new")));
+		domainLinks1.add(new DomainLink(domain1, new SimpleURL("url2", "n2",
+				"new")));
+		DomainURL domain2 = new DomainURL("d2", "n2");
+		domainLinks1.add(new DomainLink(domain2, new SimpleURL("url3", "n1",
+				"new")));
+		domainLinks1.add(new DomainLink(domain2, new SimpleURL("url4", "n2",
+				"new")));
+		List<DomainLink> domainLinks2 = new ArrayList<>();
+		DomainURL domain3 = new DomainURL("d3", "n3");
+		domainLinks2.add(new DomainLink(domain3, new SimpleURL("url1", "n2",
+				"new")));
+		domainLinks2.add(new DomainLink(domain3, new SimpleURL("url5", "n1",
+				"new")));
+		domainLinks2.add(new DomainLink(domain2, new SimpleURL("url3", "n2",
+				"new")));
+		domainLinks2.add(new DomainLink(domain2, new SimpleURL("url7", "n1",
+				"new")));
+
+		service.addDomainLinks(domainLinks1);
+		service.addDomainLinks(domainLinks2);
+
+		assertEquals(6, service.countAllLinks());
+		assertEquals(3, service.countAllDomains());
 	}
 }

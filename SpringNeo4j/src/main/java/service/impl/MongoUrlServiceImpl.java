@@ -187,4 +187,28 @@ public class MongoUrlServiceImpl implements UrlService {
        throw new RuntimeException("Not implemented");
     }
 
+	@Override
+	public long countAllNodes() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long countAllDomains() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long countAllLinks() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long countDomainLinks(String domainUrl) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

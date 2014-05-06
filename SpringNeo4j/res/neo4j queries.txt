@@ -1,0 +1,32 @@
+create domain
+CREATE (n:Domain { dname : 'Yahoo', durl:'www.yahoo.com' })
+
+create link
+CREATE (n:Link { lname:'Link1', lurl:'www.wikipedia1.com' })
+
+create relation between a link and a domain
+match (d:Domain), (l:Link) where d.dname='Wikipedia' and l.lname='Link1' create (l)-[r:PART_OF]->(d)
+
+create relation between two links
+match (l1:Link), (l2:Link) where l1.lname='Link1' and l2.lname='Link3' create (l1)-[r:LINKS_TO]->(l2)
+
+read a domain's links
+match (l:Link)-[r]-> (d:Domain{dname:'Wikipedia'}) return l
+
+read domain's not visited links
+MATCH (d:Domain{durl:'www.wikipedia.com'})<-[:PART_OF]-(l:Link{status:'NOT_VISITED'}) RETURN l
+
+read all links and relationships
+match (l:Link)-[r]-> () return r
+
+delete all nodes and relationships
+MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
+
+delete one domain
+MATCH (n:Domain{dname:'Yahoo'}) OPTIONAL MATCH (n)-[r]-() DELETE n,r
+
+add link to existing domain
+MATCH (d:Domain { dname: 'Yahoo' }) CREATE UNIQUE (d)<-[:PART_OF]-(l:Link { lname:'Link6', lurl:'www.yahoo6.com' })
+
+update link status
+match (l:Link{lurl:'www.yahoo6.com'}) set l.status = 'VISITED'

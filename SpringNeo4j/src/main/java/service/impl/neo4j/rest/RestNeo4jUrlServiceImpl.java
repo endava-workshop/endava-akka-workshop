@@ -6,10 +6,13 @@ package service.impl.neo4j.rest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.rest.graphdb.RestAPI;
 import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.neo4j.rest.graphdb.query.QueryEngine;
@@ -25,7 +28,7 @@ import entity.SimpleURL;
 
 /**
  * @author criss
- *
+ * 
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface {
@@ -81,10 +84,27 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 			Map<String, Object> row = iterator.next();
 			DomainURL domain = new DomainURL((String) row.get("n."
 					+ DOMAIN_NAME), (String) row.get("n." + DOMAIN_URL),
-					(Long) row.get("n." + COOL_DOWN_PERIOD));
+					((Integer) row.get("n." + COOL_DOWN_PERIOD)).longValue());
 			domainList.add(domain);
 		}
 		return domainList;
+	}
+
+	public DomainURL findDomain(String domainUrl) {
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(DOMAIN_URL, domainUrl);
+		QueryResult<Map<String, Object>> result = engine.query(FIND_DOMAIN,
+				paramMap);
+		Iterator<Map<String, Object>> iterator = result.iterator();
+		if (iterator.hasNext()) {
+			Map<String, Object> row = iterator.next();
+			DomainURL domain = new DomainURL((String) row.get("n."
+					+ DOMAIN_NAME), (String) row.get("n." + DOMAIN_URL),
+					((Integer) row.get("n." + COOL_DOWN_PERIOD)).longValue());
+			return domain;
+		} else {
+			return null;
+		}
 	}
 
 	/*
@@ -106,7 +126,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void removeDomains() {
-		// TODO Auto-generated method stub
+		engine.query(REMOVE_ALL_DOMAINS, null);
 
 	}
 
@@ -119,7 +139,6 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	@Override
 	public void addSimpleUrls(List<String> urls, String status,
 			String domainURL, String sourceDomainName) {
-
 	}
 
 	/*
@@ -129,18 +148,34 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void addDomainLinks(List<DomainLink> domainLinks) {
-		for (DomainLink link : domainLinks) {
+		Transaction tx = restApi.beginTx();
+		Set<String> checkedDomains = new HashSet<>();
+		for (DomainLink domainLink : domainLinks) {
+			if (!checkedDomains
+					.contains(domainLink.getDomainURL().getAddress())) {
+				if (findDomain(domainLink.getDomainURL().getAddress()) == null) {
+					addDomainUrl(domainLink.getDomainURL().getName(),
+							domainLink.getDomainURL().getAddress(), domainLink
+									.getDomainURL().getCoolDownPeriod());
+				}
+				checkedDomains.add(domainLink.getDomainURL().getAddress());
+			}
+			// }
+			// for (DomainLink domainLink : domainLinks) {
+
 			Map<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.put(DOMAIN_URL, link.getDomainURL().getAddress());
-			paramMap.put(LINK_NAME, link.getSimpleURL().getName());
-			paramMap.put(LINK_URL, link.getSimpleURL().getUrl());
-			paramMap.put(LINK_STATUS, link.getSimpleURL().getStatus());
-			paramMap.put(LINK_LAST_UPDATE, link.getSimpleURL().getLastUpdate());
-			paramMap.put(LINK_ERROR_COUNT, link.getSimpleURL().getErrorCount());
+			paramMap.put(DOMAIN_URL, domainLink.getDomainURL().getAddress());
+			paramMap.put(LINK_NAME, domainLink.getSimpleURL().getName());
+			paramMap.put(LINK_URL, domainLink.getSimpleURL().getUrl());
+			paramMap.put(LINK_STATUS, domainLink.getSimpleURL().getStatus());
+			paramMap.put(LINK_LAST_UPDATE, domainLink.getSimpleURL()
+					.getLastUpdate());
+			paramMap.put(LINK_ERROR_COUNT, domainLink.getSimpleURL()
+					.getErrorCount());
 
 			engine.query(ADD_DOMAIN_LINK, paramMap);
 		}
-
+		tx.success();
 	}
 
 	/*
@@ -243,6 +278,40 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	public List<Entries> query(String query) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public long countAllNodes() {
+		QueryResult result = engine.query(COUNT_ALL_NODES, null);
+		HashMap map = (HashMap) result.iterator().next();
+		Integer count = (Integer) map.values().iterator().next();
+		return count;
+	}
+
+	@Override
+	public long countAllDomains() {
+		QueryResult result = engine.query(COUNT_ALL_DOMAINS, null);
+		HashMap map = (HashMap) result.iterator().next();
+		Integer count = (Integer) map.values().iterator().next();
+		return count;
+	}
+
+	@Override
+	public long countAllLinks() {
+		QueryResult result = engine.query(COUNT_ALL_LINKS, null);
+		HashMap map = (HashMap) result.iterator().next();
+		Integer count = (Integer) map.values().iterator().next();
+		return count;
+	}
+
+	@Override
+	public long countDomainLinks(String domainUrl) {
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(DOMAIN_URL, domainUrl);
+		QueryResult result = engine.query(COUNT_DOMAIN_LINKS, paramMap);
+		HashMap map = (HashMap) result.iterator().next();
+		Integer count = (Integer) map.values().iterator().next();
+		return count;
 	}
 
 }
