@@ -12,12 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.AutoIndexer;
+import org.neo4j.index.impl.lucene.LuceneIndexImplementation;
 import org.neo4j.rest.graphdb.RestAPI;
 import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.neo4j.rest.graphdb.batch.BatchCallback;
+import org.neo4j.rest.graphdb.entity.RestNode;
+import org.neo4j.rest.graphdb.index.RestIndex;
 import org.neo4j.rest.graphdb.query.QueryEngine;
 import org.neo4j.rest.graphdb.query.RestCypherQueryEngine;
 import org.neo4j.rest.graphdb.util.QueryResult;
@@ -36,23 +40,33 @@ import entity.SimpleURL;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface {
 
+	private String dbUrl = "http://localhost:7474/db/data";
 	private RestAPIFacade restApi;
 
 	private QueryEngine engine;
 
 	private AutoIndexer<Node> nodeAutoIndexer;
 
+	private RestIndex<Node> index;
+	
 	public RestNeo4jUrlServiceImpl() {
-		restApi = new RestAPIFacade("http://localhost:7474/db/data");
+		restApi = new RestAPIFacade(dbUrl);
 		engine = new RestCypherQueryEngine(restApi);
 
 		nodeAutoIndexer = restApi.index().getNodeAutoIndexer();
 		
 		nodeAutoIndexer.getAutoIndex().get(LINK_URL, "");
 		
+		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("durl"));
+		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("lurl"));
+		
 		AutoIndexer<Relationship> relAutoIndexer =  restApi.index().getRelationshipAutoIndexer();
 		
 		relAutoIndexer.getAutoIndex().get(REL_PART_OF, "");
+		
+//		RestGraphDatabase restGraphDb = new RestGraphDatabase( dbUrl );
+		
+		index = restApi.createIndex(Node.class, "unique-node", LuceneIndexImplementation.EXACT_CONFIG);
 	}
 
 	/*
@@ -68,7 +82,13 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		paramMap.put(DOMAIN_NAME, domainName);
 		paramMap.put(DOMAIN_URL, domainUrl);
 		paramMap.put(COOL_DOWN_PERIOD, coolDownPeriod);
-		engine.query(CREATE_DOMAIN, paramMap);
+		
+//		engine.query(CREATE_DOMAIN, paramMap);
+		
+		RestNode node = restApi.getOrCreateNode(index, "durl", "domainUrl", paramMap);
+//		if(!node.getLabels().iterator().hasNext()){
+//			restApi.addLabels(node, "Domain");
+//		}
 		
 		return null;
 	}

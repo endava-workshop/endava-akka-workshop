@@ -108,7 +108,7 @@ public class RestNeo4jUrlServiceImplTest {
 
 	@Test
 	public void testAddDomainLinks_STRESS() throws Exception {
-		int numberOfLinks = 1000;
+		int numberOfLinks = 1;
 		List<DomainLink> domainLinks = new ArrayList<>();
 		DomainURL domain1 = new DomainURL("d1", "n1");
 		for (int i = 0; i < numberOfLinks; i++) {
@@ -117,6 +117,7 @@ public class RestNeo4jUrlServiceImplTest {
 		}
 		
 		long time = System.currentTimeMillis();
+		service.addDomainLinks(domainLinks);
 		service.addDomainLinks(domainLinks);
 		System.out.println("addDomainLinks : " + (System.currentTimeMillis() - time));
 		time = System.currentTimeMillis();
@@ -148,6 +149,15 @@ public class RestNeo4jUrlServiceImplTest {
 
 		assertEquals(4, service.countAllLinks());
 		assertEquals(2, service.countAllDomains());
+	}
+	@Test
+	public void testAddDuplicateDomains() throws Exception {
+		long time = System.currentTimeMillis();
+		for(int i = 0; i < 1000; i++){
+			service.addDomainUrl("domain" + i, "durl", 0);
+		}
+		System.out.println("time : " + (System.currentTimeMillis() - time) + " ms");
+		assertEquals(1, service.countAllDomains());
 	}
 
 	@Test
