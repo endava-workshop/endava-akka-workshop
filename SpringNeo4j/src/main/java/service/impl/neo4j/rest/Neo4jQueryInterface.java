@@ -30,6 +30,15 @@ public interface Neo4jQueryInterface {
 			+ ", n." + DOMAIN_URL + ", n." + COOL_DOWN_PERIOD + " skip {"
 			+ PARAM_SKIP + "} limit {" + PARAM_LIMIT + "}";
 
+	String CREATE_LINK = "CREATE (n:Link { " + LINK_URL + " : {" + LINK_URL
+			+ "}, " + LINK_NAME + ":{" + LINK_NAME + "}, " + LINK_STATUS + ":{"
+			+ LINK_STATUS + "}, " + LINK_LAST_UPDATE + ":{" + LINK_LAST_UPDATE
+			+ "}, " + LINK_ERROR_COUNT + ":{" + LINK_ERROR_COUNT + "} })";
+
+	String CREATE_DOMAIN_LINK_RELATION = "MATCH (d:Domain { " + DOMAIN_URL + ": {"
+			+ DOMAIN_URL + "} }), (l:Link{"+ LINK_URL + " : {" + LINK_URL + "} }) " 
+			+"CREATE (d)<-[:" + REL_PART_OF + "]-(l)";
+	
 	String ADD_DOMAIN_LINK = "MATCH (d:Domain { " + DOMAIN_URL + ": {"
 			+ DOMAIN_URL + "} }) CREATE UNIQUE (d)<-[:" + REL_PART_OF
 			+ "]-(l:Link { " + LINK_NAME + ":{" + LINK_NAME + "}, " + LINK_URL

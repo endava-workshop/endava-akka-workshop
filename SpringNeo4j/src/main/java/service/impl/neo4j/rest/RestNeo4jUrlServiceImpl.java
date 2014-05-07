@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.AutoIndexer;
 import org.neo4j.rest.graphdb.RestAPI;
 import org.neo4j.rest.graphdb.RestAPIFacade;
+import org.neo4j.rest.graphdb.batch.BatchCallback;
 import org.neo4j.rest.graphdb.query.QueryEngine;
 import org.neo4j.rest.graphdb.query.RestCypherQueryEngine;
 import org.neo4j.rest.graphdb.util.QueryResult;
@@ -33,13 +36,23 @@ import entity.SimpleURL;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface {
 
-	private RestAPI restApi;
+	private RestAPIFacade restApi;
 
 	private QueryEngine engine;
+
+	private AutoIndexer<Node> nodeAutoIndexer;
 
 	public RestNeo4jUrlServiceImpl() {
 		restApi = new RestAPIFacade("http://localhost:7474/db/data");
 		engine = new RestCypherQueryEngine(restApi);
+
+		nodeAutoIndexer = restApi.index().getNodeAutoIndexer();
+		
+		nodeAutoIndexer.getAutoIndex().get(LINK_URL, "");
+		
+		AutoIndexer<Relationship> relAutoIndexer =  restApi.index().getRelationshipAutoIndexer();
+		
+		relAutoIndexer.getAutoIndex().get(REL_PART_OF, "");
 	}
 
 	/*
@@ -56,6 +69,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		paramMap.put(DOMAIN_URL, domainUrl);
 		paramMap.put(COOL_DOWN_PERIOD, coolDownPeriod);
 		engine.query(CREATE_DOMAIN, paramMap);
+		
 		return null;
 	}
 
@@ -148,7 +162,8 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 	 */
 	@Override
 	public void addDomainLinks(List<DomainLink> domainLinks) {
-		Transaction tx = restApi.beginTx();
+		long time = System.currentTimeMillis();
+
 		Set<String> checkedDomains = new HashSet<>();
 		for (DomainLink domainLink : domainLinks) {
 			if (!checkedDomains
@@ -160,22 +175,63 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 				}
 				checkedDomains.add(domainLink.getDomainURL().getAddress());
 			}
-			// }
-			// for (DomainLink domainLink : domainLinks) {
-
-			Map<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.put(DOMAIN_URL, domainLink.getDomainURL().getAddress());
-			paramMap.put(LINK_NAME, domainLink.getSimpleURL().getName());
-			paramMap.put(LINK_URL, domainLink.getSimpleURL().getUrl());
-			paramMap.put(LINK_STATUS, domainLink.getSimpleURL().getStatus());
-			paramMap.put(LINK_LAST_UPDATE, domainLink.getSimpleURL()
-					.getLastUpdate());
-			paramMap.put(LINK_ERROR_COUNT, domainLink.getSimpleURL()
-					.getErrorCount());
-
-			engine.query(ADD_DOMAIN_LINK, paramMap);
 		}
-		tx.success();
+
+		System.out.println("add domain time : "
+				+ (System.currentTimeMillis() - time));
+		time = System.currentTimeMillis();
+		addLinksInBatch(domainLinks);
+		System.out.println("add links time : "
+				+ (System.currentTimeMillis() - time));
+		
+		time = System.currentTimeMillis();
+//		addDomainLinkRelationsInBatch(domainLinks);
+//		System.out.println("add relations time : "
+//				+ (System.currentTimeMillis() - time));
+	}
+
+	private void addLinksInBatch(final List<DomainLink> domainLinks) {
+		// add links
+		restApi.executeBatch(new BatchCallback<BatchResult>() {
+			@Override
+			public BatchResult recordBatch(RestAPI batchRestApi) {
+				BatchResult batchResult = new BatchResult();
+				QueryEngine engine = new RestCypherQueryEngine(batchRestApi);
+				for (DomainLink domainLink : domainLinks) {
+					Map<String, Object> paramMap = new HashMap<String, Object>();
+					paramMap.put(LINK_NAME, domainLink.getSimpleURL().getName());
+					paramMap.put(LINK_URL, domainLink.getSimpleURL().getUrl());
+					paramMap.put(LINK_STATUS, domainLink.getSimpleURL()
+							.getStatus());
+					paramMap.put(LINK_LAST_UPDATE, domainLink.getSimpleURL()
+							.getLastUpdate());
+					paramMap.put(LINK_ERROR_COUNT, domainLink.getSimpleURL()
+							.getErrorCount());
+
+					engine.query(CREATE_LINK, paramMap);
+				}
+				return batchResult;
+			}
+		});
+	}
+
+	private void addDomainLinkRelationsInBatch(final List<DomainLink> domainLinks) {
+		restApi.executeBatch(new BatchCallback<BatchResult>() {
+			@Override
+			public BatchResult recordBatch(RestAPI batchRestApi) {
+				BatchResult batchResult = new BatchResult();
+				QueryEngine engine = new RestCypherQueryEngine(batchRestApi);
+				for (DomainLink domainLink : domainLinks) {
+					Map<String, Object> paramMap = new HashMap<String, Object>();
+					paramMap.put(DOMAIN_URL, domainLink.getDomainURL()
+							.getAddress());
+					paramMap.put(LINK_URL, domainLink.getSimpleURL().getUrl());
+
+					engine.query(CREATE_DOMAIN_LINK_RELATION, paramMap);
+				}
+				return batchResult;
+			}
+		});
 	}
 
 	/*
@@ -314,4 +370,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		return count;
 	}
 
+	class BatchResult {
+		List<QueryResult> queryResults = new ArrayList<>();
+	}
 }
