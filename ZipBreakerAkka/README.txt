@@ -9,6 +9,8 @@ application, ensure you use a different port number in the remote configuration 
 Note: You can deploy the ZipBreakerAkka as a single jar file (all dependencies embeded), by
 issuing the following command line from the root of the project:
 mvn clean package assembly:single
+Note2: Ensure you have correctly set the IP address of the localhost in each application.conf both
+in the remote and in the local application. Do not use "localhost" or "127.0.0.1".
 
 2) Start the Akka microkernel on one or several computers (you can also have several microkernel 
 installations on the same physical computer if you provide a different port number for each).
@@ -25,6 +27,12 @@ akka.ws.pass.breaker.LocalApplication class.
 4) For each zip file to be attacked, your code should send a BreakArchiveMessage message to the
 ZipPasswordBreaker actor. An example of code to do this is presented in 
 akka.ws.pass.breaker.LocalApplication class.
+Please note that the sample LocalApplication is targeting one of the "experiment<index>.zip"
+from src/main/resources. These files are provided as resources for experimenting. The first one
+is encrypted with the password no. 1.000.001 from the common_passwords.txt (which is "buildasite"), 
+experiment2.zip is protected with the password no. 2.000.001 from the same file and so on. Thus, 
+breaking one of these archives by brute-force means trying a certain number of passwords (assuming 
+the passwords are read from this file in sequence).
 
 
 Additional notes:
@@ -39,3 +47,6 @@ Important properties to configure:
 remote machine.
 - PATH_TO_SHARED_FOLDER and SHARED_PATH_TO_SHARED_FOLDER in ZipPasswordBreaker should point to
 the same shared folder which should be accessible by all machines (local and all of the remote).
+
+* A PerformanceTests.xlsx excel file is provided in src/main/resources. I have filled into this
+file the results of several performance tests I have carried up to date.

@@ -14,10 +14,12 @@ import akka.ws.pass.breaker.messages.BreakArchiveMessage;
  */
 public class LocalApplication {
 	
-	final static String zipArchivePath = "D:/workspace/EndavaAkkaWs/ZipBreakerAkka/src/main/resources/experiment2.zip"; //beware this will be consumed after the first ran
+	final static String zipArchivePath = "D:/workspace/EndavaAkkaWs/ZipBreakerAkka/src/main/resources/experiment1.zip"; //beware this will be consumed after the first ran
 	final static String LOCAL_ACTOR_SYSTEM_NAME = "LocalZipBreakerActorSystem"; //TODO externalize name in the properties
+	public static long startTime;
 
 	public static void main(String[] args) throws Exception {
+		startTime = System.currentTimeMillis();
 		ActorSystem actorSystem = ActorSystem.create(LOCAL_ACTOR_SYSTEM_NAME);
 		
 		BreakArchiveMessage breakZipMessage = new BreakArchiveMessage(zipArchivePath);

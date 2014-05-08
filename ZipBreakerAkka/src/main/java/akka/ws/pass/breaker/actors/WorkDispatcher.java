@@ -1,7 +1,6 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.ws.pass.breaker.messages.RegisterPasswordCheckersMessage;
-
+import static akka.ws.pass.breaker.util.Utils.getFullStackTrace;
 import akka.actor.ActorPath;
 import akka.actor.ActorRef;
 import akka.actor.Address;
@@ -15,7 +14,6 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import akka.remote.RemoteScope;
-import akka.remote.routing.RemoteRouterConfig;
 import akka.routing.BroadcastRouter;
 import akka.routing.RoundRobinRouter;
 import akka.routing.SmallestMailboxRouter;
@@ -23,6 +21,7 @@ import akka.ws.pass.breaker.messages.EndProcessMessage;
 import akka.ws.pass.breaker.messages.FeedProcessMessage;
 import akka.ws.pass.breaker.messages.NewProcessMessage;
 import akka.ws.pass.breaker.messages.ReadyToProcessMessage;
+import akka.ws.pass.breaker.messages.RegisterPasswordCheckersMessage;
 import akka.ws.pass.breaker.messages.StartFeedingProcessMessage;
 import akka.ws.pass.breaker.settings.RemoteAddress;
 import akka.ws.pass.breaker.settings.RemoteAddressProvider;
@@ -43,6 +42,8 @@ import java.util.concurrent.TimeUnit;
  * @author Daniel DOBOGA
  */
 public class WorkDispatcher extends UntypedActor {
+	
+	public static final int PASSWORD_CHECKERS_PER_REMOTE_MACHINE = 4;
 
 	private SupervisorStrategy supervisionStrategy;
 	private ActorRef zipPasswordBreaker;
@@ -112,7 +113,7 @@ public class WorkDispatcher extends UntypedActor {
 
 			remoteMachine.zipPasswordBreakWorker = getContext().actorOf(Props.create(ZipPasswordBreakWorker.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address))));
 			remoteMachine.zipFileDownloader = getContext().actorOf(Props.create(ZipFileDownloader.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address))));
-			for(int i=0; i<10; i++) {
+			for(int i=0; i<PASSWORD_CHECKERS_PER_REMOTE_MACHINE; i++) {
 				remoteMachine.passwordCheckers.add(getContext().actorOf(Props.create(PasswordChecker.class).withDeploy(new Deploy(new RemoteScope(remoteMachine.address)))));
 			}
 			remoteMachine.passwordCheckersBroadcastRouter = getContext().actorOf(Props.empty().withRouter(BroadcastRouter.create(remoteMachine.passwordCheckers)));
@@ -146,7 +147,7 @@ public class WorkDispatcher extends UntypedActor {
 			return;
 		}
 		remoteMachine.processesReadyToFeed.add(processId);
-		ActorRef remoteBalancingRouter = getContext().actorOf(Props.empty().withRouter(SmallestMailboxRouter.create(allRemotePasswordCheckersBalancingRouters())));
+		ActorRef remoteBalancingRouter = getContext().actorOf(Props.empty().withRouter(RoundRobinRouter.create(allRemotePasswordCheckers())));
 		remoteBalancingRouters.put(processId, remoteBalancingRouter);
 	}
 	
@@ -174,6 +175,14 @@ public class WorkDispatcher extends UntypedActor {
 		List<ActorRef> list = new ArrayList<>(availableRemoteMachines.size());
 		for(RemoteMachine remoteMachine : availableRemoteMachines) {
 			list.add(remoteMachine.passwordCheckersBalancingRouter);
+		}
+		return list;
+	}
+	
+	private List<ActorRef> allRemotePasswordCheckers() {
+		List<ActorRef> list = new ArrayList<>(availableRemoteMachines.size() * PASSWORD_CHECKERS_PER_REMOTE_MACHINE);
+		for(RemoteMachine remoteMachine : availableRemoteMachines) {
+			list.addAll(remoteMachine.passwordCheckers);
 		}
 		return list;
 	}
@@ -208,6 +217,7 @@ public class WorkDispatcher extends UntypedActor {
 						public Directive apply(Throwable throwable) throws Exception {
 
 							// TODO analyze what kind of exceptions may occur here and what should be done for each
+							log.error(getFullStackTrace(throwable));
 							return OneForOneStrategy.escalate();
 						}
 					});

@@ -1,5 +1,7 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.ws.pass.breaker.LocalApplication;
+
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
@@ -90,6 +92,10 @@ public class ZipPasswordBreaker extends UntypedActor {
 			passwordProvider.tell(outMessage, getSelf());
 			//TODO: register somewhere the result;
 			//TODO: clear the temporary files;
+
+			System.out.println("Total time: " + (System.currentTimeMillis() - LocalApplication.startTime));
+			System.out.println("*********** Password found: " + (inMessage.getSuccessfullPassword()));
+			System.exit(0);
 		}
 	}
 	
@@ -111,7 +117,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 			workDispatcher = getContext().actorOf(Props.create(WorkDispatcher.class), "workDispatcher");
 		}
 		if(passwordProvider == null) {
-			passwordProvider = getContext().actorOf(Props.create(PasswordProvider.class), "passwordProvider");
+			passwordProvider = getContext().actorOf(Props.create(LocalPasswordProvider.class), "passwordProvider");
 		}
 	}
 	
@@ -122,7 +128,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 		
 		final String fileName = source.getName();
 		File destination = new File(PATH_TO_SHARED_FOLDER + "/" + fileName);
-		Files.move(source, destination);
+		Files.copy(source, destination);
 		URL url = new URL(SHARED_PATH_TO_SHARED_FOLDER + "/" + fileName);
 		
 		if(log.isInfoEnabled()) {

@@ -115,10 +115,14 @@ public class PasswordChecker extends UntypedActor {
 	 */
 	private static void delete(File theFile) {
 		if (theFile.isDirectory()) {
-			for (File child : theFile.listFiles()) {
-				delete(child);
+			File[] children = theFile.listFiles();
+			if(children != null) {
+				for (File child : children) {
+					if(child != null && child.exists()) {
+						delete(child);
+					}
+				}
 			}
-
 		}
 		theFile.delete();
 	}
