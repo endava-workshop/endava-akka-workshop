@@ -66,7 +66,7 @@ public class DownloadUrlActor extends BaseActor {
      * @param urlStatus The new {@link com.en_workshop.webcrawlerakka.enums.LinkStatus}
      */
     private void reportWork(final DownloadUrlRequest request, final LinkStatus urlStatus, final boolean unresponsiveDomain) {
-        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getSourceDomain(), request.getLink().getUrl(), request.getLink().getSourceLink(), urlStatus);
+        final Link newLink = new Link(request.getLink().getDomain(), request.getLink().getUrl(), request.getLink().getSourceLink(), urlStatus);
         /* Persist the new link status */
         getSender().tell(new UpdateLinkRequest(newLink), getSelf());
 

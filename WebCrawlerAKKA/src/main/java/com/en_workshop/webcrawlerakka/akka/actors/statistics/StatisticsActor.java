@@ -5,14 +5,19 @@ import akka.event.LoggingAdapter;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.other.statistics.ShowStatisticsResponse;
+import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddBulkLinkStatisticsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddDomainStatisticsRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.AddLinkStatisticsRequest;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.DomainLinkStatistics;
+import com.en_workshop.webcrawlerakka.entities.Link;
+import com.en_workshop.webcrawlerakka.enums.DomainStatus;
 import com.en_workshop.webcrawlerakka.enums.LinkStatus;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +31,7 @@ public class StatisticsActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
 
     private Map<String, DomainLinkStatistics> domainStatistics =  new HashMap<>();
+    private final Object statisticsLock = new Object();
 
     /**
      * {@inheritDoc}
@@ -38,6 +44,9 @@ public class StatisticsActor extends BaseActor {
         } else if (message instanceof AddLinkStatisticsRequest) {
             LOG.info("Received AddLinkStatisticsRequest [" + ((AddLinkStatisticsRequest) message).getLink().getUrl() + "/" + ((AddLinkStatisticsRequest) message).getLink().getStatus() + "]");
             updateDomainLinkStatistics((AddLinkStatisticsRequest) message);
+        } else if (message instanceof AddBulkLinkStatisticsRequest) {
+            LOG.info("Received AddBulkLinkStatisticsRequest");
+            updateBulkDomainLinkStatistics((AddBulkLinkStatisticsRequest) message);
         } else if (message instanceof ShowStatisticsRequest) {
             LOG.info("Received ShowStatisticsRequest");
             getSender().tell(new ShowStatisticsResponse((ShowStatisticsRequest) message, new HashMap<>(domainStatistics), printStatistics()), getSelf());
@@ -49,12 +58,21 @@ public class StatisticsActor extends BaseActor {
 
     private void addDomainStatistics(AddDomainStatisticsRequest domainRequest) {
         Domain domain = domainRequest.getDomain();
-        if (domainStatistics.get(domain.getName()) == null) {
-            domainStatistics.put(domain.getName(), new DomainLinkStatistics(domain.getName()));
+        addDomainStatistics(domain.getName(), domain.getDomainStatus());
+    }
+
+    private void addDomainStatistics(String domainName, DomainStatus domainStatus) {
+        synchronized (statisticsLock) {
+            if (domainStatistics.get(domainName) == null) {
+                domainStatistics.put(domainName, new DomainLinkStatistics(domainName));
+            }
+
+            domainStatistics.get(domainName).setDomainStatus(domainStatus);
         }
-        synchronized (this) {
-            domainStatistics.get(domain.getName()).setDomainStatus(domain.getDomainStatus());
-        }
+    }
+
+    private void addDomainStatistics(String domainName) {
+        addDomainStatistics(domainName, DomainStatus.FOUND);
     }
 
     /**
@@ -63,27 +81,43 @@ public class StatisticsActor extends BaseActor {
      * @param addLinkStatisticsRequest the request containing the the link and the domain.
      */
     private void updateDomainLinkStatistics(AddLinkStatisticsRequest addLinkStatisticsRequest) {
-        String domain = addLinkStatisticsRequest.getDomain();
-        DomainLinkStatistics domainStats = domainStatistics.get(domain);
-        if (domainStats == null) {
-            //log the fact that there should have been an empty entry for this domain
-            domainStats = new DomainLinkStatistics(domain);
-                domainStatistics.put(domain, domainStats);
-        }
-        /* Update the statistics, depending on the status of the link */
-        LinkStatus linkStatus = addLinkStatisticsRequest.getLink().getStatus();
-        switch (linkStatus) {
-            case NOT_VISITED:
-                domainStats.addIdentifiedLinks();
-                break;
-            case VISITED:
-                domainStats.addDownloadedLinks();
-                break;
-            case FAILED:
-                domainStats.addFailedLinks();
-                break;
+        addDomainLinkStatistics(addLinkStatisticsRequest.getDomain(), addLinkStatisticsRequest.getLink());
+    }
+
+    /**
+     * Updates the statistics for the given domains with the information from the given links.
+     *
+     * @param addBulkLinkStatisticsRequest the request containing the the links and the domains.
+     */
+    private void updateBulkDomainLinkStatistics(AddBulkLinkStatisticsRequest addBulkLinkStatisticsRequest) {
+        List<DomainLink> data = addBulkLinkStatisticsRequest.getDomainLinks();
+        for (DomainLink domainLink : data) {
+            addDomainLinkStatistics(domainLink.getDomain().getName(), domainLink.getLink());
         }
 
+    }
+
+    private void addDomainLinkStatistics(String domainName, Link link) {
+        DomainLinkStatistics domainStats = domainStatistics.get(domainName);
+        if (domainStats == null) {
+            addDomainStatistics(domainName);
+        }
+        domainStats = domainStatistics.get(domainName);
+        /* Update the statistics, depending on the status of the link */
+        LinkStatus linkStatus = link.getStatus();
+        synchronized (this) {
+            switch (linkStatus) {
+                case NOT_VISITED:
+                    domainStats.addIdentifiedLinks();
+                    break;
+                case VISITED:
+                    domainStats.addDownloadedLinks();
+                    break;
+                case FAILED:
+                    domainStats.addFailedLinks();
+                    break;
+            }
+        }
     }
 
     private String printStatistics() {

@@ -16,17 +16,15 @@ public class Link {
     private final String url;
     private final LinkStatus status;
 
-    private final String sourceDomain; //null daca domeniul pe care a fost gasit este acelasi cu domain
     private final String sourceLink;
 
 
-    public Link(final String domain, String sourceDomain, final String url, final String sourceLink) {
-        this(domain, sourceDomain, url, sourceLink, LinkStatus.NOT_VISITED);
+    public Link(final String domain, final String url, final String sourceLink) {
+        this(domain, url, sourceLink, LinkStatus.NOT_VISITED);
     }
 
-    public Link(final String domain, String sourceDomain, final String url, final String sourceLink, final LinkStatus status) {
+    public Link(final String domain, final String url, final String sourceLink, final LinkStatus status) {
         this.domain = domain;
-        this.sourceDomain = domain.equals(sourceDomain) ? null : sourceDomain;
         this.sourceLink = sourceLink;
         this.url = url;
         this.status = status;
@@ -44,10 +42,6 @@ public class Link {
         return status;
     }
 
-    public String getSourceDomain() {
-        return sourceDomain;
-    }
-
     public String getSourceLink() {
         return sourceLink;
     }
@@ -58,7 +52,6 @@ public class Link {
                 "domain='" + domain + '\'' +
                 ", url='" + url + '\'' +
                 ", status=" + status +
-                ", sourceDomain='" + sourceDomain + '\'' +
                 ", sourceLink='" + sourceLink + '\'' +
                 '}';
     }

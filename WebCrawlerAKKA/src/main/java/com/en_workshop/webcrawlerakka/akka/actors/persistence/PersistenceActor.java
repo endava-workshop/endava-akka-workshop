@@ -8,9 +8,8 @@ import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
 import com.en_workshop.webcrawlerakka.dao.impl.InMemoryDomainDao;
 import com.en_workshop.webcrawlerakka.dao.impl.InMemoryLinkDao;
-import com.en_workshop.webcrawlerakka.dao.impl.RestDomainDao;
-import com.en_workshop.webcrawlerakka.dao.impl.RestLinkDao;
 import com.en_workshop.webcrawlerakka.entities.Domain;
+import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
 import com.en_workshop.webcrawlerakka.enums.DomainStatus;
 
@@ -45,8 +44,8 @@ public class PersistenceActor extends BaseActor {
             processUpdateLinkRequest((UpdateLinkRequest) message);
         } else if (message instanceof UpdateDomainRequest) {
             processUpdateDomainRequest((UpdateDomainRequest) message);
-        } else if (message instanceof PersistDomainLinkRequest) {
-            processPersistDomainLinkRequest((PersistDomainLinkRequest) message);
+        } else if (message instanceof PersistDomainLinksRequest) {
+            processPersistDomainLinkRequest((PersistDomainLinksRequest) message);
         } else if (message instanceof PersistContentRequest){
             processPersistContentRequest((PersistContentRequest) message);
         }else {
@@ -95,9 +94,13 @@ public class PersistenceActor extends BaseActor {
         domainDao.update(updateDomainRequest.getDomain());
     }
 
-    private void processPersistDomainLinkRequest(PersistDomainLinkRequest persistDomainRequest) {
-        LOG.info("Received domain and link to persist: " + persistDomainRequest.getDomainLink());
-        linkDao.create(persistDomainRequest.getDomainLink());
+    private void processPersistDomainLinkRequest(PersistDomainLinksRequest persistDomainRequest) {
+        LOG.info("Received domains and links to persist: " + persistDomainRequest.getDomainLinks());
+        List<DomainLink> domainLinks = persistDomainRequest.getDomainLinks();
+        //TODO replace this with bulk create
+        for (DomainLink domainLink : domainLinks) {
+            linkDao.create(domainLink);
+        }
     }
 
     private void processPersistContentRequest(PersistContentRequest persistContentRequest) {

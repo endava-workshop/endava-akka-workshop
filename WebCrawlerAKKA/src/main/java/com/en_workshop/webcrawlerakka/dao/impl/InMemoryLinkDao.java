@@ -77,6 +77,14 @@ public class InMemoryLinkDao implements LinkDao {
         return null;
     }
 
+    @Override
+    public void bulkCreate(List<DomainLink> newDomainLinks) {
+        //TODO add implementation
+        for (DomainLink domainLink : newDomainLinks) {
+            create(domainLink);
+        }
+    }
+
     /**
      * Update or add a {@link com.en_workshop.webcrawlerakka.entities.Link}
      *

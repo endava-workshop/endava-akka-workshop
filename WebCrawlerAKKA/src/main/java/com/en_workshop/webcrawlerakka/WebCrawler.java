@@ -42,7 +42,7 @@ public class WebCrawler {
 
         Thread.sleep(2000); // allow the domain to get to DB...
         LinkDao linkDao = PersistenceActor.getLinkDao();
-        Link link = new Link(domain.getName(), null, "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83", null);
+        Link link = new Link(domain.getName(), "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83", null);
         DomainLink domainLink = new DomainLink(domain, link);
         linkDao.create(domainLink);
         if (linkDao instanceof RestLinkDao) {

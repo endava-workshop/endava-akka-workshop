@@ -10,7 +10,6 @@ import akka.japi.Function;
 import akka.routing.FromConfig;
 import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.PersistenceRequest;
-import com.en_workshop.webcrawlerakka.akka.requests.processing.AnalyzeLinkRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.processing.ProcessContentRequest;
 import com.en_workshop.webcrawlerakka.akka.requests.statistics.StatisticsRequest;
 import scala.concurrent.duration.Duration;
@@ -28,7 +27,6 @@ public class ProcessingMasterActor extends BaseActor {
     //define the routers
     private final ActorRef indentifyLinksRouter;
     private final ActorRef dataExtractorRouter;
-    private final ActorRef analyzeLinksRouter;
 
     private ActorRef parent;
 
@@ -54,8 +52,6 @@ public class ProcessingMasterActor extends BaseActor {
                 "indentifyLinksRouter");
         this.dataExtractorRouter = getContext().actorOf(Props.create(DataExtractorActor.class, getSelf()).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
                 "dataExtractorRouter");
-        this.analyzeLinksRouter = getContext().actorOf(Props.create(AnalyzeLinkActor.class, getSelf()).withRouter(new FromConfig().withSupervisorStrategy(routersSupervisorStrategy)),
-                "analyzeLinksRouter");
 
     }
 
@@ -70,9 +66,6 @@ public class ProcessingMasterActor extends BaseActor {
             indentifyLinksRouter.tell(message, getSender());
             //extract the data
             dataExtractorRouter.tell(message, getSender());
-        } else if (message instanceof AnalyzeLinkRequest) {
-            //analyze the links
-            analyzeLinksRouter.tell(message, getSender());
         } else if (message instanceof StatisticsRequest) {
             parent.tell(message, getSender());
         } else if (message instanceof PersistenceRequest) {

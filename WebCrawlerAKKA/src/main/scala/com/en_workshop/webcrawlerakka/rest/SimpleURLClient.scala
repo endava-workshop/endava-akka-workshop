@@ -13,11 +13,13 @@ import scala.collection.JavaConversions._
 
 object SimpleURLClient extends AbstractRestClient {
 
+  //TODO update the SimpleUrl definition so it corresponds to the Link entity definition
+
   implicit val timeout: Duration = 3 minute
   lazy val addUrlClient = sendReceive
   def addURL(url: String, domain: String, sourceDomain: String): Unit = {
     timed("add URL", url) {
-      val payload = new SimpleUrl_(url, Some(sourceDomain), Some(domain), Some(url), "NOT_VISITED")
+      val payload = new SimpleUrl_(url, Some(domain), Some(url), "NOT_VISITED")
       addUrlClient(Post(s"$webRoot/domain/$domain/url", payload))
     }
   }
@@ -56,7 +58,7 @@ object SimpleURLClient extends AbstractRestClient {
     }
     // translate DTO to domain model
     val result = for (u <- Await.result(f, timeout))
-      yield new Link(u.sourceDomain.getOrElse(null), null, u.url, null, LinkStatus.valueOf(u.status.getOrElse(null)))
+      yield new Link(u.domain.getOrElse(null), u.url, null, LinkStatus.valueOf(u.status.getOrElse(null)))
     println(s"found ${result.size} links for $domainAddress")
     result
   }
@@ -78,8 +80,8 @@ object SimpleURLClient extends AbstractRestClient {
 
 }
 
-case class SimpleUrl_(url: String, sourceDomain: Option[String], domain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int]) {
-  def this(url: String, sourceDomain: Option[String], domain: Option[String], name: Option[String], status: String) = this(url, sourceDomain, domain, name, Option(status), None)
+case class SimpleUrl_(url: String, domain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int]) {
+  def this(url: String, domain: Option[String], name: Option[String], status: String) = this(url, domain, name, Option(status), None)
 }
 case class DomainLink_(domain: DomainUrl_, link: SimpleUrl_)
 case class SimpleUrlStatus(url: String, status: String)

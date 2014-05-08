@@ -79,6 +79,11 @@ public class RestLinkDao implements LinkDao {
     }
 
     @Override
+    public void bulkCreate(List<DomainLink> newDomainLinks) {
+        //TODO add implementation
+    }
+
+    @Override
     public void create(DomainLink domainLink) {
         Domain domain = domainLink.getDomain();
         Link link = domainLink.getLink();
@@ -88,7 +93,7 @@ public class RestLinkDao implements LinkDao {
                 case NOT_VISITED:
                     String domainName = link.getDomain();
                     DomainUrl_ domainUrl_ = DomainURLClient.buildDomainUrl(domainName, domainName, domain.getCoolDownPeriod());
-                    SimpleUrl_ dto = new SimpleUrl_(link.getUrl(), Option.apply(link.getSourceDomain()), Option.apply(domainName), Option.apply(link.getUrl()), "NOT_VISITED");
+                    SimpleUrl_ dto = new SimpleUrl_(link.getUrl(), Option.apply(domainName), Option.apply(link.getUrl()), "NOT_VISITED");
                     DomainLink_ domainLink_ = new DomainLink_(domainUrl_, dto);
 
                     List<DomainLink_> toSave = null;
