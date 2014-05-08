@@ -1,9 +1,7 @@
 package akka.ws.pass.breaker;
 
 import akka.actor.ActorSystem;
-import akka.actor.Props;
 import akka.kernel.Bootable;
-import akka.ws.pass.breaker.actors.ZipPasswordBreakWorker;
 
 /**
  * The RemoteApplication class represents the entry point for the remote nodes 
