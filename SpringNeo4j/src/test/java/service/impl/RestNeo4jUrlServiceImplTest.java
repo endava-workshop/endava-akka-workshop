@@ -29,7 +29,9 @@ public class RestNeo4jUrlServiceImplTest {
 
 	@Test
 	public void testCreateDomain() {
-		service.addDomainUrl("Wikipedia", "www.wikipedia.com", 1000L);
+		for(int i = 0; i< 100; i++){
+			service.addDomainUrl("Wikipedia" + i, "www.wikipedia.com" + i, 1000L);
+		}
 	}
 
 	@Test

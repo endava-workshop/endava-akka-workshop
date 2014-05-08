@@ -57,8 +57,8 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		
 		nodeAutoIndexer.getAutoIndex().get(LINK_URL, "");
 		
-		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("durl"));
-		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("lurl"));
+//		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("durl"));
+//		Assert.assertTrue(nodeAutoIndexer.getAutoIndexedProperties().contains("lurl"));
 		
 		AutoIndexer<Relationship> relAutoIndexer =  restApi.index().getRelationshipAutoIndexer();
 		
@@ -85,7 +85,7 @@ public class RestNeo4jUrlServiceImpl implements UrlService, Neo4jQueryInterface 
 		
 //		engine.query(CREATE_DOMAIN, paramMap);
 		
-		RestNode node = restApi.getOrCreateNode(index, "durl", "domainUrl", paramMap);
+		RestNode node = restApi.getOrCreateNode(index, "durl", domainUrl, paramMap);
 //		if(!node.getLabels().iterator().hasNext()){
 //			restApi.addLabels(node, "Domain");
 //		}
