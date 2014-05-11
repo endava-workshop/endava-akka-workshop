@@ -1,0 +1,6 @@
+added 9300 domainLinks
+test time : 305136 ms
+
+added 93000 domainLinks
+test time : 284328 ms
+

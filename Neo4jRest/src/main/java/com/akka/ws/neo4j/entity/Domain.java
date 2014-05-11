@@ -1,5 +1,9 @@
 package com.akka.ws.neo4j.entity;
 
+import java.security.DigestException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import com.akka.ws.neo4j.enums.DomainStatus;
 
 /**
@@ -39,6 +43,29 @@ public class Domain {
         return domainStatus;
     }
 
+    
+    /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		byte[] bytes = (this.name + "0000000000000000").getBytes();
+		try {
+			return MessageDigest.getInstance("MD5").digest(bytes, 0, bytes.length);
+		} catch (Exception e) {
+			return super.hashCode();
+		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Domain) {
+			Domain domain = (Domain) obj;
+			return this.name.equals(domain.getName());
+		}
+		return false;
+	}
+    
     @Override
     public String toString() {
         return "Domain{" +

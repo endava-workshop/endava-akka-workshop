@@ -110,12 +110,12 @@ public class RestNeo4jUrlServiceImplTest {
 
 	@Test
 	public void testAddDomainLinks_STRESS() throws Exception {
-		int numberOfLinks = 1;
+		int numberOfLinks = 100;
 		List<DomainLink> domainLinks = new ArrayList<>();
 		DomainURL domain1 = new DomainURL("d1", "n1");
 		for (int i = 0; i < numberOfLinks; i++) {
 			domainLinks.add(new DomainLink(domain1, new SimpleURL("url" + i,
-					"n" + 1, "new")));
+					"n" + i, "new")));
 		}
 		
 		long time = System.currentTimeMillis();

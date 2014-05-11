@@ -1,4 +1,4 @@
-package com.akka.ws.neo4j.service;
+package com.akka.ws.neo4j.old;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import com.akka.ws.neo4j.enums.LinkStatus;
 import com.akka.ws.neo4j.util.Neo4jQueryInterface;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryInterface {
+public class Neo4jRestDaoImpl implements Neo4jQueryInterface {
 
 	private RestAPIFacade restApi;
 
@@ -38,11 +38,12 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 
 	private boolean addLabels;
 
-	public Neo4jRestPersistenceImpl(String dbUrl, boolean addLabels) {
+	public Neo4jRestDaoImpl(String dbUrl, boolean addLabels) {
 		restApi = new RestAPIFacade(dbUrl);
 		engine = new RestCypherQueryEngine(restApi);
 		this.addLabels = addLabels;
 		index = restApi.createIndex(Node.class, "domainIndex", LuceneIndexImplementation.EXACT_CONFIG);
+		
 	}
 
 	/*
@@ -59,10 +60,11 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 		paramMap.put(COOL_DOWN_PERIOD, domain.getCoolDownPeriod());
 		paramMap.put(CRAWLED_AT, domain.getCrawledAt());
 
-//		RestNode node = restApi.getOrCreateNode(index, DOMAIN_NAME, domain.getName(), paramMap);
-//		if (addLabels) {
-//			addLabel(node, DOMAIN_LABEL);
-//		}
+		// RestNode node = restApi.getOrCreateNode(index, DOMAIN_NAME,
+		// domain.getName(), paramMap);
+		// if (addLabels) {
+		// addLabel(node, DOMAIN_LABEL);
+		// }
 		engine.query(CREATE_DOMAIN, paramMap);
 	}
 
@@ -79,15 +81,13 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 					paramMap.put(COOL_DOWN_PERIOD, domain.getCoolDownPeriod());
 					paramMap.put(CRAWLED_AT, domain.getCrawledAt());
 
-					RestNode node = restApi.getOrCreateNode(index, DOMAIN_NAME, domain.getName(), paramMap);
-					if (addLabels) {
-						addLabel(node, DOMAIN_LABEL);
-					}
+					engine.query(CREATE_DOMAIN, paramMap);
 				}
 				return batchResult;
 			}
 		});
 	}
+
 	private void addLabel(RestNode node, String label) {
 		if (!node.getLabels().iterator().hasNext()) {
 			restApi.addLabels(node.labelsPath(), label);
@@ -98,10 +98,10 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * service.UrlService#findDomains(org.springframework.data.domain.Pageable)
+	 * service.UrlService#getDomains(org.springframework.data.domain.Pageable)
 	 */
 
-	public List<Domain> findDomains(int pageNo, int pageSize) {
+	public List<Domain> getDomains(int pageNo, int pageSize) {
 		int skip = pageNo * pageSize;
 
 		Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -134,9 +134,46 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 		}
 	}
 
+	public boolean existsDomain(String domainName) {
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put(DOMAIN_NAME, domainName);
+		QueryResult<Map<String, Object>> result = engine.query(FIND_DOMAIN, paramMap);
+		return result.iterator().hasNext();
+	}
+
+	public List<Domain> getNewDomainsFrom(final List<Domain> domainList) {
+		List<Domain> newDomainList = new ArrayList<Domain>();
+/*
+		DomainBatchResult result = restApi.executeBatch(new BatchCallback<DomainBatchResult>() {
+			public DomainBatchResult recordBatch(RestAPI batchRestApi) {
+				DomainBatchResult batchResult = new DomainBatchResult();
+				QueryEngine engine = new RestCypherQueryEngine(batchRestApi);
+				for (Domain domain : domainList) {
+					Map<String, Object> paramMap = new HashMap<String, Object>();
+					paramMap.put(DOMAIN_NAME, domain.getName());
+					QueryResult<Map<String, Object>> result = engine.query(FIND_DOMAIN, paramMap);
+					batchResult.resultMap.put(domain, result);
+				}
+				return batchResult;
+			}
+		});
+		for (Domain domain : result.resultMap.keySet()) {
+			if (!result.resultMap.get(domain).iterator().hasNext()) {
+				newDomainList.add(domain);
+			}
+		}
+*/
+		for (Domain domain : domainList) {
+			if (!index.get(DOMAIN_NAME, domain.getName()).hasNext()) {
+				newDomainList.add(domain);
+			}
+		}
+		return newDomainList;
+	}
+
 	private Domain extractDomain(Map<String, Object> row) {
-		return new Domain((String) row.get("n." + DOMAIN_NAME), Long.valueOf((String) row.get("n." + COOL_DOWN_PERIOD)),
-				Long.valueOf((String) row.get("n." + CRAWLED_AT)), DomainStatus.valueOf((String) row.get("n." + DOMAIN_STATUS)));
+		return new Domain((String) row.get("n." + DOMAIN_NAME), Long.valueOf((Integer) row.get("n." + COOL_DOWN_PERIOD)),
+				Long.valueOf((Integer) row.get("n." + CRAWLED_AT)), DomainStatus.valueOf((String) row.get("n." + DOMAIN_STATUS)));
 	}
 
 	/*
@@ -157,7 +194,7 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 	 * @see service.UrlService#removeDomains()
 	 */
 
-	public void removeDomains() {
+	public void removeAllDomains() {
 		engine.query(REMOVE_ALL_DOMAINS, null);
 
 	}
@@ -243,7 +280,7 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 			paramMap.put(LINK_STATUS, link.getStatus().toString());
 			paramMap.put(LINK_URL, link.getUrl());
 
-			engine.query(UPDATE_LINK_STATUS, paramMap);
+			engine.query(UPDATE_LINK, paramMap);
 		}
 
 	}
@@ -308,5 +345,9 @@ public class Neo4jRestPersistenceImpl implements PersistenceService, Neo4jQueryI
 
 	class BatchResult {
 		List<QueryResult> queryResults = new ArrayList<>();
+	}
+
+	class DomainBatchResult {
+		Map<Domain, QueryResult> resultMap = new HashMap<Domain, QueryResult>();
 	}
 }

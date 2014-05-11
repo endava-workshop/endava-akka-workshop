@@ -46,11 +46,20 @@ public class Link {
     }
 
     @Override
+   	public boolean equals(Object obj) {
+   		if (obj instanceof Relation) {
+   			Link link = (Link) obj;
+   			return this.url.equals(link.getUrl());
+   		}
+   		return false;
+   	}
+    
+    @Override
     public String toString() {
         return "Link{" +
                 "domain='" + domain + '\'' +
                 ", url='" + url + '\'' +
-                ", status=" + status +
+                ", status=" + status.toString() +
                 ", sourceLink='" + sourceLink + '\'' +
                 '}';
     }

@@ -1,36 +1,28 @@
 package com.akka.ws.neo4j.service;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import com.akka.ws.neo4j.entity.Domain;
 import com.akka.ws.neo4j.entity.DomainLink;
 import com.akka.ws.neo4j.entity.Link;
 
 public interface PersistenceService {
-	public void addDomain(Domain domain);
+	
+	public List<Domain> getDomains(int pageNo, int pageSize);
 
-	public void addDomainsInBatch(final List<Domain> domainList);
-
-	public List<Domain> findDomains(int pageNo, int pageSize);
-
-	public Domain findDomain(String domainName);
-
-	public void removeDomainUrl(String domainName);
-
-	public void removeDomains();
-
+	public List<Link> getDomainLinks(String domainName, String linkStatus, int pageNo, int pageSize);
+	
 	public void addDomainLinks(List<DomainLink> domainLinks);
+	
+	public boolean addDomain(Domain domain);
+	
+	public void addDomainsInBatch(Set<Domain> domainSet);
+	
+	public void updateLinks(List<Link> linkList);
+	
+	public void cleanDatabase();
 
-	public void updateLink(List<Link> linkList);
-
-	public Collection<Link> findDomainLinks(String domainName, String linkStatus, int pageNo, int pageSize);
-
-	public long countAllNodes();
-
-	public long countAllDomains();
-
-	public long countAllLinks();
-
-	public long countDomainLinks(String domainName);
+	public void removeDomain(String domainName);
+	
 }
