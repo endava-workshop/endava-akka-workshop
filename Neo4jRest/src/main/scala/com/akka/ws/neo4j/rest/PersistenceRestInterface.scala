@@ -22,13 +22,14 @@ abstract class PersistenceRestInterface extends HttpServiceActor with Json4sSupp
   //  lazy val urlService = springContext.getBean(classOf[MongoUrlServiceImpl])
   lazy val persistenceService = new PersistenceServiceImpl(true, 1500)
 
-  def receive = runRoute {(
-    path("purge") {
-      complete {
-        persistenceService.cleanDatabase()
-        "Removed all domains"
-      }
-    } ~
+  def receive = runRoute {
+    (
+      path("purge") {
+        complete {
+          persistenceService.cleanDatabase()
+          "Removed all domains"
+        }
+      } ~
       path("domain") {
         put { // CREATE Domain
           entity(as[Domain]) { domain =>
@@ -80,27 +81,27 @@ abstract class PersistenceRestInterface extends HttpServiceActor with Json4sSupp
       } ~
       path("updateLinks") { // UPDATE LINK Status - bulk operation
         post {
-          entity(as[List[Link]]) { 
-        	links: List[Link] =>
-            val t0 = System.currentTimeMillis()
-            persistenceService.updateLinks(links)
-            val t1 = System.currentTimeMillis()
-            println(s"bulk status update for ${links.size} urls in ${t1 - t0}ms")
-            complete("OK")
+          entity(as[List[Link]]) {
+            links: List[Link] =>
+              val t0 = System.currentTimeMillis()
+              persistenceService.updateLinks(links)
+              val t1 = System.currentTimeMillis()
+              println(s"bulk status update for ${links.size} urls in ${t1 - t0}ms")
+              complete("OK")
           }
         }
       } ~
       /**
        * not sure if still used
        */
-//      path("url" / "error") { // UPDATE LINK error count
-//        patch {
-//          entity(as[SimpleUrlError]) { patch =>
-//            urlService.updateSimpleUrlErrorStatus(patch.url, patch.errorDelta)
-//            complete("OK")
-//          }
-//        }
-//      } ~
+      //      path("url" / "error") { // UPDATE LINK error count
+      //        patch {
+      //          entity(as[SimpleUrlError]) { patch =>
+      //            urlService.updateSimpleUrlErrorStatus(patch.url, patch.errorDelta)
+      //            complete("OK")
+      //          }
+      //        }
+      //      } ~
       path("url" / "ping") {
         complete {
           println("ping")

@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 public class LocalPasswordMessage implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private int bulkSize;
 
 	private String resourceFilePath;
