@@ -12,13 +12,19 @@ public class PasswordMessage implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String password;
+    private long indexedDate;
 
-    public PasswordMessage(String password) {
+    public PasswordMessage(String password, long indexedDate) {
         this.password = password;
+        this.indexedDate = indexedDate;
     }
 
     public String getPassword() {
         return password;
+    }
+
+    public long getIndexedDate() {
+        return indexedDate;
     }
 
     @Override

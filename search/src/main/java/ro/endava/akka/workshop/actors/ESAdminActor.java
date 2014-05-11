@@ -9,7 +9,6 @@ import ro.endava.akka.workshop.es.actions.ESPutMappingAction;
 import ro.endava.akka.workshop.es.actions.structures.ESAnalyzer;
 import ro.endava.akka.workshop.es.actions.structures.ESFilter;
 import ro.endava.akka.workshop.es.client.ESRestClient;
-import ro.endava.akka.workshop.es.client.ESRestClientFactory;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
 import ro.endava.akka.workshop.exceptions.ErrorCode;
@@ -44,8 +43,7 @@ public class ESAdminActor extends UntypedActor {
     private void initiate() {
         Boolean isOk = true;
 
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
+        ESRestClient client = ESRestClient.getInstance();
 
         isOk = isOk && buildPasswordsIndex(client);
         isOk = isOk && buildArticlesIndex(client);
@@ -71,19 +69,19 @@ public class ESAdminActor extends UntypedActor {
             final ESResponse createPassResp = client.executeAsyncBlocking(createPass);
 
             final ESPutMappingAction mappPass = new ESPutMappingAction.Builder().index("passwords").type("password").
-                    attribute("password", "string").build();
+                    attribute("password", "string").attribute("indexedDate", "date").build();
             final ESResponse mappPassResp = client.executeAsyncBlocking(mappPass);
 
-            final ESPutMappingAction mappCommonPass = new ESPutMappingAction.Builder().index("passwords").type("commonPassword").
-                    attribute("password", "string").build();
-            final ESResponse mappCommonPassResp = client.executeAsyncBlocking(mappCommonPass);
+            //final ESPutMappingAction mappCommonPass = new ESPutMappingAction.Builder().index("passwords").type("commonPassword").
+            //        attribute("password", "string").build();
+            //final ESResponse mappCommonPassResp = client.executeAsyncBlocking(mappCommonPass);
 
-            if (createPassResp.isOk() && mappPassResp.isOk() && mappCommonPassResp.isOk()) {
+            if (createPassResp.isOk() && mappPassResp.isOk() /*&& mappCommonPassResp.isOk()*/) {
                 LOGGER.info("The index 'passwords' has been created");
             } else {
                 LOGGER.info("The index 'passwords' has not been created. Some errors occurred: "
                         + createPassResp.getJsonString() + ", " + mappPassResp.getJsonString()
-                        + ", " + mappCommonPassResp.getJsonString());
+                        /*+ ", " + mappCommonPassResp.getJsonString()*/);
                 isOk = false;
             }
         } else {

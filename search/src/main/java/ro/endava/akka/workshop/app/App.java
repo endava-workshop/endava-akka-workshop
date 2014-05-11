@@ -20,11 +20,8 @@ public class App {
 	public static AtomicInteger indexedChunks = new AtomicInteger(0);
 
 	public static void main(String[] args) {
-		ActorSystem akkaSystem = ActorSystem.create("akkaSystem");
+        ActorSystem akkaSystem = ActorSystem.create("akkaSystem");
 
-        final Props properties = Props.create(ESAdminActor.class);
-        ActorRef esAdminActor = akkaSystem.actorOf(properties);
-        esAdminActor.tell(true, ActorRef.noSender());
 
 		final Props props = Props.create(IndexDispatcherActor.class);
 		ActorRef indexDispatcherActor = akkaSystem.actorOf(props);
@@ -32,11 +29,11 @@ public class App {
         //Cu chunk de 10000 par cele mai bune rezultate; nici cu 1000 nu e rau; cand se ajunge la chunk de 1000000 crapa diect ca e mesajul prea mare
         //Cred ca trebuie configurari de cat din heap sa ii dam elasticului
 		LocalPasswordMessage message = new LocalPasswordMessage(
-				"/common_passwords.txt", 10000);
+				"/common_passwords_small.txt", 10000);
 
-		//indexDispatcherActor.tell(message, ActorRef.noSender());
+		indexDispatcherActor.tell(message, ActorRef.noSender());
 
-		while (sentChunks.get() == 0 || sentChunks.get() > indexedChunks.get()) {
+        while (sentChunks.get() == 0 || sentChunks.get() > indexedChunks.get()) {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {

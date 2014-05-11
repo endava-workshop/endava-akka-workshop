@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import ro.endava.akka.workshop.es.actions.ESSearchAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
-import ro.endava.akka.workshop.es.client.ESRestClientFactory;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.es.responses.custom.PasswordHits;
 import ro.endava.akka.workshop.es.responses.custom.PasswordSearchResponse;
@@ -25,11 +24,11 @@ import akka.actor.UntypedActor;
 public class SearchPasswordActor extends UntypedActor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SearchRouterActor.class);
 
+    ESRestClient client;
+
     @Override
     public void onReceive(final Object message) throws Exception {
         if (message instanceof SearchPasswordReqMessage) {
-        	LOGGER.debug("received a SearchPasswordReqMessage");
-
             searchPasswords((SearchPasswordReqMessage) message);
         } else {
             throw new ApplicationException("Message not supported.", ErrorCode.UNKNOW_MESSAGE_TYPE);
@@ -37,11 +36,9 @@ public class SearchPasswordActor extends UntypedActor {
     }
 
     private void searchPasswords(SearchPasswordReqMessage message) {
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
-
         ESSearchAction searchAction = new ESSearchAction.Builder()
-                .index("passwords").type(message.getPasswordType().toString()).from(message.getFrom()).size(message.getSize()).build();
+                .index("passwords").type("password").from(message.getFrom()).
+                        size(message.getSize()).sort(message.getSort()).build();
         ESResponse esResponse = client.executeAsyncBlocking(searchAction);
 
         PasswordSearchResponse searchResponse = esResponse.getSourceAsObject(PasswordSearchResponse.class);
@@ -52,7 +49,14 @@ public class SearchPasswordActor extends UntypedActor {
             }
         }
         SearchPasswordHitsMessage resultMessage = new SearchPasswordHitsMessage(message.getSender(), passwords);
+        LOGGER.debug("return result");
         getSender().tell(resultMessage, getSelf());
 
+    }
+
+    @Override
+    public void preStart() throws Exception {
+        super.preStart();
+        client = ESRestClient.getInstance();
     }
 }

@@ -18,9 +18,9 @@ public class Transformer {
     public static BulkPasswordMessage tokensToPasswords(ESAnalyzeResponse analyzeResponse) {
         List<PasswordMessage> passwordMessages = new ArrayList<>();
         for (ESToken token : analyzeResponse.getTokens()) {
-            PasswordMessage passwordMessage = new PasswordMessage(token.getToken());
+            PasswordMessage passwordMessage = new PasswordMessage(token.getToken(), System.currentTimeMillis());
             passwordMessages.add(passwordMessage);
         }
-        return new BulkPasswordMessage(passwordMessages, PasswordType.DEFAULT);
+        return new BulkPasswordMessage(passwordMessages);
     }
 }

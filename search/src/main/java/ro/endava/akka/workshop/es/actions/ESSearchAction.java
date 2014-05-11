@@ -3,27 +3,31 @@ package ro.endava.akka.workshop.es.actions;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import ro.endava.akka.workshop.es.actions.structures.ESSort;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by cosmin on 4/6/14.
  * Indexing action for ES
  */
-//TODO add sorting
 public class ESSearchAction extends ESAbstractAction {
 
     private String query;
     private Long from;
     private Long size;
+    private List<ESSort> sort;
 
     private ESSearchAction(Builder builder) {
         super(builder);
         this.query = builder.query;
         this.from = builder.from;
         this.size = builder.size;
+        this.sort = builder.sort;
         this.url = buildUrl();
         this.body = buildBody();
         this.method = "POST";
@@ -69,6 +73,12 @@ public class ESSearchAction extends ESAbstractAction {
             query = query.replaceFirst("\\{", "\\{" + sizeString.toString());
         }
 
+        if (sort != null && sort.size() > 0) {
+            StringBuilder sorting = new StringBuilder("\"sort\": [");
+            sorting.append(StringUtils.join(sort, ","));
+            sorting.append("],");
+            query = query.replaceFirst("\\{", "\\{" + sorting.toString());
+        }
 
         return query;
     }
@@ -95,6 +105,8 @@ public class ESSearchAction extends ESAbstractAction {
         private String query;
         private Long from;
         private Long size;
+        private List<ESSort> sort = new ArrayList<>();
+
 
         public Builder query(String query) {
             this.query = query;
@@ -108,6 +120,16 @@ public class ESSearchAction extends ESAbstractAction {
 
         public Builder size(Long size) {
             this.size = size;
+            return this;
+        }
+
+        public Builder sort(ESSort esSort){
+            this.sort.add(esSort);
+            return this;
+        }
+
+        public Builder sort(List<ESSort> esSorts){
+            this.sort.addAll(esSorts);
             return this;
         }
 

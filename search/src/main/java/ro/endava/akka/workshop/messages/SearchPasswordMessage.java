@@ -1,6 +1,9 @@
 package ro.endava.akka.workshop.messages;
 
+import ro.endava.akka.workshop.es.actions.structures.ESSort;
+
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by cosmin on 4/9/14.
@@ -11,14 +14,20 @@ import java.io.Serializable;
 public class SearchPasswordMessage implements Serializable {
     private Long from;
     private Long size;
-    private PasswordType passwordType;
+    private List<ESSort> sort;
 
-    //TODO add sort
+    public SearchPasswordMessage() {
+    }
 
-    public SearchPasswordMessage(PasswordType passwordType, Long from, Long size) {
+    public SearchPasswordMessage(Long from, Long size) {
         this.from = from;
         this.size = size;
-        this.passwordType = passwordType;
+    }
+
+    public SearchPasswordMessage(Long from, Long size, List<ESSort> sort) {
+        this.from = from;
+        this.size = size;
+        this.sort = sort;
     }
 
     public Long getFrom() {
@@ -29,8 +38,7 @@ public class SearchPasswordMessage implements Serializable {
         return size;
     }
 
-
-    public PasswordType getPasswordType() {
-        return passwordType;
+    public List<ESSort> getSort() {
+        return sort;
     }
 }

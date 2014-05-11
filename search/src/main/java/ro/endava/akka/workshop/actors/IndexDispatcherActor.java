@@ -81,19 +81,19 @@ public class IndexDispatcherActor extends UntypedActor {
         if (indexArticleActorRouter == null) {
             indexArticleActorRouter = getContext().actorOf(
                     Props.create(IndexArticleActor.class).withRouter(
-                            new RoundRobinRouter(5)));
+                            new RoundRobinRouter(20)));
         }
 
         if (indexPassActorRouter == null) {
             indexPassActorRouter = getContext().actorOf(
                     Props.create(IndexPasswordActor.class).withRouter(
-                            new RoundRobinRouter(5)));
+                            new RoundRobinRouter(50)));
         }
 
         if (indexTokenizerActorRouter == null) {
             indexTokenizerActorRouter = getContext().actorOf(
                     Props.create(IndexTokenizerActor.class).withRouter(
-                            new RoundRobinRouter(5)));
+                            new RoundRobinRouter(20)));
         }
     }
 

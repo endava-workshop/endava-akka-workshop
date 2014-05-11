@@ -15,15 +15,11 @@ import ro.endava.akka.workshop.es.actions.ESPutMappingAction;
 import ro.endava.akka.workshop.es.actions.structures.ESAnalyzer;
 import ro.endava.akka.workshop.es.actions.structures.ESFilter;
 import ro.endava.akka.workshop.es.client.ESRestClient;
-import ro.endava.akka.workshop.es.client.ESRestClientFactory;
 import ro.endava.akka.workshop.es.responses.ESIndexResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.messages.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by cosmin on 3/10/14.
@@ -67,9 +63,11 @@ public class ActorsIT {
             final ActorRef subject = system.actorOf(props);
 
             // the run() method needs to finish within 10 seconds
-            new Within(duration("10 seconds")) {
+            new Within(duration("20000 seconds")) {
                 protected void run() {
-                    subject.tell(createSearchPasswordMessage(), getRef());
+                    for(int i=0; i<5000; i++){
+                        subject.tell(createSearchPasswordMessage(), getRef());
+                    }
                     // Will wait for the rest of the 10 seconds
                     expectMsgClass(SearchPasswordResultMessage.class);
                 }
@@ -82,8 +80,7 @@ public class ActorsIT {
      */
     @Test
     public void testCreateIndex() {
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
+        ESRestClient client = ESRestClient.getInstance();
         ESCreateIndexAction createIndexAction = new ESCreateIndexAction.Builder().index("randomindex").build();
         ESResponse createIndexResponse = client.executeAsyncBlocking(createIndexAction);
         ESIndexResponse indexResponse = createIndexResponse.getSourceAsObject(ESIndexResponse.class);
@@ -100,8 +97,7 @@ public class ActorsIT {
      */
     @Test
     public void testCreateIndexWithSettings() {
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
+        ESRestClient client = ESRestClient.getInstance();
 
         Map<String, Object> props = new HashMap<>();
         props.put("type", "custom");
@@ -132,8 +128,7 @@ public class ActorsIT {
 
     @Test
     public void testIsIndex() {
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
+        ESRestClient client = ESRestClient.getInstance();
         ESIsIndexAction isIndexAction = new ESIsIndexAction.Builder().index("mama").build();
         ESResponse esResponse = client.executeAsyncBlocking(isIndexAction);
         Assert.assertFalse(esResponse.isOk());
@@ -147,6 +142,8 @@ public class ActorsIT {
     }
 
     private SearchPasswordMessage createSearchPasswordMessage() {
-        return new SearchPasswordMessage(PasswordType.COMMON, 0L, 1L);
+        Random random = new Random();
+        int randomNum = random.nextInt((4000 - 0) + 1) + 0;
+        return new SearchPasswordMessage(new Integer(randomNum).longValue(), new Integer(randomNum).longValue() + 1000);
     }
 }

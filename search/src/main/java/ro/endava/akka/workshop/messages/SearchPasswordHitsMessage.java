@@ -26,4 +26,12 @@ public class SearchPasswordHitsMessage implements Serializable {
     public ActorRef getRequestor() {
         return requestor;
     }
+
+    @Override
+    public String toString() {
+        return "SearchPasswordHitsMessage{" +
+                "passwords=" + passwords +
+                ", requestor=" + requestor +
+                '}';
+    }
 }

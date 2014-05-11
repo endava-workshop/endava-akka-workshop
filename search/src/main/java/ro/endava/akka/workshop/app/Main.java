@@ -17,13 +17,13 @@ public class Main {
         final Props indexProps = Props.create(IndexDispatcherActor.class);
         ActorRef indexDispatcherActor = akkaSystem.actorOf(indexProps);
 
-        indexDispatcherActor.tell(new LocalPasswordMessage(
-                "/common_passwords_small.txt", 10000), ActorRef.noSender());
+       // indexDispatcherActor.tell(new LocalPasswordMessage(
+         //       "/common_passwords.txt", 10000), ActorRef.noSender());
 
         final Props searchProps = Props.create(SearchRouterActor.class);
         ActorRef searchRouterActor = akkaSystem.actorOf(searchProps);
 
-        searchRouterActor.tell(new SearchPasswordMessage(PasswordType.COMMON, 0L, 10L), ActorRef.noSender());
+        searchRouterActor.tell(new SearchPasswordMessage(0L, 10L), ActorRef.noSender());
 
 
         //will run forever

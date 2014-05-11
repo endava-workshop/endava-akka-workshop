@@ -1,8 +1,10 @@
 package ro.endava.akka.workshop.messages;
 
 import akka.actor.ActorRef;
+import ro.endava.akka.workshop.es.actions.structures.ESSort;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by cosmin on 4/9/14.
@@ -13,14 +15,19 @@ import java.io.Serializable;
 public class SearchPasswordReqMessage implements Serializable {
     private Long from;
     private Long size;
-    private PasswordType passwordType;
+    private List<ESSort> sort;
     private ActorRef sender;
-    //TODO add sort
 
-    public SearchPasswordReqMessage(PasswordType passwordType, Long from, Long size, ActorRef sender) {
+    public SearchPasswordReqMessage(Long from, Long size, List<ESSort> sort, ActorRef sender) {
         this.from = from;
         this.size = size;
-        this.passwordType = passwordType;
+        this.sort = sort;
+        this.sender = sender;
+    }
+
+    public SearchPasswordReqMessage(Long from, Long size, ActorRef sender) {
+        this.from = from;
+        this.size = size;
         this.sender = sender;
     }
 
@@ -36,8 +43,8 @@ public class SearchPasswordReqMessage implements Serializable {
         return sender;
     }
 
-    public PasswordType getPasswordType() {
-        return passwordType;
+    public List<ESSort> getSort() {
+        return sort;
     }
 
     @Override

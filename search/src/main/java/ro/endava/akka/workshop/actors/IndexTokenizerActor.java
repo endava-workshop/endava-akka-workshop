@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ro.endava.akka.workshop.es.actions.ESAnalyzeAction;
 import ro.endava.akka.workshop.es.client.ESRestClient;
-import ro.endava.akka.workshop.es.client.ESRestClientFactory;
 import ro.endava.akka.workshop.es.responses.ESAnalyzeResponse;
 import ro.endava.akka.workshop.es.responses.ESResponse;
 import ro.endava.akka.workshop.exceptions.ApplicationException;
@@ -19,7 +18,10 @@ import ro.endava.akka.workshop.util.Transformer;
  * Actor that will query elastic to get the tokens from an article
  */
 public class IndexTokenizerActor extends UntypedActor {
+
     private final static Logger LOGGER = LoggerFactory.getLogger(IndexTokenizerActor.class);
+
+    private ESRestClient client;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -38,9 +40,6 @@ public class IndexTokenizerActor extends UntypedActor {
      * @throws Exception
      */
     private void tokenizeAndRespond(IndexMessage indexMessage) throws Exception {
-        ESRestClientFactory factory = new ESRestClientFactory();
-        ESRestClient client = factory.getClient(ESRestClientFactory.Type.ASYNC, false);
-
         ESAnalyzeAction analyzeAction = new ESAnalyzeAction.Builder().index("analysis").
                 analyzer("myanalyzer").body(indexMessage.getContent()).build();
 
@@ -48,5 +47,11 @@ public class IndexTokenizerActor extends UntypedActor {
         ESAnalyzeResponse analyzeResponse = esResponse.getSourceAsObject(ESAnalyzeResponse.class);
         BulkPasswordMessage bulkPasswordMessage = Transformer.tokensToPasswords(analyzeResponse);
         getSender().tell(bulkPasswordMessage, getSelf());
+    }
+
+    @Override
+    public void preStart() throws Exception {
+        super.preStart();
+        client = ESRestClient.getInstance();
     }
 }
