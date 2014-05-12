@@ -111,6 +111,10 @@ public class Neo4jLinkDaoImpl implements Neo4jLinkDao, Neo4jQueryInterface {
 		engine.query(REMOVE_ALL_DOMAINS, null);
 	}
 
+	public void addLinkUrlConstraints() {
+		engine.query(LINK_URL_CONSTRAINT, null);
+	}
+	
 	private Map<String, Object> getLinkMap(Link link) {
 		Map<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.put(LINK_URL, link.getUrl());

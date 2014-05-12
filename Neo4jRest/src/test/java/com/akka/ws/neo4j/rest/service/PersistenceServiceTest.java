@@ -34,9 +34,6 @@ public class PersistenceServiceTest {
 		
 		service.addDomainLinks(domainLinks);
 		
-		
-		
-		
 	}
 	
 	private List<DomainLink> getPage1For(Domain domain){

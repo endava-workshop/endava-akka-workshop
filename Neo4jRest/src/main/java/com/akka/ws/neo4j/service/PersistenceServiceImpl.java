@@ -44,6 +44,7 @@ public class PersistenceServiceImpl implements PersistenceService, Neo4jQueryInt
 		neo4jLinkDao = new Neo4jLinkDaoImpl(dbUrl);
 		neo4jRelationDao = new Neo4jRelationDaoImpl(dbUrl);
 		this.groupDataInBatch = false;
+		addConstraints();
 	}
 
 	public PersistenceServiceImpl(boolean groupDataInBatch, int batchMinSize) {
@@ -54,8 +55,14 @@ public class PersistenceServiceImpl implements PersistenceService, Neo4jQueryInt
 		if (this.groupDataInBatch) {
 			this.batchMinSize = batchMinSize;
 		}
+		addConstraints();
 	}
 
+	private void addConstraints(){
+		neo4jDomainDao.addDomainNameConstraints();
+		neo4jLinkDao.addLinkUrlConstraints();
+	}
+	
 	@Override
 	public List<Domain> getDomains(int pageNo, int pageSize) {
 		return neo4jDomainDao.getDomains(pageNo, pageSize);

@@ -1,5 +1,6 @@
 package com.akka.ws.neo4j.util;
 
+
 public interface Neo4jQueryInterface {
 
 	int DEFAULT_COOLDOWN_PERIOD = 30 * 1000;
@@ -66,6 +67,13 @@ public interface Neo4jQueryInterface {
 
 	String REMOVE_ALL_DOMAINS = "MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r";
 
+	/**
+	 * add constraints queries
+	 */
+	String DOMAIN_NAME_CONSTRAINT = "CREATE CONSTRAINT ON (n:Domain) ASSERT n.dname IS UNIQUE";
+	
+	String LINK_URL_CONSTRAINT = "CREATE CONSTRAINT ON (l:Link) ASSERT l.lurl IS UNIQUE";
+	
 	/**
 	 * COUNT queries
 	 */

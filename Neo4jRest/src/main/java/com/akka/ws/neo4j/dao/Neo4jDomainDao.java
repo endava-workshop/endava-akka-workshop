@@ -21,4 +21,5 @@ public interface Neo4jDomainDao {
 
 	public void removeDomain(String domainName);
 
+	public void addDomainNameConstraints();
 }

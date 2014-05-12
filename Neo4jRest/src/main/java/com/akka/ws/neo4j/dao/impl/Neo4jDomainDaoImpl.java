@@ -74,7 +74,8 @@ public class Neo4jDomainDaoImpl implements Neo4jDomainDao, Neo4jQueryInterface {
 		Map<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.put(PARAM_SKIP, skip);
 		paramMap.put(PARAM_LIMIT, pageSize);
-		QueryResult<Map<String, Object>> result = engine.query(GET_ALL_DOMAINS, paramMap);
+		QueryResult<Map<String, Object>> result = engine.query(GET_ALL_DOMAINS,
+				paramMap);
 		List<Domain> domainList = new ArrayList<Domain>();
 
 		Iterator<Map<String, Object>> iterator = result.iterator();
@@ -100,9 +101,17 @@ public class Neo4jDomainDaoImpl implements Neo4jDomainDao, Neo4jQueryInterface {
 		paramMap.put(DOMAIN_NAME, domainName);
 		engine.query(REMOVE_DOMAIN, paramMap);
 	}
-	
+
+	/**
+	 * TODO - this is not working when database contains more than 1 mil nodes
+	 * and relations
+	 */
 	public void cleanDatabase() {
 		engine.query(REMOVE_ALL_DOMAINS, null);
+	}
+
+	public void addDomainNameConstraints() {
+		engine.query(DOMAIN_NAME_CONSTRAINT, null);
 	}
 
 	private Map<String, Object> getDomainMap(Domain domain) {
@@ -115,14 +124,14 @@ public class Neo4jDomainDaoImpl implements Neo4jDomainDao, Neo4jQueryInterface {
 	}
 
 	private Domain extractDomain(Map<String, Object> row) {
-		return new Domain((String) row.get("n." + DOMAIN_NAME), Long.valueOf((Integer) row.get("n." + COOL_DOWN_PERIOD)),
-				Long.valueOf((Integer) row.get("n." + CRAWLED_AT)), DomainStatus.valueOf((String) row.get("n." + DOMAIN_STATUS)));
+		return new Domain((String) row.get("n." + DOMAIN_NAME),
+				Long.valueOf((Integer) row.get("n." + COOL_DOWN_PERIOD)),
+				Long.valueOf((Integer) row.get("n." + CRAWLED_AT)),
+				DomainStatus.valueOf((String) row.get("n." + DOMAIN_STATUS)));
 	}
 
 	class BatchResult {
 		List<QueryResult> queryResults = new ArrayList<>();
 	}
-
-	
 
 }

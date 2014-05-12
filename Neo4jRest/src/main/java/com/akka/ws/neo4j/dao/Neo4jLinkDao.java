@@ -21,4 +21,5 @@ public interface Neo4jLinkDao {
 
 	public void updateLinks(List<Link> linkList);
 
+	public void addLinkUrlConstraints();
 }
