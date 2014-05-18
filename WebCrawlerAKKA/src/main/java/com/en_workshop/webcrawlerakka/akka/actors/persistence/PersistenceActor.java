@@ -6,8 +6,7 @@ import com.en_workshop.webcrawlerakka.akka.actors.BaseActor;
 import com.en_workshop.webcrawlerakka.akka.requests.persistence.*;
 import com.en_workshop.webcrawlerakka.dao.DomainDao;
 import com.en_workshop.webcrawlerakka.dao.LinkDao;
-import com.en_workshop.webcrawlerakka.dao.impl.InMemoryDomainDao;
-import com.en_workshop.webcrawlerakka.dao.impl.InMemoryLinkDao;
+import com.en_workshop.webcrawlerakka.dao.impl.*;
 import com.en_workshop.webcrawlerakka.entities.Domain;
 import com.en_workshop.webcrawlerakka.entities.DomainLink;
 import com.en_workshop.webcrawlerakka.entities.Link;
@@ -24,10 +23,10 @@ import java.util.List;
  */
 public class PersistenceActor extends BaseActor {
     private final LoggingAdapter LOG = Logging.getLogger(getContext().system(), this);
-    private static DomainDao domainDao = new InMemoryDomainDao();
-//    private static DomainDao domainDao = new RestDomainDao();
-    private static LinkDao linkDao = new InMemoryLinkDao();
-//    private static LinkDao linkDao = new RestLinkDao();
+//    private static DomainDao domainDao = new InMemoryDomainDao();
+    private static DomainDao domainDao = new RestDomainDao();
+//    private static LinkDao linkDao = new InMemoryLinkDao();
+    private static LinkDao linkDao = new RestLinkDao();
 
     /**
      * {@inheritDoc}

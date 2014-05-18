@@ -125,8 +125,8 @@ public class Neo4jDomainDaoImpl implements Neo4jDomainDao, Neo4jQueryInterface {
 
 	private Domain extractDomain(Map<String, Object> row) {
 		return new Domain((String) row.get("n." + DOMAIN_NAME),
-				Long.valueOf((Integer) row.get("n." + COOL_DOWN_PERIOD)),
-				Long.valueOf((Integer) row.get("n." + CRAWLED_AT)),
+				Long.valueOf(row.get("n." + COOL_DOWN_PERIOD).toString()),
+				Long.valueOf(row.get("n." + CRAWLED_AT).toString()),
 				DomainStatus.valueOf((String) row.get("n." + DOMAIN_STATUS)));
 	}
 

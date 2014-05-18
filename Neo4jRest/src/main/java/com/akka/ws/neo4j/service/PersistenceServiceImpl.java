@@ -92,8 +92,9 @@ public class PersistenceServiceImpl implements PersistenceService, Neo4jQueryInt
 			linkSet.add(link);
 			if (link.getDomain().equals(domain.getName())) {
 				// is part of this domain
+                domainSet.add(domain);
 				relationSet.add(new Relation(link.getUrl(), domain.getName(), REL_PART_OF));
-				if (!link.getSourceLink().equals(link.getDomain())) {
+				if (link.getSourceLink() != null && !link.getSourceLink().equals(link.getDomain())) {
 					/**
 					 * TODO - not sure if makes sense to set the relations
 					 * between links from the same domain
@@ -155,7 +156,11 @@ public class PersistenceServiceImpl implements PersistenceService, Neo4jQueryInt
 	public void updateLinks(List<Link> linkList){
 		neo4jLinkDao.updateLinks(linkList);
 	}
-	
+
+    public void flush() {
+        persistData();
+    }
+
 	private void persistData() {
 		neo4jDomainDao.addDomainsInBatch(newDomainSet);
 		neo4jLinkDao.addLinksInBatch(newLinkSet);

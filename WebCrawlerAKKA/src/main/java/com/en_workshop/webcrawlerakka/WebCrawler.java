@@ -34,13 +34,12 @@ public class WebCrawler {
         LOG.debug("Add sample (test) data ...");
 
         Domain domain = new Domain("ro.wikipedia.org", 20000, 0);
-//        DOMAIN_NAME_FILTER = "wikipedia"; // to prevent crawling all domains!
-        DOMAIN_NAME_FILTER = "*"; // to prevent crawling all domains!
+        DOMAIN_NAME_FILTER = "wikipedia"; // to prevent crawling all domains!
+//        DOMAIN_NAME_FILTER = "*"; // to prevent crawling all domains!
 //        DOMAIN_NAME_FILTER = "www.archeus.ro"; // to prevent crawling all domains!
 //      Domain domain = new Domain("www.archeus.ro", 1, 0);
 
 
-        Thread.sleep(2000); // allow the domain to get to DB...
         LinkDao linkDao = PersistenceActor.getLinkDao();
         Link link = new Link(domain.getName(), "http://ro.wikipedia.org/wiki/Pagina_principal%C4%83", null);
         DomainLink domainLink = new DomainLink(domain, link);

@@ -21,7 +21,7 @@ public class RestLinkDao implements LinkDao {
     private int pageSize = 2000;
 
     private Map<String, Queue<Link>> domainLinks = new HashMap<>(); // per domainName
-    private List<DomainLink_> buffToSave = new ArrayList<>(BUFF_SIZE_SAVE);
+    private List<DomainLinkDTO> buffToSave = new ArrayList<>(BUFF_SIZE_SAVE);
     private Object BUFF_TO_SAVE_LOCK = new Object();
 
     private List<String> buffVisited = new ArrayList<>(BUFF_SIZE_UPDATE);
@@ -71,7 +71,7 @@ public class RestLinkDao implements LinkDao {
                 }
                 break;
             case FAILED:
-                SimpleURLClient.markURLError(link.getUrl());
+                SimpleURLClient.setURLsStatus(Collections.singletonList(link.getUrl()), LinkStatus.FAILED.toString());
                 break;
             default:
                 break;
@@ -92,13 +92,13 @@ public class RestLinkDao implements LinkDao {
             switch (link.getStatus()) {
                 case NOT_VISITED:
                     String domainName = link.getDomain();
-                    DomainUrl_ domainUrl_ = DomainURLClient.buildDomainUrl(domainName, domainName, domain.getCoolDownPeriod());
-                    SimpleUrl_ dto = new SimpleUrl_(link.getUrl(), Option.apply(domainName), Option.apply(link.getUrl()), "NOT_VISITED");
-                    DomainLink_ domainLink_ = new DomainLink_(domainUrl_, dto);
+                    DomainDTO domainUrl_ = DomainURLClient.buildDomainUrl(domainName, domain.getCoolDownPeriod());
+                    LinkDTO linkDTO = new LinkDTO(domainName, link.getUrl(), LinkStatus.NOT_VISITED.toString(),link.getSourceLink());
+                    DomainLinkDTO domainLinkDTO = new DomainLinkDTO(domainUrl_, linkDTO);
 
-                    List<DomainLink_> toSave = null;
+                    List<DomainLinkDTO> toSave = null;
                     synchronized (BUFF_TO_SAVE_LOCK) { // create domain entry if it does not exist
-                        buffToSave.add(domainLink_);
+                        buffToSave.add(domainLinkDTO);
                         if (buffToSave.size() >= BUFF_SIZE_SAVE) {
                             toSave = buffToSave;
                             buffToSave = new ArrayList<>(BUFF_SIZE_SAVE);
@@ -122,7 +122,7 @@ public class RestLinkDao implements LinkDao {
     }
 
     public void flush() {
-        List<DomainLink_> toSave = null;
+        List<DomainLinkDTO> toSave = null;
         synchronized (BUFF_TO_SAVE_LOCK) {
             if (buffToSave.size() > 0) {
                 toSave = buffToSave;
@@ -131,7 +131,7 @@ public class RestLinkDao implements LinkDao {
         }
         if (toSave != null) {
             SimpleURLClient.addDomainLinks(toSave, true);
-
+            SimpleURLClient.flush();
         }
         List<String> toUpdate = null;
         synchronized (BUFF_VISITED_LOCK) {
@@ -142,6 +142,7 @@ public class RestLinkDao implements LinkDao {
         }
         if (toUpdate != null) {
             SimpleURLClient.setURLsStatus(toUpdate, LinkStatus.VISITED.toString());
+            SimpleURLClient.flush();
         }
     }
 

@@ -20,8 +20,7 @@ public class RestDomainDao implements DomainDao {
 
     @Override
     public List<Domain> findAll(List<DomainStatus> domainStatuses) {
-        //TODO implement this
-        return null;
+        return DomainURLClient.filterDomains(domainStatuses, 0, WebCrawlerConstants.DOMAINS_CRAWL_MAX_COUNT);
     }
 
     @Override

@@ -16,20 +16,12 @@ object SimpleURLClient extends AbstractRestClient {
   //TODO update the SimpleUrl definition so it corresponds to the Link entity definition
 
   implicit val timeout: Duration = 3 minute
-  lazy val addUrlClient = sendReceive
-  def addURL(url: String, domain: String, sourceDomain: String): Unit = {
-    timed("add URL", url) {
-      val payload = new SimpleUrl_(url, Some(domain), Some(url), "NOT_VISITED")
-      addUrlClient(Post(s"$webRoot/domain/$domain/url", payload))
-    }
-  }
-
 
   lazy val addDomainLinkClient = sendReceive// ~> unmarshal[List[DomainLink_]])
-  def addDomainLinks(domainLinks: java.util.Collection[DomainLink_], sync: Boolean = false): Unit = {
+  def addDomainLinks(domainLinks: java.util.Collection[DomainLinkDTO], sync: Boolean = false): Unit = {
 
       val f = timed(s"add ${domainLinks.size()} DomainLinks") {
-        addDomainLinkClient(Post(s"$webRoot/urls", domainLinks))
+        addDomainLinkClient(Post(s"$webRoot/domainLinks", domainLinks))
       }
       if (sync) {
         Await.result(f, timeout)
@@ -37,28 +29,14 @@ object SimpleURLClient extends AbstractRestClient {
 
   }
 
-  def addURLs(urls: java.util.Collection[SimpleUrl_], sync: Boolean = false): Unit = {
-    urls.flatMap(u => u.domain).toSet.foreach {
-      domain: String => {
-        val forCrtDomain = urls.filter(_.domain.getOrElse("") == domain)
-        val f = timed(s"add ${forCrtDomain.size()} URLs") {
-          addUrlClient(Post(s"$webRoot/domain/${domain}/urls", forCrtDomain))
-        }
-        if (sync) {
-          Await.result(f, timeout)
-        }
-      }
-    }
-  }
-
-  lazy val getUrlClient = (sendReceive ~> unmarshal[List[SimpleUrl_]])
+  lazy val getUrlClient = (sendReceive ~> unmarshal[List[LinkDTO]])
   def getURLs(domainAddress: String, status: String, pageNo: Int, pageSize: Int): java.util.List[Link] = {
     val f = timed("get URLs", domainAddress) {
-      getUrlClient(Get(s"$webRoot/domain/$domainAddress/url?status=$status&pageNo=$pageNo&pageSize=$pageSize"))
+      getUrlClient(Get(s"$webRoot/domain/$domainAddress/links?status=$status&pageNo=$pageNo&pageSize=$pageSize"))
     }
     // translate DTO to domain model
     val result = for (u <- Await.result(f, timeout))
-      yield new Link(u.domain.getOrElse(null), u.url, null, LinkStatus.valueOf(u.status.getOrElse(null)))
+      yield new Link(u.domain, u.url, null, LinkStatus.valueOf(u.status))
     println(s"found ${result.size} links for $domainAddress")
     result
   }
@@ -66,24 +44,20 @@ object SimpleURLClient extends AbstractRestClient {
   lazy val urlBulkStatusClient = sendReceive
   def setURLsStatus(url: java.util.List[String], status: String): Unit = {
     timed(s"bulk update status for ${url.size()} links") {
-      urlBulkStatusClient(Patch(s"$webRoot/url/status", SimpleUrlsStatus(url.toList, status)))
+      urlBulkStatusClient(Post(s"$webRoot/updateLinks", url.map(new LinkDTO("", _, status, ""))))
     }
   }
 
-  lazy val urlErrorClient = sendReceive
-  def markURLError(url: String): Unit = {
-    timed("incrementing error count", url){
-      val payload = SimpleUrlError(url, 1)
-      urlErrorClient(Patch(s"$webRoot/url/error", payload))
+  lazy val flushClient = sendReceive
+  def flush(): Unit = {
+    val f = timed("flush") {
+      flushClient(Get(s"$webRoot/flush"))
     }
+    Await.result(f, timeout)
   }
 
 }
 
-case class SimpleUrl_(url: String, domain: Option[String], name: Option[String], status: Option[String], errorCount: Option[Int]) {
-  def this(url: String, domain: Option[String], name: Option[String], status: String) = this(url, domain, name, Option(status), None)
-}
-case class DomainLink_(domain: DomainUrl_, link: SimpleUrl_)
-case class SimpleUrlStatus(url: String, status: String)
-case class SimpleUrlsStatus(urls: List[String], status: String)
-case class SimpleUrlError(url: String, errorDelta: Int)
+case class LinkDTO(domain: String, url: String, status: String, sourceLink: String)
+case class DomainLinkDTO(domain: DomainDTO, link: LinkDTO)
+
