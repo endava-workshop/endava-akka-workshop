@@ -1,0 +1,13 @@
+
+The main characteristics of a workshop are:
+
+* Requires a hands-on software development activity.
+* A workshop has a well defined scope, which is partially suggested by the name (e.g.: Akka Workshop's scope is to explore the Akka framework, its features, limitations and integration possibilities with other technologies).
+* Each workshop should provide Endava stuff with (one or more) presentations designed to share the knowledge and experience achieved during this activity.
+* A workshop may not necessarily end up with a stable release of a software product, the main purpose being to reach the scope (which is usually to explore a set of technologies rather than providing a product).
+* The code and other software components developed within the workshop should be shared in a centralized repository which is available to all Endava stuff.
+* A workshop has 1 or more participants.
+* Abandoning the workshop should be allowed at any point in time.
+* Accountability: the work done, at both workshop level and individual level of each participant is accountable by the physical outcome (e.g.: written code, analysis and architecture documets if any etc.) which is transparent at Endava (or public) level and by the presentations done for the workshop in front of Endava audience.
+* A workshop has an organizer (the person initiating it), who also acts as a workshop lead and is responsible to maintain the communication along the team. However, this does not impose special restrictions for this person. Just like any other participant, the lead is free to leave at any point if he/she decides this. Such a case should not affect the workshop, as long as a replacement is found.
+
