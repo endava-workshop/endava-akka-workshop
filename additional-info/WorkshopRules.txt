@@ -11,3 +11,8 @@ The main characteristics of a workshop are:
 * Accountability: the work done, at both workshop level and individual level of each participant is accountable by the physical outcome (e.g.: written code, analysis and architecture documets if any etc.) which is transparent at Endava (or public) level and by the presentations done for the workshop in front of Endava audience.
 * A workshop has an organizer (the person initiating it), who also acts as a workshop lead and is responsible to maintain the communication along the team. However, this does not impose special restrictions for this person. Just like any other participant, the lead is free to leave at any point if he/she decides this. Such a case should not affect the workshop, as long as a replacement is found.
 
+* A workshop should specify a desired (not required) experience level. This is specified as a guide line, so the participants should know what kind of technical knowledge is expected.
+* A workshop should provide a list of documentation resources. The list should be available from the beginning and could (should) be updated during the workshop.
+* A workshop should have goals. This is useful to determine when the workshop will finish. If other goals are added the workshop can be extended, or created a new one, with new requirements.
+* A workshop should have a maximum period of time allocated. If the topics / goals take more than that maximum time, they can be reviewed and shortened, or the workshop can be split.
+* A workshop can continue the work done by other workshops. The participants can be the same people or others. No restrictions apply.
