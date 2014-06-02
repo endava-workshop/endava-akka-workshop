@@ -16,3 +16,11 @@ The main characteristics of a workshop are:
 * A workshop should have goals. This is useful to determine when the workshop will finish. If other goals are added the workshop can be extended, or created a new one, with new requirements.
 * A workshop should have a maximum period of time allocated. If the topics / goals take more than that maximum time, they can be reviewed and shortened, or the workshop can be split.
 * A workshop can continue the work done by other workshops. The participants can be the same people or others. No restrictions apply.
+
+* A workshop should not have more than 6-8 members. Having more members implies to develop a more complex project and is hard to be follwed and managed.
+* A workshop's project should be seaparated in individual parts on which the members can work in the same time without having conflicts.
+* One each module or component from a workshop there should be at least two members working on it for having in this way the guarantee that the project will evolve even if one member is too busy in a period.
+* A workshop should have a main purpose and that purpose should be followed all the time
+* A workshop can add secondary purposes, but these should not require too much time and should not cover the main purpose
+* A workshop should have very well delimited periods of development and at the end it should provide a working solution or concrete results on the main purpose
+* A workshop should not have a development/technical lead and everyone should be actively implied in taking any kind of decision as long as the main purpose is kept
