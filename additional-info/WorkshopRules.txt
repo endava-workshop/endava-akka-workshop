@@ -26,3 +26,11 @@ The main characteristics of a workshop are:
 * A workshop should not have a development/technical lead and everyone should be actively implied in taking any kind of decision as long as the main purpose is kept
 * A workshop should promote a lot of brainstorming session.
 * A workshop should offer freedom in thinking and trying unusual solutions
+* The workshop's meetings should be open and anyoen interested can participate as spectator.
+* At the begining of a workshop any member should specify the amount of time willing to invest in the workshop.(doesn't matter if it's time from the professional time in the company or free time)
+
+
+
+
+
+
