@@ -16,7 +16,7 @@ public class TestRestClient {
 	public static void main(String[] args) {
 		ActorSystem system = ActorSystem.create(LOCAL_ACTOR_SYSTEM_NAME);
 		
-		List<String> result = RestClient.getPasswords(system, 10, 10);
+		List<String> result = RestClient.getPasswords(system, 4, 9);
 
 		System.out.println(result);
 		system.shutdown();

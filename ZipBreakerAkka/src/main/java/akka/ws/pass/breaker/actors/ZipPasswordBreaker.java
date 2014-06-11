@@ -41,7 +41,7 @@ import com.google.common.io.Files;
  */
 public class ZipPasswordBreaker extends UntypedActor {
 
-	final static String THIS_HOST = "192.168.166.100"; //TODO externalize in properties
+	final static String THIS_HOST = "127.0.0.1"; //TODO externalize in properties
 	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
 	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
 
