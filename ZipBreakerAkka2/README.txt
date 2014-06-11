@@ -35,10 +35,19 @@ breaking one of these archives by brute-force means trying a certain number of p
 the passwords are read from this file in sequence).
 
 
-Additional notes:
+Configuration files:
 
-* some configuration information (such as chunk size or password file name - for example) are 
-currently mentioned in static final variables inside the actor classes. This situation will 
-change in the future and they will go into properties files. However, if you want to configure 
-anything at this moment, take a look in the code of the actors and in the LocalPasswordProvider
-(look at the final variable declarations from the beginning of the class definition).
+* application.conf -> contains the configuration for Akka framework; there should be 
+one application.conf in src/main/resources of the local application and one in each conf directory
+of each akka microkernel running on remote machines; if remote kernels are ran on the same
+physical machine, please ensure you are using different ports than for the local.
+* remoteAddresses.json -> contains the information about the remote kernels in order for the
+local application to know how to connect to those kernels; for each remote machine, it is also
+compulsory to specify how many workers should run for each attacked zip archive; this should be
+a positive integer greater than zero; the local application will equaly distribute the work to
+each remote worker - which means you can increase the load on one physical machine by forcing
+more workers to be deployed on it, or limit the work to be done on one machine by allocating fewer
+workers on it.
+* settings.properties -> contains the configuration for the resources and configurable information
+used by the actors; please ensure you have configured these values before running; also ensure
+the files and folders denoted by given paths exist.
