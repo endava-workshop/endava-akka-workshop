@@ -3,13 +3,12 @@ package akka.ws.pass.breaker.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LocalPasswordsProvider {
 
-	private final static String PASSWORD_FILE_PATH = "D:/workspace/EndavaAkkaWs/ZipBreakerAkka2/src/main/resources/common_passwords.txt";
+	private final static String PASSWORD_FILE_PATH = PropertyUtil.getStringProperty("password.file.path");
 	private final static List<String> result = new ArrayList<>(4152000);
 	private final static int resultSize;
 

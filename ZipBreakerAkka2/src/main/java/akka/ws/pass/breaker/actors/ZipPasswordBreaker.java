@@ -1,5 +1,7 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.ws.pass.breaker.util.PropertyUtil;
+
 import akka.actor.ActorRef;
 import akka.actor.Address;
 import akka.actor.Deploy;
@@ -42,11 +44,11 @@ import com.google.common.io.Files;
  */
 public class ZipPasswordBreaker extends UntypedActor {
 
-	final static String THIS_HOST = "127.0.0.1"; //TODO externalize in properties
-	final static String PATH_TO_SHARED_FOLDER = "D:/share"; //TODO externalize in properties
-	final static String SHARED_PATH_TO_SHARED_FOLDER = "file://EN61081/share"; //TODO externalize in properties
-	final static boolean RUN_WITH_REMOTE_WORKERS = true; //TODO externalize in properties
-	final static int passwordChunkSize = 5000; //TODO externalize in properties
+	final static String THIS_HOST = PropertyUtil.getStringProperty("local.machine.host");
+	final static String PATH_TO_SHARED_FOLDER = PropertyUtil.getStringProperty("path.to.shared.folder");
+	final static String SHARED_PATH_TO_SHARED_FOLDER = PropertyUtil.getStringProperty("shared.path.to.shared.folder");
+	final static boolean RUN_WITH_REMOTE_WORKERS = PropertyUtil.getBooleanProperty("run.with.remote.workers");
+	final static int passwordChunkSize = PropertyUtil.getIntProperty("password.chunk.size");
 
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -175,7 +177,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 	private void endProcess(Long processId) {
 		Process process = runningProcesses.get(processId);
 		for(ActorRef worker : process.workers) {
-			getContext().stop(worker);
+			getContext().stop(worker); //TODO this doesn't seem to work properly
 		}
 		runningProcesses.remove(processId);
 	}

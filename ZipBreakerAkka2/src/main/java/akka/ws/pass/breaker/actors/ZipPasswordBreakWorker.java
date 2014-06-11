@@ -28,9 +28,8 @@ import java.util.List;
 public class ZipPasswordBreakWorker extends UntypedActor {
 	private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 	private static final long MAX_POSSIBLE_CHUNKS = Long.MAX_VALUE;
-	
-
 	private static final String ZIP_EXTENSION = "zip";
+	
 	private static final String TEMP_FOLDER = "d:/tmp"; //TODO externalize in properties
 	private static final boolean PASSWORDS_FROM_FILE = true; //TODO externalize in properties
 	
