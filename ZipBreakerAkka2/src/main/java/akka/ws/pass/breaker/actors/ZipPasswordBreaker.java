@@ -1,7 +1,5 @@
 package akka.ws.pass.breaker.actors;
 
-import akka.ws.pass.breaker.util.PropertyUtil;
-
 import akka.actor.ActorRef;
 import akka.actor.Address;
 import akka.actor.Deploy;
@@ -19,8 +17,10 @@ import akka.ws.pass.breaker.exception.PasswordsExhaustedException;
 import akka.ws.pass.breaker.messages.FoundPasswordMessage;
 import akka.ws.pass.breaker.messages.StartProcessMessage;
 import akka.ws.pass.breaker.messages.StartWorkerMessage;
+import akka.ws.pass.breaker.messages.StopProcessMessage;
 import akka.ws.pass.breaker.settings.RemoteAddress;
 import akka.ws.pass.breaker.settings.RemoteAddressProvider;
+import akka.ws.pass.breaker.util.PropertyUtil;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
@@ -90,7 +90,8 @@ public class ZipPasswordBreaker extends UntypedActor {
 			//TODO: following are temporary lines
 			System.out.println("Total time: " + (System.currentTimeMillis() - LocalApplication.startTime));
 			System.out.println("*********** Password found: " + (inMessage.getSuccessfullPassword()));
-			//System.exit(0);
+			
+			System.exit(0);  //FIXME this exit is temporary; also the TODOs, I hope :-D
 		}
 	}
 	
@@ -144,8 +145,14 @@ public class ZipPasswordBreaker extends UntypedActor {
 				}
 				processWorkers.add(passwordChecker);
 			}
+			ActorRef stopper;
+			if(RUN_WITH_REMOTE_WORKERS) {
+				stopper = getContext().actorOf(Props.create(ZipPasswordBreakWorkerStopper.class).withDeploy(new Deploy(new RemoteScope(address))));
+			} else {
+				stopper = getContext().actorOf(Props.create(ZipPasswordBreakWorkerStopper.class));
+			}
 			
-			runningProcesses.put(processId, new Process(processWorkers, sharedFileURL, message.getZipFilePath()));
+			runningProcesses.put(processId, new Process(processWorkers, stopper, sharedFileURL, message.getZipFilePath()));
 		}
 	}
 
@@ -176,12 +183,11 @@ public class ZipPasswordBreaker extends UntypedActor {
 
 	private void endProcess(Long processId) {
 		Process process = runningProcesses.get(processId);
-		for(ActorRef worker : process.workers) {
-			worker.tell(akka.actor.PoisonPill.getInstance(), getSelf());
-			//TODO this doesn't seem to work properly
-			getContext().stop(worker);
-			getContext().unwatch(worker);
-		}
+//		for(ActorRef worker : process.workers) {
+//			getContext().stop(worker);
+//			getContext().unwatch(worker);
+//		}
+		process.stopper.tell(new StopProcessMessage(processId), getSelf());
 		runningProcesses.remove(processId);
 	}
 
@@ -220,11 +226,13 @@ public class ZipPasswordBreaker extends UntypedActor {
 
 	private static class Process {
 		List<ActorRef> workers;
+		ActorRef stopper;
 		URL sharedFileCopyUrl;
 		String originalFilePath;
-		public Process(List<ActorRef> workers, URL sharedFileCopyUrl, String originalFilePath) {
+		public Process(List<ActorRef> workers, ActorRef stopper, URL sharedFileCopyUrl, String originalFilePath) {
 			super();
 			this.workers = workers;
+			this.stopper = stopper;
 			this.sharedFileCopyUrl = sharedFileCopyUrl;
 			this.originalFilePath = originalFilePath;
 		}

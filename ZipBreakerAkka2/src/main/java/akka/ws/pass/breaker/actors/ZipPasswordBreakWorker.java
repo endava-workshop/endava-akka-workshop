@@ -5,7 +5,6 @@ import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.ws.pass.breaker.exception.PasswordsExhaustedException;
-import akka.ws.pass.breaker.messages.ContinueProcessMessage;
 import akka.ws.pass.breaker.messages.FoundPasswordMessage;
 import akka.ws.pass.breaker.messages.StartWorkerMessage;
 import akka.ws.pass.breaker.util.LocalPasswordsProvider;
@@ -65,15 +64,17 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 			
 			logWorkerStateFollowingInit();
 			
-			getSelf().tell(new ContinueProcessMessage(), getSelf());
-			
-		} else if(message instanceof ContinueProcessMessage) {
-			while(++ lastChunkIndex < MAX_POSSIBLE_CHUNKS) {
-				if(lastChunkIndex % totalWorkers == workerIndex) {
-					processPasswordChunkWithIndex(lastChunkIndex);
-					getSelf().tell(message, getSelf());
+			for(int chunkIndex=0; chunkIndex<MAX_POSSIBLE_CHUNKS; chunkIndex++) {
+				if(chunkIndex % totalWorkers == workerIndex) {
+					processPasswordChunkWithIndex(chunkIndex);
+				}
+				if(ZipPasswordBreakWorkerStopper.isStopped(processId)) {
+					break;
 				}
 			}
+			
+			getContext().stop(getSelf());
+			
 		} else {
 			throw new IllegalArgumentException("Unsupported message type: " + message.getClass());
 		}
