@@ -9,30 +9,6 @@
 			protocol: "akka.tcp",
 			actorSystem: "ZipBreakerRemoteSystem",
 			workersPerProcess: 4
-		},
-		{
-			alias: "remote machine 2",
-			ip: "127.0.0.1",
-			port: 2555,
-			protocol: "akka.tcp",
-			actorSystem: "ZipBreakerRemoteSystem",
-			workersPerProcess: 4
-		},
-		{
-			alias: "remote machine 3",
-			ip: "127.0.0.1",
-			port: 2556,
-			protocol: "akka.tcp",
-			actorSystem: "ZipBreakerRemoteSystem",
-			workersPerProcess: 4
-		},
-		{
-			alias: "remote machine 4",
-			ip: "127.0.0.1",
-			port: 2557,
-			protocol: "akka.tcp",
-			actorSystem: "ZipBreakerRemoteSystem",
-			workersPerProcess: 4
 		}
 	]
 }

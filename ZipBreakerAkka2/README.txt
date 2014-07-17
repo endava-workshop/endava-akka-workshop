@@ -51,3 +51,30 @@ workers on it.
 * settings.properties -> contains the configuration for the resources and configurable information
 used by the actors; please ensure you have configured these values before running; also ensure
 the files and folders denoted by given paths exist.
+
+
+--------------------------------------------------------
+STEPS TO INSTALL AND RUN A REMOTE WORKER ON YOUR MACHINE
+--------------------------------------------------------
+Step 1: 
+-	Copiezi folderul “microkernel_1” de aici: file://EN61081/akka-2.2.3 (in orice locatie de pe calculatorul tau).
+Step 2:
+-	Mergi in interiorul folderului copiat la step 1 si intri in subfolderul “deploy”. Acolo vei gasi un fisier jar pe care il deschizi cu 7-zip sau win-rar.
+Step 3:
+-	Extragi common_passwords.txt din arhiva de la pasul 2 in orice locatie de pe calculatorul tau.
+Step 4:
+-	Editezi settings.properties din arhiva de la punctual 2 astfel:
+o	temp.folder.path.on.remote.machine  trebuie sa pointeze catre un folder existent pe masina ta (in care se vor scrie date temporare).
+o	password.file.path  trebuie sa pointeze catre fisierul dezarhivat la pasul 3.
+Step 5:
+-	Editezi application.conf din subfolderul “config” al microkernelului. Jos de tot, in loc de hostname = "127.0.0.1", pui IP-ul masinii tale. In loc de port = 2554, pui portul pe care vrei sa mi-l pui la dispozitie (in cazul in care e altul).
+Step 6:
+-	Deschizi portul specificat in configuratie la step 5 (detalii aici pt. windows 7: http://www.dummies.com/how-to/content/how-to-open-a-port-in-the-windows-7-firewall.html), sau dai disable la firewall (in caz ca e prea complicat sa deschizi doar portul :-D).
+Step 7:
+-	Mergi dintr-un command line in folderul “bin” al microkernelului si de acolo rulezi comanda urmatoare:
+akka.bat akka.ws.pass.breaker.RemoteApplication
+(ar trebui sa se termine cu un mesaj “Successfully started Akka”).
+Step 8:
+-	Comunici portul si IP-ul (configurate la step 5) subsemnatului, intr-un reply la acest email, impreuna cu intervalele orare intre care microkernelul va fi up and running si cu numarul de core-uri de procesori pe care imi dai voie sa le ating (in functie de asta voi sti cati workeri pot sa deployez maxim pe masina ta).
+Step 9:
+-	Verifici regulat email-ul si citesti mesajul de multumesc de la subsemnatul :-).

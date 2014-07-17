@@ -90,7 +90,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 			//TODO: following are temporary lines
 			System.out.println("Total time: " + (System.currentTimeMillis() - LocalApplication.startTime));
 			System.out.println("*********** Password found: " + (inMessage.getSuccessfullPassword()));
-			System.exit(0);
+			//System.exit(0);
 		}
 	}
 	
@@ -138,7 +138,7 @@ public class ZipPasswordBreaker extends UntypedActor {
 			for(int i=0; i<workersPerProcess; i++) {
 				final ActorRef passwordChecker;
 				if(RUN_WITH_REMOTE_WORKERS) {
-					passwordChecker = getContext().system().actorOf(Props.create(ZipPasswordBreakWorker.class).withDeploy(new Deploy(new RemoteScope(address))));
+					passwordChecker = getContext().actorOf(Props.create(ZipPasswordBreakWorker.class).withDeploy(new Deploy(new RemoteScope(address))));
 				} else {
 					passwordChecker = getContext().actorOf(Props.create(ZipPasswordBreakWorker.class));
 				}
@@ -177,7 +177,10 @@ public class ZipPasswordBreaker extends UntypedActor {
 	private void endProcess(Long processId) {
 		Process process = runningProcesses.get(processId);
 		for(ActorRef worker : process.workers) {
-			getContext().stop(worker); //TODO this doesn't seem to work properly
+			worker.tell(akka.actor.PoisonPill.getInstance(), getSelf());
+			//TODO this doesn't seem to work properly
+			getContext().stop(worker);
+			getContext().unwatch(worker);
 		}
 		runningProcesses.remove(processId);
 	}

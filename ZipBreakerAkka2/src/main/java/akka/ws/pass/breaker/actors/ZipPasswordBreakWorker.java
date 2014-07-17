@@ -1,9 +1,11 @@
 package akka.ws.pass.breaker.actors;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.ws.pass.breaker.exception.PasswordsExhaustedException;
+import akka.ws.pass.breaker.messages.ContinueProcessMessage;
 import akka.ws.pass.breaker.messages.FoundPasswordMessage;
 import akka.ws.pass.breaker.messages.StartWorkerMessage;
 import akka.ws.pass.breaker.util.LocalPasswordsProvider;
@@ -40,6 +42,8 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 	private ZipFile zipFile;
 	private String tempOutputFilePath;
 	private int passwordChunkSize;
+	private int lastChunkIndex;
+	private ActorRef parent;
 
 	public void onReceive(Object message) throws Exception {
 		if(log.isInfoEnabled()) {
@@ -53,15 +57,21 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 			processId = inMessage.getIdProcess();
 			sharedFileUrl = inMessage.getFileURL();
 			passwordChunkSize = inMessage.getPasswordChunkSize();
+			lastChunkIndex = -1;
+			parent = getSender();
 			
 			makeFileAvailableLocally();
 			establishTempOutputFilePath();
 			
 			logWorkerStateFollowingInit();
 			
-			for(int chunkIndex=0; chunkIndex<MAX_POSSIBLE_CHUNKS; chunkIndex++) {
-				if(chunkIndex % totalWorkers == workerIndex) {
-					processPasswordChunkWithIndex(chunkIndex);
+			getSelf().tell(new ContinueProcessMessage(), getSelf());
+			
+		} else if(message instanceof ContinueProcessMessage) {
+			while(++ lastChunkIndex < MAX_POSSIBLE_CHUNKS) {
+				if(lastChunkIndex % totalWorkers == workerIndex) {
+					processPasswordChunkWithIndex(lastChunkIndex);
+					getSelf().tell(message, getSelf());
 				}
 			}
 		} else {
@@ -91,11 +101,19 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 		}
 	}
 	
-	private void processOnePassword(final String password) {
+	/**
+	 * Check one password.
+	 * @param password
+	 * @return true if the password matched; false otherwise
+	 */
+	private boolean processOnePassword(final String password) {
 		if (checkPassword(zipFile, password)) {
 			log.info("\nPASSWORD BROKEN ******************!\nFound password:" + password);
 			FoundPasswordMessage outMessage = new FoundPasswordMessage(processId, password);
-			getSender().tell(outMessage, getSelf());
+			parent.tell(outMessage, getSelf());
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -203,6 +221,7 @@ public class ZipPasswordBreakWorker extends UntypedActor {
 
 	@Override
 	public void postStop() {
+		log.info("\n\n**************************** postStop() called for worker " + workerIndex + " of process " + processId + " *********************\n\n");
 		deleteLocalFileCopy();
 		
 		File destinationFolder = new File(tempOutputFilePath);
